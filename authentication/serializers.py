@@ -2,11 +2,11 @@ import datetime
 from datetime import datetime
 from typing import NoReturn
 
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
+from rest_framework.fields import IntegerField
 from rest_framework.serializers import (
     ModelSerializer,
-    BooleanField,
     CharField,
     SerializerMethodField,
     ValidationError,
@@ -20,21 +20,52 @@ from django.contrib.auth import authenticate
 
 
 class RegistrationSerializer(ModelSerializer[Users]):
+    region_id = IntegerField()
+
     class Meta:
         model = Users
-        fields = ["first_name", "last_name", "email", "birth_date", "password"]
+        fields = [
+            "first_name",
+            "last_name",
+            "middle_name",
+            "phone_number",
+            "email",
+            "avatar_link",
+            "birth_date",
+            "password",
+            "region_id",
+        ]
 
     def create(self, validated_data):
+        print(validated_data)
         return Users.objects.create_user(**validated_data)
+
+    def validate(self, data):
+        required_fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "middle_name",
+            "phone_number",
+            "birth_date",
+            "password",
+            "region_id",
+        ]
+        for field in required_fields:
+            if not data.get(field):
+                raise serializers.ValidationError(
+                    f"Поле '{field}' является обязательным."
+                )
+        return data
 
     def validate_email(self, value):
         if Users.objects.filter(email=value).exists():
-            raise serializers.ValidationError("A user with that email already exists.")
+            raise ValidationError("A user with that email already exists.")
         return value
 
     def validate_birth_date(self, value):
         if value > datetime.now().date():
-            raise serializers.ValidationError("Birth date cannot be in the future.")
+            raise ValidationError("Birth date cannot be in the future.")
         return value
 
 
@@ -89,3 +120,27 @@ class LogoutSerializer(Serializer[Users]):
             refresh_token.blacklist()
         except TokenError:
             raise AuthenticationFailed("Refresh token is invalid")
+
+
+class PasswordResetSerializer(ModelSerializer[Users]):
+    current_password = CharField(required=True)
+    new_password = CharField(required=True)
+
+    class Meta:
+        model = Users
+        fields = ["current_password", "new_password"]
+
+    def validate(self, data):
+        user = self.context.get("user")
+        current_password = data.get("current_password")
+
+        if not check_password(password=current_password, encoded=user.password):
+            raise ValidationError({"current_password": "Текущий пароль неверен."})
+
+        return data
+
+    def update(self, instance, validated_data):
+        new_password = validated_data.get("new_password")
+        instance.set_password(new_password)
+        instance.save()
+        return instance

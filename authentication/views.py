@@ -11,6 +11,7 @@ from authentication.serializers import (
     RegistrationSerializer,
     LoginSerializer,
     LogoutSerializer,
+    PasswordResetSerializer,
 )
 from authentication.utils import set_refresh_cookie, delete_refresh_cookie
 
@@ -22,7 +23,8 @@ from authentication.utils import set_refresh_cookie, delete_refresh_cookie
     ]
 )
 def registration_view(request: Request) -> Response:
-    serializer: RegistrationSerializer = RegistrationSerializer(data=request.data)
+    print(request.data)
+    serializer = RegistrationSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     serializer.save()
@@ -36,7 +38,7 @@ def registration_view(request: Request) -> Response:
     ]
 )
 def login_view(request: Request) -> Response:
-    serializer: LoginSerializer = LoginSerializer(data=request.data)
+    serializer = LoginSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,7 +88,6 @@ def cookie_tokens_refresh_view(request) -> Response:
     )
 
     delete_refresh_cookie(response=response)
-
     set_refresh_cookie(response=response, value=new_refresh_token)
 
     return response
@@ -119,3 +120,18 @@ def logout_view(request: Request) -> Response:
     )
     delete_refresh_cookie(response=response)
     return response
+
+
+@api_view(http_method_names=["PUT"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def reset_password(request: Request) -> Response:
+    serializer = PasswordResetSerializer(
+        data=request.data, context={"user": request.user}
+    )
+    if not serializer.is_valid(raise_exception=True):
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer.update(instance=request.user, validated_data=serializer.validated_data)
+    return Response(
+        data={"message": "Пароль успешно изменён."}, status=status.HTTP_200_OK
+    )

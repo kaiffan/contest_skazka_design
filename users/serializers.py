@@ -107,3 +107,16 @@ class UserFullDataSerializer(ModelSerializer[Users]):
             "region",
             "competencies",
         ]
+
+
+class AllUsersShortDataSerializer(ModelSerializer[Users]):
+    class Meta:
+        model = Users
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "middle_name",
+            "email",
+            "phone_number",
+        ]

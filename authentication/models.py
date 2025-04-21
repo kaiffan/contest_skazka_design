@@ -1,12 +1,12 @@
-from uuid import uuid4
-
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import models
 
+from applications.models import Applications
 from authentication.managers import UsersManager
 from competencies.models import Competencies
+from contests.models import Contest
 from regions.models import Region
 
 
@@ -33,7 +33,13 @@ class Users(AbstractBaseUser, PermissionsMixin):
         name="education_or_work", max_length=255, null=False, default="None"
     )
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    competencies = models.ManyToManyField(to=Competencies, related_name="users")
+
+    competencies = models.ManyToManyField(
+        to=Competencies, related_name="user_competencies"
+    )
+    contests = models.ManyToManyField(
+        to=Contest, related_name="user_applications", through=Applications
+    )
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

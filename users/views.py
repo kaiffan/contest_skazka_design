@@ -3,10 +3,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from participants.permissions import IsContestOwner
+
 from users.serializers import (
     ContestDataUpdateSerializer,
     UserDataPatchSerializer,
     UserFullDataSerializer,
+    AllUsersShortDataSerializer,
 )
 
 
@@ -43,4 +46,12 @@ def user_data_update_view(request) -> Response:
 def user_data_get_view(request) -> Response:
     user = request.user
     serializer = UserFullDataSerializer(user)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestOwner])
+def all_users_view(request) -> Response:
+    user = request.user
+    serializer = AllUsersShortDataSerializer(user)
     return Response(data=serializer.data, status=status.HTTP_200_OK)

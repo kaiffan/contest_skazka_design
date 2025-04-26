@@ -5,6 +5,7 @@ from applications.models import Applications
 from rest_framework.serializers import ModelSerializer
 
 from applications.validator import ApplicationValidator
+from participants.models import Participant
 
 
 class ApplicationSerializer(ModelSerializer[Applications]):
@@ -66,6 +67,11 @@ class ApproveApplicationSerializer(ModelSerializer[Applications]):
         instance.status = ApplicationStatus.accepted.value
         instance.rejection_reason = None
         instance.save()
+
+        Participant.objects.create(
+            user_id=instance.user_id,
+            contest_id=instance.contest_id
+        )
 
 
 class RejectApplicationSerializer(ModelSerializer[Applications]):

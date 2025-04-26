@@ -1,0 +1,8 @@
+pgdata
+.venv
+.gitignore
+.git
+.idea
+.ruff_cache
+docker-compose.yml
+

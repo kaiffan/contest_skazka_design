@@ -71,7 +71,7 @@ class ApproveApplicationSerializer(ModelSerializer[Applications]):
 class RejectApplicationSerializer(ModelSerializer[Applications]):
     class Meta:
         model = Applications
-        fields = ["status", "rejection_reason"]
+        fields = ["id", "rejection_reason"]
 
     def validate(self, data):
         application_id = data.get("id")

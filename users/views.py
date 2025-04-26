@@ -45,8 +45,7 @@ def user_data_update_view(request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated])
 def user_data_get_view(request) -> Response:
-    user = request.user
-    serializer = UserFullDataSerializer(user)
+    serializer = UserFullDataSerializer(request.user)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -58,7 +57,7 @@ def all_users_view(request) -> Response:
     queryset = Users.objects.all()
 
     if email:
-       queryset = queryset.filter(email=email)
+        queryset = queryset.filter(email=email)
 
     serializer = AllUsersShortDataSerializer(data=queryset, many=True)
 

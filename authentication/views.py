@@ -23,7 +23,6 @@ from authentication.utils import set_refresh_cookie, delete_refresh_cookie
     ]
 )
 def registration_view(request: Request) -> Response:
-    print(request.data)
     serializer = RegistrationSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

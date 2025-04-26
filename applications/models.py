@@ -17,9 +17,15 @@ class Applications(models.Model):
         choices=ApplicationStatus.choices(),
         default=ApplicationStatus.pending.value,
     )
+    rejection_reason = models.CharField(
+        name="rejection_reason", max_length=255, blank=True, null=True
+    )
+
+    nomination = models.ForeignKey(Nominations, on_delete=models.CASCADE)
 
     contest = models.ForeignKey(to=Contest, on_delete=models.CASCADE)
     user = models.ForeignKey(to=Users, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "applications"
+        unique_together = ("name", "contest", "nomination")

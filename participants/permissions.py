@@ -10,7 +10,7 @@ class IsContestOwner(BasePermission):
         return check_contest_role_permission(
             contest_id=request.headers.get("X-Contest-ID"),
             user_id=request.user.id,
-            role=ParticipantRole.owner,
+            role=ParticipantRole.owner.value,
         )
 
 

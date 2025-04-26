@@ -39,7 +39,10 @@ def user_data_update_view(request) -> Response:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     serializer.save()
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        data={"message": "Данные успешно обновлены", "data": serializer.data},
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(http_method_names=["GET"])

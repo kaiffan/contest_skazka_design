@@ -26,9 +26,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "applications",
     "authentication",
+    "categories",
     "competencies",
+    "contest_categories",
+    "contests",
+    "criterias",
+    "nomination",
     "participants",
     "regions",
+    "users",
 ]
 
 MIDDLEWARE = [

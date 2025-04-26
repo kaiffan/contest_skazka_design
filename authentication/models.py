@@ -3,11 +3,7 @@ from django.contrib.auth.models import PermissionsMixin
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import models
 
-from applications.models import Applications
 from authentication.managers import UsersManager
-from competencies.models import Competencies
-from contests.models import Contest
-from regions.models import Region
 
 
 class Users(AbstractBaseUser, PermissionsMixin):
@@ -19,7 +15,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     )
     email = models.EmailField(name="email", max_length=255, unique=True, null=False)
     birth_date = models.DateField(name="birth_date", null=False)
-    password = models.CharField(name="password", max_length=255, default="", null=False)
+    password = models.CharField(name="password", max_length=255, null=False)
     registration_date = models.DateTimeField(
         name="registration_date", auto_now_add=True, null=False
     )
@@ -32,13 +28,15 @@ class Users(AbstractBaseUser, PermissionsMixin):
     education_or_work = models.CharField(
         name="education_or_work", max_length=255, null=False, default="None"
     )
-    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    region = models.ForeignKey(to="regions.Region", on_delete=models.CASCADE)
 
     competencies = models.ManyToManyField(
-        to=Competencies, related_name="user_competencies"
+        to="competencies.Competencies", related_name="user_competencies"
     )
     contests = models.ManyToManyField(
-        to=Contest, related_name="user_applications", through=Applications
+        to="contests.Contest",
+        related_name="user_applications",
+        through="applications.Applications",
     )
 
     is_active = models.BooleanField(default=True)

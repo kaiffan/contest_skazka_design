@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="Competencies",
+            name="Criteria",
             fields=[
                 (
                     "id",
@@ -22,9 +22,12 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=255, unique=True)),
+                ("description", models.CharField(max_length=255)),
+                ("max_points", models.PositiveIntegerField()),
+                ("min_points", models.PositiveIntegerField()),
             ],
             options={
-                "db_table": "competencies",
+                "db_table": "criteria",
             },
         ),
     ]

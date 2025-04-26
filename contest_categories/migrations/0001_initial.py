@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="Competencies",
+            name="ContestCategories",
             fields=[
                 (
                     "id",
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=255, unique=True)),
             ],
             options={
-                "db_table": "competencies",
+                "db_table": "contest_category",
             },
         ),
     ]

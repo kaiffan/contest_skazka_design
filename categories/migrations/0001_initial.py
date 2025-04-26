@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="Competencies",
+            name="Categories",
             fields=[
                 (
                     "id",
@@ -22,9 +22,11 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=255, unique=True)),
+                ("start_age", models.PositiveIntegerField(default=0)),
+                ("end_age", models.PositiveIntegerField(default=0)),
             ],
             options={
-                "db_table": "competencies",
+                "db_table": "categories",
             },
         ),
     ]

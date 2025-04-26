@@ -14,27 +14,23 @@ class ContestDataUpdateSerializer(Serializer):
     education_or_work = CharField(max_length=255, required=True)
 
     def validate_competencies(self, value):
-        existing_competences = set(
-            Competencies.objects.filter(name__in=value).values_list("name", flat=True)
-        )
-        if len(existing_competences) != len(value):
-            invalid_competences = set(value) - existing_competences
-            raise ValidationError(
-                f"Недопустимые компетенции: {', '.join(invalid_competences)}"
-            )
+        if not value:
+            raise ValidationError("Competencies cannot be empty")
+
+        if len(value) != len(set(value)):
+            raise ValidationError("Competencies cannot contain duplicate competencies")
+
         return value
 
     def update_user_data(self, user):
         validated_competencies = self.validated_data["competencies"]
         new_education_or_work = self.validated_data["education_or_work"]
 
-        existing_competencies = set(
-            Competencies.objects.filter(name__in=validated_competencies).values_list(
-                "name", flat=True
-            )
-        )
+        existing_competencies = Competencies.objects.filter(
+            name__in=validated_competencies
+        ).values_list("name", flat=True)
 
-        missing_competencies = set(validated_competencies) - existing_competencies
+        missing_competencies = set(validated_competencies) - set(existing_competencies)
 
         if missing_competencies:
             Competencies.objects.bulk_create(
@@ -45,7 +41,12 @@ class ContestDataUpdateSerializer(Serializer):
             name__in=validated_competencies
         )
 
-        user.competencies.clear()
+        current_competencies_user = user.competencies.all()
+
+        competencies_to_remove = current_competencies_user.exclude(
+            name__in=validated_competencies
+        )
+        user.competencies.remove(*competencies_to_remove)
         user.competencies.add(*competence_objects)
 
         user.education_or_work = new_education_or_work

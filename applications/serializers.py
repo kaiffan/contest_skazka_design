@@ -69,8 +69,7 @@ class ApproveApplicationSerializer(ModelSerializer[Applications]):
         instance.save()
 
         Participant.objects.create(
-            user_id=instance.user_id,
-            contest_id=instance.contest_id
+            user_id=instance.user_id, contest_id=instance.contest_id
         )
 
 

@@ -1,8 +1,5 @@
 from django.db import models
 
-from authentication.models import Users
-from contests.models import Contest
-
 from applications.enums import ApplicationStatus
 
 
@@ -21,10 +18,12 @@ class Applications(models.Model):
         name="rejection_reason", max_length=255, blank=True, null=True
     )
 
-    nomination = models.ForeignKey(Nominations, on_delete=models.CASCADE)
+    nomination = models.ForeignKey(
+        to="nomination.Nominations", on_delete=models.CASCADE
+    )
 
-    contest = models.ForeignKey(to=Contest, on_delete=models.CASCADE)
-    user = models.ForeignKey(to=Users, on_delete=models.CASCADE)
+    contest = models.ForeignKey(to="contests.Contest", on_delete=models.CASCADE)
+    user = models.ForeignKey(to="authentication.Users", on_delete=models.CASCADE)
 
     class Meta:
         db_table = "applications"

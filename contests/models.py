@@ -1,7 +1,8 @@
 from django.db import models
 
-from authentication.models import Users
-from participants.models import Participant
+from contest_categories.models import ContestCategories
+from criterias.models import Criteria
+from nomination.models import Nominations
 from regions.models import Region
 
 
@@ -14,10 +15,23 @@ class Contest(models.Model):
     organizer = models.CharField(name="organizer", max_length=255, null=False)
     is_draft = models.BooleanField(name="is_draft", null=False, default=False)
 
-    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    contest_categories = models.ForeignKey(
+        to="contest_categories.ContestCategories", on_delete=models.CASCADE
+    )
+    region = models.ForeignKey(to="regions.Region", on_delete=models.CASCADE)
 
     participants = models.ManyToManyField(
-        to=Users, through=Participant, related_name="contest_participants"
+        to="authentication.Users",
+        through="participants.Participant",
+        related_name="contest_participants",
+    )
+    categories = models.ManyToManyField(
+        to="nomination.Nominations",
+        through="categories.Categories",
+        related_name="contest_nominations",
+    )
+    criteria = models.ManyToManyField(
+        to="criterias.Criteria", related_name="contest_criteria"
     )
 
     class Meta:

@@ -9,11 +9,11 @@ from regions.models import Region
 class Contest(models.Model):
     title = models.CharField(name="title", max_length=255, unique=True, null=False)
     description = models.CharField(name="description", max_length=255, null=False)
+    avatar = models.CharField(name="avatar", max_length=255, null=False, default=" ")
     link_to_rules = models.CharField(name="link_to_rules", max_length=255, null=False)
-    date_start = models.DateField(name="date_start", null=False)
-    date_end = models.DateField(name="date_end", null=False)
     organizer = models.CharField(name="organizer", max_length=255, null=False)
     is_draft = models.BooleanField(name="is_draft", null=False, default=False)
+    is_deleted = models.BooleanField(name="is_deleted", null=False, default=False)
 
     contest_categories = models.ForeignKey(
         to="contest_categories.ContestCategories", on_delete=models.CASCADE
@@ -33,6 +33,10 @@ class Contest(models.Model):
     criteria = models.ManyToManyField(
         to="criterias.Criteria", related_name="contest_criteria"
     )
+    contest_stage = models.ManyToManyField(
+        to="contest_stage.ContestStage",
+        related_name="contest_stage",
+    )  # реализовать триггер для смены стадии конкурса
 
     class Meta:
         db_table = "contests"

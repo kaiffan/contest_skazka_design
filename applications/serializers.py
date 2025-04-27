@@ -1,4 +1,5 @@
 from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SerializerMethodField
 
 from applications.enums import ApplicationStatus
 from applications.models import Applications
@@ -18,15 +19,48 @@ class ApplicationSerializer(ModelSerializer[Applications]):
             "annotation",
             "status",
             "rejection_reason",
-            "user",
+            "contest_id",
+            "user_id",
             "nomination",
         ]
+
+
+class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
+    criteria = SerializerMethodField()
+
+    class Meta:
+        model = Applications
+        fields = [
+            "id",
+            "name",
+            "link_to_work",
+            "annotation",
+            "status",
+            "rejection_reason",
+            "user_id",
+            "nomination",
+            "contest_id",
+            "criteria",
+        ]
+
+    def get_criteria(self, application: Applications):
+        test = application.contest.criteria.through.objects.filter(
+            contests_id=application.contest.id
+        )
+        print(test)
 
 
 class SendApplicationsSerializer(ModelSerializer[Applications]):
     class Meta:
         model = Applications
         fields = ["name", "annotation", "link_to_work", "nomination_id", "contest_id"]
+        extra_kwargs = {
+            "name": {"required": True},
+            "annotation": {"required": True},
+            "link_to_work": {"required": True},
+            "nomination_id": {"required": True},
+            "contest_id": {"required": True},
+        }
 
     def validate(self, data):
         contest_id = data.get("contest_id")
@@ -52,6 +86,7 @@ class ApproveApplicationSerializer(ModelSerializer[Applications]):
     class Meta:
         model = Applications
         fields = ["id"]
+        extra_kwargs = {"id": {"required": True}}
 
     def validate(self, data):
         application_id = data.get("id")
@@ -77,6 +112,10 @@ class RejectApplicationSerializer(ModelSerializer[Applications]):
     class Meta:
         model = Applications
         fields = ["id", "rejection_reason"]
+        extra_kwargs = {
+            "id": {"required": True},
+            "rejection_reason": {"required": True},
+        }
 
     def validate(self, data):
         application_id = data.get("id")

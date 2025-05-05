@@ -4,11 +4,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from participants.serializers import JuryParticipantSerializer
+from participants.permissions import IsContestOwner
+from participants.serializers import (
+    JuryParticipantSerializer,
+    OrgCommitteeParticipantSerializer,
+)
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestOwner])
 def change_jury_view(request: Request) -> Response:
     contest_id = request.headers.get("X-Contest-ID")
 
@@ -20,5 +24,22 @@ def change_jury_view(request: Request) -> Response:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     data: dict[str, list[str]] = serializer.update_list_jury_in_contest()
+
+    return Response(data=data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["POST"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestOwner])
+def change_or_committee_view(request: Request) -> Response:
+    contest_id = request.headers.get("X-Contest-ID")
+
+    serializer = OrgCommitteeParticipantSerializer(
+        data=request.data, context={"contest_id": contest_id}
+    )
+
+    if not serializer.is_valid(raise_exception=True):
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    data: dict[str, list[str]] = serializer.update_list_org_committee_in_contest()
 
     return Response(data=data, status=status.HTTP_200_OK)

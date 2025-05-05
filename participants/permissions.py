@@ -30,3 +30,12 @@ class IsContestMember(BasePermission):
             user_id=request.user.id,
             role=ParticipantRole.member,
         )
+
+
+class IsOrgCommittee(BasePermission):
+    def has_permission(self, request, view) -> bool:
+        return check_contest_role_permission(
+            contest_id=request.headers.get("X-Contest-ID"),
+            user_id=request.user.id,
+            role=ParticipantRole.org_committee,
+        )

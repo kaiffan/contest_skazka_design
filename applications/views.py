@@ -13,7 +13,29 @@ from applications.serializers import (
     RejectApplicationSerializer,
     ApplicationSerializer,
 )
-from participants.permissions import IsContestJury
+from participants.permissions import IsContestJury, IsOrgCommittee
+
+
+def get_filtered_applications(contest_id: str, status_filter: str):
+    return Applications.objects.filter(
+        contest_id=contest_id, status=status_filter
+    ).all()
+
+
+def get_applications_by_status(request: Request, status_filter: str) -> Response:
+    contest_id = request.headers.get("X-Contest-ID")
+
+    if not contest_id:
+        return Response(
+            data={"message": "No Contest ID"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    paginator = ApplicationPaginator()
+    queryset = get_filtered_applications(contest_id, status_filter)
+    page = paginator.paginate_queryset(queryset, request)
+    serializer = ApplicationSerializer(page, many=True)
+
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(http_method_names=["POST"])
@@ -32,7 +54,7 @@ def send_applications_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PUT"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
 def approve_application_view(request: Request) -> Response:
     serializer = ApproveApplicationSerializer(data=request.data)
 
@@ -51,7 +73,7 @@ def approve_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
 def reject_application_view(request: Request) -> Response:
     serializer = RejectApplicationSerializer(data=request.data)
 
@@ -70,26 +92,21 @@ def reject_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJury])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
 def get_all_applications_view(request: Request) -> Response:
-    contest_id = request.headers.get("X-Contest-ID", None)
+    return get_applications_by_status(request, ApplicationStatus.pending.value)
 
-    if not contest_id:
-        return Response(
-            data={"message": "No Contest ID"}, status=status.HTTP_400_BAD_REQUEST
-        )
 
-    paginator = ApplicationPaginator()
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJury])
+def get_all_applications_rejected_view(request: Request) -> Response:
+    return get_applications_by_status(request, ApplicationStatus.accepted.value)
 
-    applications_contest = Applications.objects.filter(
-        contest_id=contest_id, status=ApplicationStatus.accepted.value
-    ).all()
 
-    page = paginator.paginate_queryset(applications_contest, request)
-
-    serializer = ApplicationSerializer(page, many=True)
-
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
+def get_all_applications_approved_view(request: Request) -> Response:
+    return get_applications_by_status(request, ApplicationStatus.rejected.value)
 
 
 @api_view(http_method_names=["GET"])

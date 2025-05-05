@@ -50,7 +50,7 @@ class BaseContestSerializer(ModelSerializer[Contest]):
             "link_to_rules",
             "organizer",
             "region_id",
-            "contest_categories_name"
+            "contest_categories_name",
         ]
         extra_kwargs = {
             "title": {"required": True},
@@ -59,19 +59,20 @@ class BaseContestSerializer(ModelSerializer[Contest]):
             "avatar": {"required": True},
             "region_id": {"required": True},
             "contest_categories_name": {"required": True},
-            "organizer": {"required": True}
+            "organizer": {"required": True},
         }
 
     def create(self, validated_data):
-        name_contest_categories: str = validated_data.pop("contest_categories_name", None)
+        name_contest_categories: str = validated_data.pop(
+            "contest_categories_name", None
+        )
 
         contest_category, _ = ContestCategories.objects.get_or_create(
             name=name_contest_categories
         )
 
         Contest.objects.create(
-            contest_categories_id=contest_category.id,
-            **validated_data
+            contest_categories_id=contest_category.id, **validated_data
         )
 
     def update(self, instance, validated_data):
@@ -92,7 +93,3 @@ class BaseContestSerializer(ModelSerializer[Contest]):
         if not Region.objects.filter(id=region_id).exists():
             raise ValidationError("Region does not exist")
         return region_id
-
-
-
-

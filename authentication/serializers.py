@@ -36,26 +36,19 @@ class RegistrationSerializer(ModelSerializer[Users]):
             "region_id",
         ]
 
+        extra_kwargs = {
+            "first_name": {"required": True},
+            "last_name": {"required": True},
+            "middle_name": {"required": True},
+            "phone_number": {"required": True},
+            "email": {"required": True},
+            "birth_date": {"required": True},
+            "password": {"required": True},
+            "region_id": {"required": True},
+        }
+
     def create(self, validated_data):
         return Users.objects.create_user(**validated_data)
-
-    def validate(self, data):
-        required_fields = [
-            "email",
-            "first_name",
-            "last_name",
-            "middle_name",
-            "phone_number",
-            "birth_date",
-            "password",
-            "region_id",
-        ]
-        for field in required_fields:
-            if not data.get(field):
-                raise serializers.ValidationError(
-                    f"Поле '{field}' является обязательным."
-                )
-        return data
 
     def validate_email(self, value):
         if Users.objects.filter(email=value).exists():

@@ -132,7 +132,7 @@ class RejectApplicationSerializer(ModelSerializer[Applications]):
 
         return data
 
-    def update(self, instance: Applications, validated_data):
+    def update(self, instance, validated_data):
         instance.status = ApplicationStatus.rejected.value
         instance.rejection_reason = validated_data.get("rejection_reason")
         instance.save()

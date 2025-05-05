@@ -12,8 +12,9 @@ class Contest(models.Model):
     avatar = models.CharField(name="avatar", max_length=255, null=False, default=" ")
     link_to_rules = models.CharField(name="link_to_rules", max_length=255, null=False)
     organizer = models.CharField(name="organizer", max_length=255, null=False)
-    is_draft = models.BooleanField(name="is_draft", null=False, default=False)
+    is_draft = models.BooleanField(name="is_draft", null=False, default=True)
     is_deleted = models.BooleanField(name="is_deleted", null=False, default=False)
+    is_published = models.BooleanField(name="is_published", null=False, default=False)
 
     contest_categories = models.ForeignKey(
         to="contest_categories.ContestCategories", on_delete=models.CASCADE
@@ -36,7 +37,7 @@ class Contest(models.Model):
     contest_stage = models.ManyToManyField(
         to="contest_stage.ContestStage",
         related_name="contest_stage",
-    )  # реализовать триггер для смены стадии конкурса
+    )
 
     class Meta:
         db_table = "contests"

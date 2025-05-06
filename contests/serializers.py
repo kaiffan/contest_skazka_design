@@ -1,9 +1,14 @@
+from typing import List, Set, Dict, Any
+
+from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField
 from rest_framework.serializers import ModelSerializer
 
 from contest_categories.models import ContestCategories
 from contests.models import Contest
+from criterias.models import Criteria
+from criterias.serializers import CriteriaSerializer
 from regions.models import Region
 
 
@@ -93,3 +98,77 @@ class BaseContestSerializer(ModelSerializer[Contest]):
         if not Region.objects.filter(id=region_id).exists():
             raise ValidationError("Region does not exist")
         return region_id
+
+
+class ContestChangeCriteriaSerializer(ModelSerializer[Contest]):
+    criteria_list = CriteriaSerializer(many=True, source="criteria")
+
+    class Meta:
+        model = Contest
+        fields = ["criteria_list"]
+        extra_kwargs = {"criteria_list": {"required": True}}
+
+    def validate_criteria_list(self, data):
+        if not data:
+            raise ValidationError("criteria_list cannot be empty")
+        return data
+
+    def update_criteria(self) -> Dict[str, Any]:
+        criteria_list = self.validated_data["criteria_list"]
+        existing_criteria: List[int] = [
+            criteria.get("id")
+            for criteria in criteria_list
+            if criteria.get("id") is not None
+        ]
+
+        new_criteria_list: List[Criteria] = [
+            Criteria(
+                name=criteria.get("name"),
+                description=criteria.get("description"),
+                min_points=criteria.get("min_points"),
+                max_points=criteria.get("max_points"),
+            )
+            for criteria in criteria_list
+            if criteria.get("id") is None
+        ]
+        new_criteria_name: List[str] = [criteria.name for criteria in new_criteria_list]
+
+        with transaction.atomic():
+            existing_name_criteria = set(
+                Criteria.objects.filter(name__in=new_criteria_name).values_list(
+                    "name", flat=True
+                )
+            )
+
+            only_new_criteria: List[Criteria] = [
+                criteria
+                for criteria in new_criteria_list
+                if criteria.name not in existing_name_criteria
+            ]
+
+            exists_criteria_in_db: Set[int] = set(
+                self.instance.criteria.values_list("id", flat=True)
+            )
+
+            criteria_to_remove: Set[int] = exists_criteria_in_db - set(
+                existing_criteria
+            )
+            criteria_to_add: Set[int] = set(existing_criteria) - exists_criteria_in_db
+
+            if criteria_to_remove:
+                self.instance.criteria.remove(*criteria_to_remove)
+
+            if criteria_to_add:
+                self.instance.criteria.add(*criteria_to_add)
+
+            created_criteria_list: List[Criteria] = Criteria.objects.bulk_create(
+                objs=only_new_criteria
+            )
+            if created_criteria_list:
+                self.instance.criteria.add(*created_criteria_list)
+
+            return {
+                "created_criteria": created_criteria_list,
+                "remove_criteria": list(criteria_to_remove),
+                "add_criteria": list(criteria_to_add),
+            }

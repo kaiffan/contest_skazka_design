@@ -6,7 +6,8 @@ from applications.views import (
     reject_application_view,
     get_all_applications_view,
     get_application_view,
-    get_all_applications_approved_view, get_all_applications_rejected_view,
+    get_all_applications_approved_view,
+    get_all_applications_rejected_view,
 )
 
 urlpatterns = [
@@ -25,7 +26,7 @@ urlpatterns = [
         view=get_all_applications_approved_view,
         name="get_all_applications_approved_view",
     ),
-path(
+    path(
         route="all/accepted",
         view=get_all_applications_rejected_view,
         name="get_all_applications_rejected_view",

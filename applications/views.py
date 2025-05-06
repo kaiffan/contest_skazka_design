@@ -11,7 +11,7 @@ from applications.serializers import (
     SendApplicationsSerializer,
     ApproveApplicationSerializer,
     RejectApplicationSerializer,
-    ApplicationSerializer,
+    ApplicationSerializer, ApplicationWithCriteriaSerializer,
 )
 from participants.permissions import IsContestJury, IsOrgCommittee
 
@@ -24,7 +24,9 @@ def get_filtered_applications(contest_id: str, status_filter: str):
 
 def get_applications_by_status(request: Request, status_filter: str) -> Response:
     paginator = ApplicationPaginator()
-    queryset = get_filtered_applications(contest_id=request.contest_id, status_filter=status_filter)
+    queryset = get_filtered_applications(
+        contest_id=request.contest_id, status_filter=status_filter
+    )
     page = paginator.paginate_queryset(queryset=queryset, request=request)
     serializer = ApplicationSerializer(page, many=True)
 
@@ -105,4 +107,13 @@ def get_all_applications_approved_view(request: Request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated])
 def get_application_view(request: Request) -> Response:
-    pass
+    application_id = request.data.get("application_id", None)
+
+    if not application_id:
+        return Response(data={"error": "Application id not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+    application = Applications.objects.get(id=application_id)
+    serializer = ApplicationWithCriteriaSerializer(application)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+

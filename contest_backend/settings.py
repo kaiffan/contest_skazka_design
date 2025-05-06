@@ -46,7 +46,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "contests.middleware.ContestHeaderMiddleware"
+    "contests.middleware.ContestHeaderMiddleware",
 ]
 
 ROOT_URLCONF = "contest_backend.urls"

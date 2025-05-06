@@ -6,25 +6,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('contests', '0001_initial'),
-        ('participants', '0001_initial'),
-        ('regions', '0001_initial'),
+        ("contests", "0001_initial"),
+        ("participants", "0001_initial"),
+        ("regions", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='contest',
-            name='participants',
-            field=models.ManyToManyField(related_name='contest_participants', through='participants.Participant', to=settings.AUTH_USER_MODEL),
+            model_name="contest",
+            name="participants",
+            field=models.ManyToManyField(
+                related_name="contest_participants",
+                through="participants.Participant",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='contest',
-            name='region',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='regions.region'),
+            model_name="contest",
+            name="region",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="regions.region"
+            ),
         ),
     ]

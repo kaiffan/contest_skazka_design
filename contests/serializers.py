@@ -72,16 +72,12 @@ class BaseContestSerializer(ModelSerializer[Contest]):
 
         validated_data["contest_categories_id"] = contest_category.id
 
-        contest = Contest.objects.create(
-            **validated_data
-        )
+        contest = Contest.objects.create(**validated_data)
 
         user_id = self.context.get("user_id")
 
         Participant.objects.create(
-            contest_id=contest.id,
-            user_id=user_id,
-            role=ParticipantRole.owner.value
+            contest_id=contest.id, user_id=user_id, role=ParticipantRole.owner.value
         )
 
     def update(self, instance, validated_data):
@@ -105,10 +101,7 @@ class BaseContestSerializer(ModelSerializer[Contest]):
 
 
 class ContestChangeCriteriaSerializer(Serializer):
-    criteria_list = ListField(
-        child=JSONField(),
-        required=True
-    )
+    criteria_list = ListField(child=JSONField(), required=True)
 
     def validate_criteria_list(self, data):
         if not data:

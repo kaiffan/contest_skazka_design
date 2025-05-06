@@ -5,37 +5,67 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('categories', '0001_initial'),
-        ('contest_categories', '0001_initial'),
-        ('contest_stage', '0001_initial'),
-        ('criteria', '0001_initial'),
-        ('nomination', '0001_initial'),
+        ("categories", "0001_initial"),
+        ("contest_categories", "0001_initial"),
+        ("contest_stage", "0001_initial"),
+        ("criteria", "0001_initial"),
+        ("nomination", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Contest',
+            name="Contest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255, unique=True)),
-                ('description', models.CharField(max_length=255)),
-                ('avatar', models.CharField(default=' ', max_length=255)),
-                ('link_to_rules', models.CharField(max_length=255)),
-                ('organizer', models.CharField(max_length=255)),
-                ('is_draft', models.BooleanField(default=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('is_published', models.BooleanField(default=False)),
-                ('categories', models.ManyToManyField(related_name='contest_nominations', through='categories.Categories', to='nomination.nominations')),
-                ('contest_categories', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contest_categories.contestcategories')),
-                ('contest_stage', models.ManyToManyField(related_name='contest_stage', to='contest_stage.conteststage')),
-                ('criteria', models.ManyToManyField(related_name='contest_criteria', to='criteria.criteria')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255, unique=True)),
+                ("description", models.CharField(max_length=255)),
+                ("avatar", models.CharField(default=" ", max_length=255)),
+                ("link_to_rules", models.CharField(max_length=255)),
+                ("organizer", models.CharField(max_length=255)),
+                ("is_draft", models.BooleanField(default=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("is_published", models.BooleanField(default=False)),
+                (
+                    "categories",
+                    models.ManyToManyField(
+                        related_name="contest_nominations",
+                        through="categories.Categories",
+                        to="nomination.nominations",
+                    ),
+                ),
+                (
+                    "contest_categories",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contest_categories.contestcategories",
+                    ),
+                ),
+                (
+                    "contest_stage",
+                    models.ManyToManyField(
+                        related_name="contest_stage", to="contest_stage.conteststage"
+                    ),
+                ),
+                (
+                    "criteria",
+                    models.ManyToManyField(
+                        related_name="contest_criteria", to="criteria.criteria"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'contests',
+                "db_table": "contests",
             },
         ),
     ]

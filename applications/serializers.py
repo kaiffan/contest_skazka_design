@@ -6,6 +6,7 @@ from applications.models import Applications
 from rest_framework.serializers import ModelSerializer
 
 from applications.validator import ApplicationValidator
+from participants.enums import ParticipantRole
 from participants.models import Participant
 
 
@@ -73,6 +74,15 @@ class SendApplicationsSerializer(ModelSerializer[Applications]):
 
         if exists_application:
             raise ValidationError("Application already exists")
+
+        is_iternal_role = (
+            Participant.objects.filter(contest_id=contest_id, user_id=user_id)
+            .exclude(role=ParticipantRole.member.value)
+            .exists()
+        )
+
+        if is_iternal_role:
+            raise ValidationError("Participant role don't send application")
 
         return data
 

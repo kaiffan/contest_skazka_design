@@ -6,34 +6,39 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('applications', '0001_initial'),
-        ('contests', '0001_initial'),
-        ('nomination', '0001_initial'),
+        ("applications", "0001_initial"),
+        ("contests", "0001_initial"),
+        ("nomination", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='applications',
-            name='contest',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contests.contest'),
+            model_name="applications",
+            name="contest",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="contests.contest"
+            ),
         ),
         migrations.AddField(
-            model_name='applications',
-            name='nomination',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nomination.nominations'),
+            model_name="applications",
+            name="nomination",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="nomination.nominations"
+            ),
         ),
         migrations.AddField(
-            model_name='applications',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="applications",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='applications',
-            unique_together={('name', 'contest', 'nomination')},
+            name="applications",
+            unique_together={("name", "contest", "nomination")},
         ),
     ]

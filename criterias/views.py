@@ -14,15 +14,7 @@ from participants.permissions import IsContestOwner
 @api_view(http_method_names=["POST"])
 @permission_classes([IsAuthenticated, IsContestOwner])
 def change_criteria_contest_view(request: Request) -> Response:
-    contest_id = request.headers.get("X-Contest-ID")
-
-    if not contest_id:
-        return Response(
-            data={"message": "No Contest ID in header"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    contest = Contest.objects.get(id=contest_id)
+    contest = Contest.objects.get(id=request.contest_id)
 
     if not contest:
         return Response(
@@ -47,16 +39,8 @@ def change_criteria_contest_view(request: Request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes([IsAuthenticated, IsContestOwner])
 def get_all_criteria_view(request: Request) -> Response:
-    contest_id = request.headers.get("X-Contest-ID") # написать middleware для получения contest_id
-
-    if not contest_id:
-        return Response(
-            data={"message": "No Contest ID in header"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
     try:
-        contest = Contest.objects.get(id=contest_id)
+        contest = Contest.objects.get(id=request.contest_id)
     except Contest.DoesNotExist:
         return Response(
             data={"error": "Contest not found"}, status=status.HTTP_404_NOT_FOUND

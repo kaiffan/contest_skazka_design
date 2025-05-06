@@ -23,16 +23,9 @@ def get_filtered_applications(contest_id: str, status_filter: str):
 
 
 def get_applications_by_status(request: Request, status_filter: str) -> Response:
-    contest_id = request.headers.get("X-Contest-ID")
-
-    if not contest_id:
-        return Response(
-            data={"message": "No Contest ID"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
     paginator = ApplicationPaginator()
-    queryset = get_filtered_applications(contest_id, status_filter)
-    page = paginator.paginate_queryset(queryset, request)
+    queryset = get_filtered_applications(contest_id=request.contest_id, status_filter=status_filter)
+    page = paginator.paginate_queryset(queryset=queryset, request=request)
     serializer = ApplicationSerializer(page, many=True)
 
     return paginator.get_paginated_response(serializer.data)

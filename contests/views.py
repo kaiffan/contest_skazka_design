@@ -24,21 +24,13 @@ def create_contest_view(request: Request) -> Response:
 @api_view(http_method_names=["PUT"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwner])
 def update_contest_view(request: Request) -> Response:
-    contest_id = request.headers.get("X-Contest-ID")
-
-    if not contest_id:
-        return Response(
-            data={"message": "No Contest ID in header"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
     serializer = BaseContestSerializer(data=request.data)
 
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        contest = Contest.objects.get(id=contest_id)
+        contest = Contest.objects.get(id=request.contest_id)
     except Contest.DoesNotExist:
         return Response(
             data={"error": "Contest not found"}, status=status.HTTP_404_NOT_FOUND

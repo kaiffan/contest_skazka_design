@@ -14,10 +14,8 @@ from participants.serializers import (
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwner])
 def change_jury_view(request: Request) -> Response:
-    contest_id = request.headers.get("X-Contest-ID")
-
     serializer = JuryParticipantSerializer(
-        data=request.data, context={"contest_id": contest_id}
+        data=request.data, context={"contest_id": request.contest_id}
     )
 
     if not serializer.is_valid(raise_exception=True):
@@ -31,10 +29,8 @@ def change_jury_view(request: Request) -> Response:
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwner])
 def change_or_committee_view(request: Request) -> Response:
-    contest_id = request.headers.get("X-Contest-ID")
-
     serializer = OrgCommitteeParticipantSerializer(
-        data=request.data, context={"contest_id": contest_id}
+        data=request.data, context={"contest_id": request.contest_id}
     )
 
     if not serializer.is_valid(raise_exception=True):

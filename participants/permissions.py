@@ -8,7 +8,7 @@ from participants.utils import check_contest_role_permission
 class IsContestOwner(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
-            contest_id=request.headers.get("X-Contest-ID"),
+            contest_id=request.contest_id,
             user_id=request.user.id,
             role=ParticipantRole.owner.value,
         )
@@ -17,7 +17,7 @@ class IsContestOwner(BasePermission):
 class IsContestJury(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
-            contest_id=request.headers.get("X-Contest-ID"),
+            contest_id=request.contest_id,
             user_id=request.user.id,
             role=ParticipantRole.jury,
         )
@@ -26,7 +26,7 @@ class IsContestJury(BasePermission):
 class IsContestMember(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
-            contest_id=request.headers.get("X-Contest-ID"),
+            contest_id=request.contest_id,
             user_id=request.user.id,
             role=ParticipantRole.member,
         )
@@ -35,7 +35,7 @@ class IsContestMember(BasePermission):
 class IsOrgCommittee(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
-            contest_id=request.headers.get("X-Contest-ID"),
+            contest_id=request.contest_id,
             user_id=request.user.id,
             role=ParticipantRole.org_committee,
         )

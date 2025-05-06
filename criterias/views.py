@@ -46,7 +46,7 @@ def change_criteria_contest_view(request: Request) -> Response:
 
 @api_view(http_method_names=["GET"])
 @permission_classes([IsAuthenticated, IsContestOwner])
-def get_all_criteria(request: Request) -> Response:
+def get_all_criteria_view(request: Request) -> Response:
     contest_id = request.headers.get("X-Contest-ID") # написать middleware для получения contest_id
 
     if not contest_id:

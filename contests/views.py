@@ -12,7 +12,7 @@ from participants.permissions import IsContestOwner
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated])
 def create_contest_view(request: Request) -> Response:
-    serializer = BaseContestSerializer(data=request.data)
+    serializer = BaseContestSerializer(data=request.data, context={"user_id": request.user.id})
 
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -2,13 +2,15 @@ from typing import List, Set, Dict, Any
 
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CharField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.fields import CharField, IntegerField, ListField, JSONField
+from rest_framework.serializers import ModelSerializer, Serializer
 
 from contest_categories.models import ContestCategories
 from contests.models import Contest
-from criterias.models import Criteria
-from criterias.serializers import CriteriaSerializer
+from criteria.models import Criteria
+from criteria.serializers import CriteriaSerializer
+from participants.enums import ParticipantRole
+from participants.models import Participant
 from regions.models import Region
 
 
@@ -45,6 +47,7 @@ class ContestAllSerializer(ModelSerializer[Contest]):
 
 class BaseContestSerializer(ModelSerializer[Contest]):
     contest_categories_name = CharField(write_only=True)
+    region_id = IntegerField()
 
     class Meta:
         model = Contest
@@ -57,15 +60,6 @@ class BaseContestSerializer(ModelSerializer[Contest]):
             "region_id",
             "contest_categories_name",
         ]
-        extra_kwargs = {
-            "title": {"required": True},
-            "description": {"required": True},
-            "link_to_rules": {"required": True},
-            "avatar": {"required": True},
-            "region_id": {"required": True},
-            "contest_categories_name": {"required": True},
-            "organizer": {"required": True},
-        }
 
     def create(self, validated_data):
         name_contest_categories: str = validated_data.pop(
@@ -76,8 +70,18 @@ class BaseContestSerializer(ModelSerializer[Contest]):
             name=name_contest_categories
         )
 
-        Contest.objects.create(
-            contest_categories_id=contest_category.id, **validated_data
+        validated_data["contest_categories_id"] = contest_category.id
+
+        contest = Contest.objects.create(
+            **validated_data
+        )
+
+        user_id = self.context.get("user_id")
+
+        Participant.objects.create(
+            contest_id=contest.id,
+            user_id=user_id,
+            role=ParticipantRole.owner.value
         )
 
     def update(self, instance, validated_data):
@@ -100,26 +104,27 @@ class BaseContestSerializer(ModelSerializer[Contest]):
         return region_id
 
 
-class ContestChangeCriteriaSerializer(ModelSerializer[Contest]):
-    criteria_list = CriteriaSerializer(many=True, source="criteria")
-
-    class Meta:
-        model = Contest
-        fields = ["criteria_list"]
-        extra_kwargs = {"criteria_list": {"required": True}}
+class ContestChangeCriteriaSerializer(Serializer):
+    criteria_list = ListField(
+        child=JSONField(),
+        required=True
+    )
 
     def validate_criteria_list(self, data):
         if not data:
             raise ValidationError("criteria_list cannot be empty")
         return data
 
-    def update_criteria(self) -> Dict[str, Any]:
-        criteria_list = self.validated_data["criteria_list"]
+    def update_criteria(self):
+        contest = self.context.get("contest", None)
+        criteria_list = self.validated_data.get("criteria_list")
+        print(criteria_list)
         existing_criteria: List[int] = [
             criteria.get("id")
             for criteria in criteria_list
             if criteria.get("id") is not None
         ]
+        print(existing_criteria)
 
         new_criteria_list: List[Criteria] = [
             Criteria(
@@ -131,6 +136,7 @@ class ContestChangeCriteriaSerializer(ModelSerializer[Contest]):
             for criteria in criteria_list
             if criteria.get("id") is None
         ]
+
         new_criteria_name: List[str] = [criteria.name for criteria in new_criteria_list]
 
         with transaction.atomic():
@@ -147,28 +153,26 @@ class ContestChangeCriteriaSerializer(ModelSerializer[Contest]):
             ]
 
             exists_criteria_in_db: Set[int] = set(
-                self.instance.criteria.values_list("id", flat=True)
+                contest.criteria.values_list("id", flat=True)
             )
+            print(exists_criteria_in_db)
 
             criteria_to_remove: Set[int] = exists_criteria_in_db - set(
                 existing_criteria
             )
             criteria_to_add: Set[int] = set(existing_criteria) - exists_criteria_in_db
+            print(criteria_to_add)
 
             if criteria_to_remove:
-                self.instance.criteria.remove(*criteria_to_remove)
+                contest.criteria.remove(*criteria_to_remove)
 
             if criteria_to_add:
-                self.instance.criteria.add(*criteria_to_add)
+                contest.criteria.add(*criteria_to_add)
 
             created_criteria_list: List[Criteria] = Criteria.objects.bulk_create(
                 objs=only_new_criteria
             )
             if created_criteria_list:
-                self.instance.criteria.add(*created_criteria_list)
+                contest.criteria.add(*created_criteria_list)
 
-            return {
-                "created_criteria": created_criteria_list,
-                "remove_criteria": list(criteria_to_remove),
-                "add_criteria": list(criteria_to_add),
-            }
+            return None

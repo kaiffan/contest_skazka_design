@@ -12,15 +12,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='ContestStage',
+            name='Criteria',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, unique=True)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
+                ('description', models.CharField(max_length=255)),
+                ('max_points', models.PositiveIntegerField()),
+                ('min_points', models.PositiveIntegerField()),
             ],
             options={
-                'db_table': 'contest_stage',
+                'db_table': 'criteria',
             },
         ),
     ]

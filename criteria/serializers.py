@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from criterias.models import Criteria
+from criteria.models import Criteria
 
 
 class CriteriaSerializer(ModelSerializer[Criteria]):

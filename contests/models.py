@@ -1,7 +1,7 @@
 from django.db import models
 
 from contest_categories.models import ContestCategories
-from criterias.models import Criteria
+from criteria.models import Criteria
 from nomination.models import Nominations
 from regions.models import Region
 
@@ -32,7 +32,7 @@ class Contest(models.Model):
         related_name="contest_nominations",
     )
     criteria = models.ManyToManyField(
-        to="criterias.Criteria", related_name="contest_criteria"
+        to="criteria.Criteria", related_name="contest_criteria"
     )
     contest_stage = models.ManyToManyField(
         to="contest_stage.ContestStage",

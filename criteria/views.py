@@ -6,8 +6,8 @@ from rest_framework.response import Response
 
 from contests.models import Contest
 from contests.serializers import ContestChangeCriteriaSerializer
-from criterias.models import Criteria
-from criterias.serializers import CriteriaSerializer
+from criteria.models import Criteria
+from criteria.serializers import CriteriaSerializer
 from participants.permissions import IsContestOwner
 
 
@@ -22,7 +22,7 @@ def change_criteria_contest_view(request: Request) -> Response:
         )
 
     serializer = ContestChangeCriteriaSerializer(
-        instance=contest, data=request.data, partial=False
+        data=request.data, context={"contest": contest}
     )
 
     if not serializer.is_valid():

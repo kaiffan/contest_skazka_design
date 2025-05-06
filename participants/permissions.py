@@ -5,7 +5,7 @@ from participants.enums import ParticipantRole
 from participants.utils import check_contest_role_permission
 
 
-class IsContestOwner(BasePermission):
+class IsContestOwnerPermission(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
             contest_id=request.contest_id,
@@ -14,7 +14,7 @@ class IsContestOwner(BasePermission):
         )
 
 
-class IsContestJury(BasePermission):
+class IsContestJuryPermission(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
             contest_id=request.contest_id,
@@ -23,7 +23,7 @@ class IsContestJury(BasePermission):
         )
 
 
-class IsContestMember(BasePermission):
+class IsContestMemberPermission(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
             contest_id=request.contest_id,
@@ -32,7 +32,7 @@ class IsContestMember(BasePermission):
         )
 
 
-class IsOrgCommittee(BasePermission):
+class IsOrgCommitteePermission(BasePermission):
     def has_permission(self, request, view) -> bool:
         return check_contest_role_permission(
             contest_id=request.contest_id,

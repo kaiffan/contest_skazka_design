@@ -9,11 +9,11 @@ from contests.models import Contest
 from contests.serializers import ContestChangeCriteriaSerializer
 from criteria.models import Criteria
 from criteria.serializers import CriteriaSerializer, CriteriaNotRequiredSerializer
-from participants.permissions import IsContestOwner
+from participants.permissions import IsContestOwnerPermission
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes([IsAuthenticated, IsContestOwner])
+@permission_classes([IsAuthenticated, IsContestOwnerPermission])
 def add_or_remove_criteria_contest_view(request: Request) -> Response:
     contest = Contest.objects.get(id=request.contest_id)
 
@@ -38,7 +38,7 @@ def add_or_remove_criteria_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes([IsAuthenticated, IsContestOwner])
+@permission_classes([IsAuthenticated, IsContestOwnerPermission])
 def get_all_criteria_view(request: Request) -> Response:
     try:
         contest = Contest.objects.get(id=request.contest_id)
@@ -62,7 +62,7 @@ def get_all_criteria_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes([IsAuthenticated, IsContestOwner])
+@permission_classes([IsAuthenticated, IsContestOwnerPermission])
 def update_criteria_view(request: Request) -> Response:
     criteria_id = request.data["id"]
 
@@ -73,7 +73,9 @@ def update_criteria_view(request: Request) -> Response:
 
     instance = get_object_or_404(Criteria, id=criteria_id)
 
-    serializer = CriteriaNotRequiredSerializer(instance=instance, data=request.data, partial=True)
+    serializer = CriteriaNotRequiredSerializer(
+        instance=instance, data=request.data, partial=True
+    )
 
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -81,4 +83,3 @@ def update_criteria_view(request: Request) -> Response:
     serializer.save()
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-

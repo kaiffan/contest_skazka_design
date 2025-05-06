@@ -3,6 +3,7 @@ from django.contrib.auth.models import PermissionsMixin
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import models
 
+from authentication.enums import UserRole
 from authentication.managers import UsersManager
 
 
@@ -24,6 +25,13 @@ class Users(AbstractBaseUser, PermissionsMixin):
         max_length=255,
         null=False,
         default="http://localhost:3000/static/images/default_avatar.jpg",
+    )
+    user_role = models.CharField(
+        name="user_role",
+        max_length=255,
+        null=False,
+        choices=UserRole.choices(),
+        default=UserRole.user.value,
     )
     education_or_work = models.CharField(
         name="education_or_work", max_length=255, null=False, default="None"

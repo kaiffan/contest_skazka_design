@@ -5,10 +5,9 @@ from nomination.models import Nominations
 
 
 class Categories(models.Model):
-    name = models.CharField(name="name", max_length=255, null=False, unique=True)
-    start_age = models.PositiveIntegerField(name="start_age", null=False, default=0)
-    end_age = models.PositiveIntegerField(name="end_age", null=False, default=0)
-
+    age_category = models.ForeignKey(
+        to="age_categories.AgeCategories", on_delete=models.CASCADE
+    )
     contest = models.ForeignKey(
         to="contests.Contest", on_delete=models.CASCADE, related_name="category_set"
     )
@@ -20,3 +19,4 @@ class Categories(models.Model):
 
     class Meta:
         db_table = "categories"
+        unique_together = ("age_category", "contest", "nominations")

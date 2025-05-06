@@ -11,9 +11,10 @@ from applications.serializers import (
     SendApplicationsSerializer,
     ApproveApplicationSerializer,
     RejectApplicationSerializer,
-    ApplicationSerializer, ApplicationWithCriteriaSerializer,
+    ApplicationSerializer,
+    ApplicationWithCriteriaSerializer,
 )
-from participants.permissions import IsContestJury, IsOrgCommittee
+from participants.permissions import IsContestJuryPermission, IsOrgCommitteePermission
 
 
 def get_filtered_applications(contest_id: str, status_filter: str):
@@ -49,7 +50,7 @@ def send_applications_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PUT"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
 def approve_application_view(request: Request) -> Response:
     serializer = ApproveApplicationSerializer(data=request.data)
 
@@ -68,7 +69,7 @@ def approve_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
 def reject_application_view(request: Request) -> Response:
     serializer = RejectApplicationSerializer(data=request.data)
 
@@ -87,19 +88,19 @@ def reject_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
 def get_all_applications_view(request: Request) -> Response:
     return get_applications_by_status(request, ApplicationStatus.pending.value)
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJury])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def get_all_applications_rejected_view(request: Request) -> Response:
     return get_applications_by_status(request, ApplicationStatus.accepted.value)
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommittee])
+@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
 def get_all_applications_approved_view(request: Request) -> Response:
     return get_applications_by_status(request, ApplicationStatus.rejected.value)
 
@@ -110,10 +111,12 @@ def get_application_view(request: Request) -> Response:
     application_id = request.data.get("application_id", None)
 
     if not application_id:
-        return Response(data={"error": "Application id not found"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            data={"error": "Application id not found"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     application = Applications.objects.get(id=application_id)
     serializer = ApplicationWithCriteriaSerializer(application)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-

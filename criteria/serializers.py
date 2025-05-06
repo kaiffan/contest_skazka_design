@@ -21,9 +21,11 @@ class CriteriaSerializer(ModelSerializer[Criteria]):
         max_points = attrs.get("max_points")
 
         if min_points >= max_points:
-            raise ValidationError({
-                "min_points": "Значение 'min_points' должно быть меньше, чем 'max_points'."
-            })
+            raise ValidationError(
+                {
+                    "min_points": "Значение 'min_points' должно быть меньше, чем 'max_points'."
+                }
+            )
 
         return attrs
 
@@ -48,8 +50,10 @@ class CriteriaNotRequiredSerializer(ModelSerializer[Criteria]):
         new_max: int = attrs.get("max_points", db_max_points)
 
         if new_min >= new_max:
-            raise ValidationError({
-                "min_points": "Значение 'min_points' должно быть меньше, чем 'max_points'."
-            })
+            raise ValidationError(
+                {
+                    "min_points": "Значение 'min_points' должно быть меньше, чем 'max_points'."
+                }
+            )
 
         return attrs

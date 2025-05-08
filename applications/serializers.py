@@ -63,7 +63,9 @@ class SendApplicationsSerializer(ModelSerializer[Applications]):
             "contest_id": {"required": True},
         }
 
-    def validate(self, data):
+    def validate(
+        self, data
+    ):  # TODO: добавить проверку соответствия категории возраста участника
         contest_id = data.get("contest_id")
         user_id = self.context.get("user_id")
         nomination_id = data.get("nomination_id")
@@ -88,7 +90,6 @@ class SendApplicationsSerializer(ModelSerializer[Applications]):
 
     def create(self, validated_data):
         user_id = self.context.get("user_id")
-
         return Applications.objects.create(user_id=user_id, **validated_data)
 
 

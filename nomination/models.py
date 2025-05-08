@@ -7,3 +7,4 @@ class Nominations(models.Model):
 
     class Meta:
         db_table = "nominations"
+

@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     "age_categories",
     "applications",
     "authentication",
-    "categories",
     "competencies",
     "contest_categories",
     "contest_stage",

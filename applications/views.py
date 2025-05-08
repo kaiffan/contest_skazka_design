@@ -31,7 +31,7 @@ def get_applications_by_status(request: Request, status_filter: str) -> Response
     page = paginator.paginate_queryset(queryset=queryset, request=request)
     serializer = ApplicationSerializer(page, many=True)
 
-    return paginator.get_paginated_response(serializer.data)
+    return paginator.get_paginated_response(data=serializer.data)
 
 
 @api_view(http_method_names=["POST"])

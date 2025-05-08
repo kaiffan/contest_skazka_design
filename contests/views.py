@@ -60,6 +60,7 @@ def publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=contest_id)
 
     contest.is_published = True
+    contest.is_draft = False
     contest.save()
 
     return Response(

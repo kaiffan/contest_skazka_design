@@ -26,9 +26,12 @@ class Contest(models.Model):
         through="participants.Participant",
         related_name="contest_participants",
     )
-    categories = models.ManyToManyField(
+    age_category = models.ManyToManyField(
+        to="age_categories.AgeCategories",
+        related_name="contest_age_categories",
+    )
+    nominations = models.ManyToManyField(
         to="nomination.Nominations",
-        through="categories.Categories",
         related_name="contest_nominations",
     )
     criteria = models.ManyToManyField(

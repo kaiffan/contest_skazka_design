@@ -1,5 +1,5 @@
 from rest_framework.fields import ListField, IntegerField
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, ModelSerializer
 
 from participants.enums import ParticipantRole
 from participants.models import Participant
@@ -107,3 +107,9 @@ class OrgCommitteeParticipantSerializer(Serializer):
                 org_committee_to_remove.values_list("user_id", flat=True)
             ),
         }
+
+
+class ParticipantSerializer(ModelSerializer[Participant]):
+    class Meta:
+        model = Participant
+        fields = "__all__"

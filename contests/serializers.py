@@ -1,28 +1,37 @@
-from typing import List, Set, Dict, Any, NoReturn
+from typing import List, Set
 
 from django.db import transaction
-from django.db.models import Model
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CharField, IntegerField, ListField, JSONField, SerializerMethodField
+from rest_framework.fields import (
+    CharField,
+    IntegerField,
+    ListField,
+    JSONField,
+    SerializerMethodField,
+)
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from age_categories.models import AgeCategories
+from age_categories.serializers import AgeCategoriesSerializer
 from contest_categories.models import ContestCategories
 from contests.models import Contest
+from contests.utils import get_current_contest_stage
 from criteria.models import Criteria
+from criteria.serializers import CriteriaSerializer
 from nomination.models import Nominations
+from nomination.serializers import NominationsSerializer
 from participants.enums import ParticipantRole
 from participants.models import Participant
+from participants.serializers import ParticipantSerializer
 from regions.models import Region
 
 
 class ContestByIdSerializer(ModelSerializer[Contest]):
     jury = SerializerMethodField()
     criteria = SerializerMethodField()
-    categories = SerializerMethodField()
     nomination = SerializerMethodField()
     age_categories = SerializerMethodField()
-
+    contest_stage = SerializerMethodField()
 
     class Meta:
         model = Contest
@@ -33,24 +42,49 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "avatar",
             "organizer",
             "is_draft",
-            "categories",
             "nomination",
             "criteria",
             "age_categories",
-            "contest_stage",  # динамически подставлять стадию
+            "contest_stage",
             "jury",
         ]
 
+    def get_jury(self, instance):
+        jury_list = Participant.objects.filter(
+            contest_id=instance.id, role=ParticipantRole.jury.value
+        ).all()
+        return ParticipantSerializer(jury_list, many=True).data
+
+    def get_criteria(self, instance):
+        criteria_list = instance.criteria.all()
+        return CriteriaSerializer(criteria_list, many=True).data
+
+    def get_nomination(self, instance):
+        nomination_list = instance.nominations.all()
+        return NominationsSerializer(nomination_list, many=True).data
+
+    def get_age_categories(self, instance):
+        age_category_list = instance.age_category.all()
+        return AgeCategoriesSerializer(age_category_list, many=True).data
+
+    def get_contest_stage(self, instance):
+        return get_current_contest_stage(instance=instance)
+
 
 class ContestAllSerializer(ModelSerializer[Contest]):
+    contest_stage = SerializerMethodField()
+
     class Meta:
         model = Contest
         fields = [
             "title",
             "avatar",
             "contest_categories",
-            "contest_stage",  # динамически подставлять стадию энд дейт стейдж
+            "contest_stage",
         ]
+
+    def get_contest_stage(self, instance):
+        return get_current_contest_stage(instance=instance)
 
 
 class CreateBaseContestSerializer(ModelSerializer[Contest]):

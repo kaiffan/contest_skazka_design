@@ -48,4 +48,3 @@ def add_or_remove_nomination_contest_view(request: Request) -> Response:
         data={"message": "Nominations updated successfully", "data": data},
         status=status.HTTP_200_OK,
     )
-

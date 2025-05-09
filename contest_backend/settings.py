@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "participants",
     "regions",
     "users",
+    "work_rate",
 ]
 
 MIDDLEWARE = [

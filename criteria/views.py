@@ -8,7 +8,10 @@ from rest_framework.response import Response
 from contests.models import Contest
 from contests.serializers import ContestChangeCriteriaSerializer
 from criteria.models import Criteria
-from criteria.serializers import CriteriaRequiredSerializer, CriteriaNotRequiredSerializer
+from criteria.serializers import (
+    CriteriaRequiredSerializer,
+    CriteriaNotRequiredSerializer,
+)
 from participants.permissions import IsContestOwnerPermission
 
 

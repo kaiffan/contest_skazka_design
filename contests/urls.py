@@ -4,11 +4,14 @@ from contests.views import (
     publish_contest_view,
     update_contest_view,
     delete_contest_view,
+    get_all_contests_view, get_contest_by_id,
 )
 
 urlpatterns = [
     path(route="", view=create_contest_view, name="create_contest_view"),
     path(route="update", view=update_contest_view, name="update_contest_view"),
     path(route="admin/publish", view=publish_contest_view, name="publish_contest_view"),
-    path(route="", view=delete_contest_view, name="delete_contest_view"),
+    path(route="admin/delete", view=delete_contest_view, name="delete_contest_view"),
+    path(route="id", view=get_contest_by_id, name="get_contest_by_id_view"),
+    path(route="all", view=get_all_contests_view, name="get_all_contests_view"),
 ]

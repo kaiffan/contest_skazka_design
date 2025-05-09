@@ -10,6 +10,7 @@ from contests.models import Contest
 from contests.serializers import (
     CreateBaseContestSerializer,
     UpdateBaseContestSerializer,
+    ContestByIdSerializer, ContestAllSerializer,
 )
 from participants.permissions import IsContestOwnerPermission
 
@@ -74,3 +75,38 @@ def delete_contest_view(request: Request) -> Response:
     return Response(
         data={"message": "Contest successfully deleted"}, status=status.HTTP_200_OK
     )
+
+
+@api_view(http_method_names=["DELETE"])
+@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+def delete_contest_view(request: Request) -> Response:
+    contest = get_object_or_404(Contest, id=request.contest_id)
+
+    contest.is_deleted = True
+    contest.save()
+
+    return Response(
+        data={"message": "Contest successfully deleted"}, status=status.HTTP_200_OK
+    )
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def get_contest_by_id(request: Request) -> Response:
+    instance = Contest.objects.prefetch_related(
+        "criteria", "nominations", "age_category", "participants", "contest_stage"
+    ).get(id=request.contest_id)
+
+    serializer = ContestByIdSerializer(instance=instance)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def get_all_contests_view(request: Request) -> Response:
+    contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
+
+    serializer = ContestAllSerializer(data=contest_list, many=True)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)

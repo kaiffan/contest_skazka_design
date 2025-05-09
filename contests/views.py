@@ -7,14 +7,17 @@ from rest_framework.request import Request
 
 from authentication.permissions import IsAdminSystemPermission
 from contests.models import Contest
-from contests.serializers import BaseContestSerializer
+from contests.serializers import (
+    CreateBaseContestSerializer,
+    UpdateBaseContestSerializer,
+)
 from participants.permissions import IsContestOwnerPermission
 
 
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated])
 def create_contest_view(request: Request) -> Response:
-    serializer = BaseContestSerializer(
+    serializer = CreateBaseContestSerializer(
         data=request.data, context={"user_id": request.user.id}
     )
 
@@ -26,10 +29,10 @@ def create_contest_view(request: Request) -> Response:
     return Response(status=status.HTTP_201_CREATED)
 
 
-@api_view(http_method_names=["PUT"])
+@api_view(http_method_names=["PATCH"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
 def update_contest_view(request: Request) -> Response:
-    serializer = BaseContestSerializer(data=request.data)
+    serializer = UpdateBaseContestSerializer(data=request.data)
 
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -49,15 +52,7 @@ def update_contest_view(request: Request) -> Response:
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
 def publish_contest_view(request: Request) -> Response:
-    contest_id = request.data["contest_id"]
-
-    if not contest_id:
-        return Response(
-            data={"error": "Contest_id not found"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    contest = get_object_or_404(Contest, id=contest_id)
+    contest = get_object_or_404(Contest, id=request.contest_id)
 
     contest.is_published = True
     contest.is_draft = False
@@ -71,15 +66,7 @@ def publish_contest_view(request: Request) -> Response:
 @api_view(http_method_names=["DELETE"])
 @permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
 def delete_contest_view(request: Request) -> Response:
-    contest_id = request.data["contest_id"]
-
-    if not contest_id:
-        return Response(
-            data={"error": "Contest_id not found"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    contest = get_object_or_404(Contest, id=contest_id)
+    contest = get_object_or_404(Contest, id=request.contest_id)
 
     contest.is_deleted = True
     contest.save()

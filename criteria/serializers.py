@@ -4,7 +4,7 @@ from rest_framework.serializers import ModelSerializer
 from criteria.models import Criteria
 
 
-class CriteriaSerializer(ModelSerializer[Criteria]):
+class CriteriaRequiredSerializer(ModelSerializer[Criteria]):
     class Meta:
         model = Criteria
         fields = ["id", "name", "description", "min_points", "max_points"]
@@ -57,3 +57,9 @@ class CriteriaNotRequiredSerializer(ModelSerializer[Criteria]):
             )
 
         return attrs
+
+
+class CriteriaSerializer(ModelSerializer[Criteria]):
+    class Meta:
+        model = Criteria
+        fields = "__all__"

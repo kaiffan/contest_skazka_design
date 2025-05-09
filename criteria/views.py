@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from contests.models import Contest
 from contests.serializers import ContestChangeCriteriaSerializer
 from criteria.models import Criteria
-from criteria.serializers import CriteriaSerializer, CriteriaNotRequiredSerializer
+from criteria.serializers import CriteriaRequiredSerializer, CriteriaNotRequiredSerializer
 from participants.permissions import IsContestOwnerPermission
 
 
@@ -29,7 +29,7 @@ def add_or_remove_criteria_contest_view(request: Request) -> Response:
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    data = serializer.update_criteria()
+    data = serializer.update_criteria_in_contest()
 
     return Response(
         data={"message": "Criteria updated successfully", "data": data},
@@ -51,7 +51,7 @@ def get_all_criteria_view(request: Request) -> Response:
 
     available_criteria = Criteria.objects.exclude(id__in=selected_criteria_ids)
 
-    serializer = CriteriaSerializer(available_criteria, many=True)
+    serializer = CriteriaRequiredSerializer(available_criteria, many=True)
 
     return Response(
         data={

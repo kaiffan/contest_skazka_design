@@ -38,7 +38,7 @@ def get_applications_by_status(request: Request, status_filter: str) -> Response
 @permission_classes(permission_classes=[IsAuthenticated])
 def send_applications_view(request: Request) -> Response:
     serializer = SendApplicationsSerializer(
-        data=request.data, context={"user_id": request.user.id}
+        data=request.data, context={"user": request.user}
     )
 
     if not serializer.is_valid(raise_exception=True):
@@ -46,7 +46,7 @@ def send_applications_view(request: Request) -> Response:
 
     serializer.save()
 
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(http_method_names=["PUT"])

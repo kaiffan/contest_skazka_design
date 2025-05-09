@@ -11,4 +11,5 @@ urlpatterns = [
     path(route="api/v1/contest_categories/", view=include("contest_categories.urls")),
     path(route="api/v1/contests/", view=include("contests.urls")),
     path(route="api/v1/criteria/", view=include("criteria.urls")),
+    path(route="api/v1/nomination/", view=include("nomination.urls")),
 ]

@@ -6,14 +6,14 @@ from applications.enums import ApplicationStatus
 class Applications(models.Model):
     name = models.CharField(name="name", max_length=255, null=False)
     annotation = models.CharField(name="annotation", max_length=255, null=False)
-    link_to_work = models.CharField(name="link_to_work", max_length=255, null=False)
+    link_to_work = models.CharField(name="link_to_work", max_length=255, null=False, default="asdasdasd")
     status = models.CharField(
-        null=False,
         name="status",
         max_length=255,
         choices=ApplicationStatus.choices(),
         default=ApplicationStatus.pending.value,
     )
+    age_category = models.CharField(name="age_category", max_length=255, null=False)
     rejection_reason = models.CharField(
         name="rejection_reason", max_length=255, blank=True, null=True
     )

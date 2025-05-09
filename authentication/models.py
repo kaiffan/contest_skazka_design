@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -62,3 +64,11 @@ class Users(AbstractBaseUser, PermissionsMixin):
     def tokens(self) -> dict[str, str]:
         refresh = RefreshToken.for_user(self)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
+
+    def get_full_age(self) -> int:
+        date_today = date.today()
+        is_birthdate_in_this_year = (date_today.month, date_today.day) < (
+            self.birth_date.month,
+            self.birth_date.day,
+        )
+        return date_today.year - self.birth_date.year - is_birthdate_in_this_year

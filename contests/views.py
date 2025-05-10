@@ -10,7 +10,8 @@ from contests.models import Contest
 from contests.serializers import (
     CreateBaseContestSerializer,
     UpdateBaseContestSerializer,
-    ContestByIdSerializer, ContestAllSerializer,
+    ContestByIdSerializer,
+    ContestAllSerializer,
 )
 from participants.permissions import IsContestOwnerPermission
 

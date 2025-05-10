@@ -1,4 +1,5 @@
 from typing import List, Set
+from datetime import date
 
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
@@ -14,6 +15,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from age_categories.models import AgeCategories
 from age_categories.serializers import AgeCategoriesSerializer
 from contest_categories.models import ContestCategories
+from contest_stage.serializers import ContestStageSerializer
 from contests.models import Contest
 from contests.utils import get_current_contest_stage
 from criteria.models import Criteria
@@ -68,7 +70,8 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
         return AgeCategoriesSerializer(age_category_list, many=True).data
 
     def get_contest_stage(self, instance):
-        return get_current_contest_stage(instance=instance)
+        contest_stage_list = instance.contest_stage.all()
+        return ContestStageSerializer(contest_stage_list, many=True).data
 
 
 class ContestAllSerializer(ModelSerializer[Contest]):
@@ -395,3 +398,60 @@ class ContestChangeNominationSerializer(Serializer):
                 contest.nominations.add(*created_nominations)
 
             return None
+
+
+class ContestChangeStageSerializer(Serializer):
+    contest_stage_list = ListField(child=JSONField(), required=True, write_only=True)
+
+    def validate_contest_stage_list(self, data):
+        if not data:
+            raise ValidationError("contest_stage_list cannot be empty")
+
+        stages_with_dates = []
+
+        for contest_stage in data:
+            start_date_str: str = contest_stage.get("start_date")
+            end_date_str: str = contest_stage.get("end_date")
+
+            if not start_date_str or not end_date_str:
+                raise ValidationError("date_start or date_end cannot be empty")
+
+            try:
+                start_date: date = date.fromisoformat(start_date_str)
+                end_date: date = date.fromisoformat(end_date_str)
+            except ValueError:
+                raise ValidationError(
+                    f"Invalid date format. Use YYYY-MM-DD. Got: start_date={start_date_str}, end_date={end_date_str}"
+                )
+
+            if start_date >= end_date:
+                raise ValidationError("date_start must be before date_end")
+
+            stages_with_dates.append(
+                {
+                    "start_date": start_date,
+                    "end_date": end_date,
+                }
+            )
+
+        previous_end = None
+        for contest_stage in stages_with_dates:
+            current_stage_start: date = contest_stage.get("start_date")
+            current_stage_end: date = contest_stage.get("end_date")
+
+            if previous_end is not None:
+                if previous_end > current_stage_start:
+                    raise ValidationError(
+                        f"Stages have overlapping time ranges: previous end_date "
+                        f"({previous_end}) > next start_date ({current_stage_start})"
+                    )
+
+            previous_end = current_stage_end
+
+        return data
+
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        pass

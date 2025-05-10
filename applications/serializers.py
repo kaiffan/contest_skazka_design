@@ -89,7 +89,7 @@ class SendApplicationsSerializer(Serializer):
         contest_id = validated_data.get("contest_id")
 
         with transaction.atomic():
-            contest: Contest = get_object_or_404(Contest, id=contest_id)
+            contest = get_object_or_404(Contest, id=contest_id)
             count_full_age: int = user.get_full_age()
             matching_age_category_name = contest.age_category.filter(
                 start_age__lte=count_full_age,

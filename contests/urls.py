@@ -4,7 +4,8 @@ from contests.views import (
     publish_contest_view,
     update_contest_view,
     delete_contest_view,
-    get_all_contests_view, get_contest_by_id,
+    get_all_contests_view,
+    get_contest_by_id,
 )
 
 urlpatterns = [

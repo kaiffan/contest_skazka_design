@@ -39,7 +39,9 @@ class Contest(models.Model):
     )
     contest_stage = models.ManyToManyField(
         to="contest_stage.ContestStage",
-        related_name="contest_stage",
+        through="contests_contest_stage.ContestsContestStage",
+        through_fields=("contest", "stage"),
+        related_name="contest_stages",
     )
 
     class Meta:

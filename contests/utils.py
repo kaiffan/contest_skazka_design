@@ -9,7 +9,7 @@ def get_current_contest_stage(instance: Contest) -> Dict[str, Any]:
     current_stage = next(
         (
             stage
-            for stage in instance.contest_stage.all()
+            for stage in instance.contest_stage.through.objects.filter(contest=instance)
             if stage.start_date <= today <= stage.end_date
         ),
         None,
@@ -17,7 +17,7 @@ def get_current_contest_stage(instance: Contest) -> Dict[str, Any]:
 
     if current_stage:
         return {
-            "name": current_stage.name,
+            "name": current_stage.contest_stage.name,
             "start_date": current_stage.start_date,
             "end_date": current_stage.end_date,
         }

@@ -3,12 +3,12 @@ from django.db import models
 
 
 class WorkRate(models.Model):
-    criteria_id = models.ForeignKey(
+    criteria = models.ForeignKey(
         to="criteria.Criteria",
         on_delete=models.CASCADE,
     )
 
-    application_id = models.ForeignKey(
+    application = models.ForeignKey(
         to="applications.Applications",
         on_delete=models.CASCADE,
     )
@@ -21,5 +21,5 @@ class WorkRate(models.Model):
     )
 
     class Meta:
-        unique_together = ("criteria_id", "application_id")
         db_table = "work_rate"
+        unique_together = ("criteria", "application")

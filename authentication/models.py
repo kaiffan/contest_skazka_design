@@ -12,7 +12,9 @@ from authentication.managers import UsersManager
 class Users(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(name="first_name", max_length=255, null=False)
     last_name = models.CharField(name="last_name", max_length=255, null=False)
-    middle_name = models.CharField(name="middle_name", max_length=255, null=False)
+    middle_name = models.CharField(
+        name="middle_name", max_length=255, null=False, default="Отсутствует"
+    )
     phone_number = models.CharField(
         name="phone_number", max_length=255, null=False, unique=True
     )
@@ -36,7 +38,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         default=UserRole.user.value,
     )
     education_or_work = models.CharField(
-        name="education_or_work", max_length=255, null=False, default="None"
+        name="education_or_work", max_length=255, null=False, default="Отсутствует"
     )
     region = models.ForeignKey(to="regions.Region", on_delete=models.CASCADE)
 

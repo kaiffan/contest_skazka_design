@@ -66,15 +66,28 @@ class SendApplicationsSerializer(Serializer):
         nomination_id = data.get("nomination_id")
 
         with transaction.atomic():
+            contest = Contest.objects.get(id=contest_id)
+
+            if not contest:
+                raise ValidationError("Contest does not exist")
+
             exists_application = Applications.objects.filter(
-                nomination_id=nomination_id, contest_id=contest_id, user_id=user.id
+                nomination_id=nomination_id, contest_id=contest.id, user_id=user.id
             ).exists()
+
+            contest_region: str = contest.region.name
+            user_region = user.region.name
+
+            if not (contest_region == user_region or contest_region == "Онлайн"):
+                raise ValidationError(
+                    detail="This application does not belong to this region", code=403
+                )
 
             if exists_application:
                 raise ValidationError("Application already exists")
 
             is_iternal_role = (
-                Participant.objects.filter(contest_id=contest_id, user_id=user.id)
+                Participant.objects.filter(contest_id=contest.id, user_id=user.id)
                 .exclude(role=ParticipantRole.member.value)
                 .exists()
             )

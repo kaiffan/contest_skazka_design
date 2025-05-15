@@ -14,4 +14,6 @@ urlpatterns = [
     path(route="logout", view=logout_view, name="logout_view"),
     path(route="verify", view=TokenVerifyView.as_view(), name="token_verify_view"),
     path(route="refresh", view=cookie_tokens_refresh_view, name="token_refresh_view"),
+    # Обновление пароля
+    # Восстановление пароля
 ]

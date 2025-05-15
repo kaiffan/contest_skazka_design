@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from contests.models import Contest
-from utils import validate_count_criteria_by_contest
+from work_rate.utils import validate_count_criteria_by_contest
 
 from participants.permissions import IsContestJuryPermission
 from work_rate.models import WorkRate
@@ -29,18 +29,20 @@ def work_rate_view(request: Request) -> Response:
 
     application = work_rate_list[0].application
 
-    validate_count_criteria_by_contest(
-        contest=contest,
-        application=application
-    )
+    validate_count_criteria_by_contest(contest=contest, application=application)
 
     return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
-def get_all_rated_works_view(request: Request) -> Response:
+def get_all_rated_works_in_contest_view(request: Request) -> Response:
+    # отображать сумму полученных баллов
     work_rate_list = WorkRate.objects.all()
     serializer = WorkRateAllSerializer(work_rate_list, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+def update_rated_work_view(request: Request) -> Response:
+    pass

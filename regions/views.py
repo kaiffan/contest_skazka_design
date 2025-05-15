@@ -13,3 +13,6 @@ def all_regions_view(request):
     regions = Region.objects.all()
     serializer = RegionSerializer(regions, many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+# + точка для пользователя без онлайна

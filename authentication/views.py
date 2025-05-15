@@ -63,7 +63,7 @@ def login_view(request: Request) -> Response:
     ]
 )
 def cookie_tokens_refresh_view(request) -> Response:
-    refresh_token: str = request.COOKIES.get("refresh_token")
+    refresh_token: str = request.COOKIES.get("refresh_token", None)
 
     if not refresh_token:
         raise ValidationError("Refresh token is missing")

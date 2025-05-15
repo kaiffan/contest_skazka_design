@@ -14,7 +14,6 @@ class UsersManager(BaseUserManager):
         email,
         first_name,
         last_name,
-        middle_name,
         phone_number,
         birth_date,
         region_id,
@@ -25,8 +24,6 @@ class UsersManager(BaseUserManager):
             raise ValidationError("Пользователь должен иметь имя.")
         if not last_name:
             raise ValidationError("Пользователь должен иметь фамилию.")
-        if not middle_name:
-            raise ValidationError("Пользователь должен иметь отчество.")
         if not phone_number:
             raise ValidationError("Пользователь должен иметь номер телефона.")
         if not birth_date:
@@ -39,17 +36,16 @@ class UsersManager(BaseUserManager):
         email,
         first_name,
         last_name,
-        middle_name,
         phone_number,
         birth_date,
         region_id,
         password=None,
+        middle_name="",
     ):
         self._validate_required_fields(
             email=email,
             first_name=first_name,
             last_name=last_name,
-            middle_name=middle_name,
             phone_number=phone_number,
             birth_date=birth_date,
             region_id=region_id,
@@ -57,6 +53,9 @@ class UsersManager(BaseUserManager):
         self._validate_birth_date(birth_date=birth_date)
 
         email = self.normalize_email(email)
+
+        if not middle_name:
+            middle_name = self.model.middle_name.field.default
 
         user = self.model(
             email=email,
@@ -67,6 +66,7 @@ class UsersManager(BaseUserManager):
             birth_date=birth_date,
             region_id=region_id,
         )
+
         user.set_password(raw_password=password)
         user.save()
         return user

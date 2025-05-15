@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import NoReturn
 from config.settings import get_settings
 
@@ -10,8 +9,8 @@ def set_refresh_cookie(response, value) -> NoReturn:
         key=settings.token_credentials.REFRESH_COOKIE_KEY,
         value=value,
         httponly=True,
-        secure=False,
-        samesite="Strict",
+        secure=True,
+        samesite="None",
         path=settings.token_credentials.REFRESH_COOKIE_PATH,
         max_age=settings.token_credentials.REFRESH_COOKIE_MAX_AGE,
     )

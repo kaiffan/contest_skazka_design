@@ -14,7 +14,7 @@ from work_rate.serializers import WorkRateSerializer, WorkRateAllSerializer
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(permission_classes=[IsAuthenticated]) # , IsContestJuryPermission
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

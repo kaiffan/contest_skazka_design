@@ -1,5 +1,6 @@
 from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import ModelSerializer
+from rest_framework.fields import IntegerField
+from rest_framework.serializers import ModelSerializer, Serializer
 
 from applications.enums import ApplicationStatus
 from applications.models import Applications
@@ -7,10 +8,10 @@ from criteria.models import Criteria
 from work_rate.models import WorkRate
 
 
-class WorkRateSerializer(ModelSerializer[WorkRate]):
-    class Meta:
-        model = WorkRate
-        fields = ["criteria_id", "application_id", "rate"]
+class WorkRateSerializer(Serializer):
+    application_id = IntegerField()
+    criteria_id = IntegerField()
+    rate = IntegerField()
 
     def validate_application_id(self, value):
         try:

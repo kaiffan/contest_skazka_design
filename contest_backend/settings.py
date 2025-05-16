@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "participants",
     "regions",
     "users",
+    "winners",
     "work_rate",
     "corsheaders",
 ]

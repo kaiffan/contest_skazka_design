@@ -113,3 +113,5 @@ class ParticipantSerializer(ModelSerializer[Participant]):
     class Meta:
         model = Participant
         fields = "__all__"
+
+        #TODO: провести рефакторинг двух сериалайзеров

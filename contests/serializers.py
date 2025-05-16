@@ -1,7 +1,9 @@
+from collections import defaultdict
 from typing import List, Set
 from datetime import date
 
 from django.db import transaction
+from django.db.models import Sum
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import (
     CharField,
@@ -14,6 +16,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 
 from age_categories.models import AgeCategories
 from age_categories.serializers import AgeCategoriesSerializer
+from applications.models import Applications
 from contest_categories.models import ContestCategories
 from contest_stage.models import ContestStage
 from contest_stage.serializers import ContestStageSerializer
@@ -28,6 +31,7 @@ from participants.enums import ParticipantRole
 from participants.models import Participant
 from participants.serializers import ParticipantSerializer
 from regions.models import Region
+from winners.models import Winners
 
 
 class ContestByIdSerializer(ModelSerializer[Contest]):
@@ -455,9 +459,7 @@ class ContestChangeStageSerializer(Serializer):
 
     def update_contest_stages_in_contest(self):
         contest: Contest = self.context.get("contest", None)
-        contest_stages = self.validated_data.get(
-            "contest_stage_list"
-        )
+        contest_stages = self.validated_data.get("contest_stage_list")
 
         contest_stage_names: Set[str] = {stage.get("name") for stage in contest_stages}
 
@@ -471,13 +473,13 @@ class ContestChangeStageSerializer(Serializer):
 
         with transaction.atomic():
             existing_names_contest_stage: Set[str] = set(
-                ContestStage.objects.filter(name__in=list(contest_stage_names)).values_list(
-                    "name", flat=True
-                )
+                ContestStage.objects.filter(
+                    name__in=list(contest_stage_names)
+                ).values_list("name", flat=True)
             )
 
             new_names_contest_stage: Set[str] = (
-                    contest_stage_names - existing_names_contest_stage
+                contest_stage_names - existing_names_contest_stage
             )
 
             if new_names_contest_stage:
@@ -486,9 +488,9 @@ class ContestChangeStageSerializer(Serializer):
                 )
 
             contest_stage_name_ids: Set = {
-                ContestStage.objects.filter(name__in=list(contest_stage_names)).values_list(
-                    "id", flat=True
-                )
+                ContestStage.objects.filter(
+                    name__in=list(contest_stage_names)
+                ).values_list("id", flat=True)
             }
 
             all_links_contest_stages = ContestsContestStage.objects.filter(
@@ -506,7 +508,9 @@ class ContestChangeStageSerializer(Serializer):
                 ).delete()
 
             if ids_contest_stage_to_add:
-                all_stages = ContestStage.objects.filter(id__in=ids_contest_stage_to_add)
+                all_stages = ContestStage.objects.filter(
+                    id__in=ids_contest_stage_to_add
+                )
 
                 ContestsContestStage.objects.bulk_create(
                     [
@@ -535,8 +539,8 @@ class ContestChangeStageSerializer(Serializer):
                         continue
 
                     if (
-                            ccontest_stage.start_date != dates_to_update["start_date"]
-                            or ccontest_stage.end_date != dates_to_update["end_date"]
+                        ccontest_stage.start_date != dates_to_update["start_date"]
+                        or ccontest_stage.end_date != dates_to_update["end_date"]
                     ):
                         ccontest_stage.start_date = dates_to_update["start_date"]
                         ccontest_stage.end_date = dates_to_update["end_date"]
@@ -547,3 +551,84 @@ class ContestChangeStageSerializer(Serializer):
                     )
 
         return None
+
+
+class ContestWinnerSerializer(Serializer):
+    def assign_places(self, winners: List[Winners]) -> List[Winners]:
+        """
+        Присваивает места участникам, учитывая одинаковые суммы баллов.
+        :param winners: Список объектов Winners, не отсортированный
+        :return: Список объектов Winners с присвоенными местами
+        """
+        if not winners:
+            return []
+
+        groups = defaultdict(list)
+
+        for winner in winners:
+            app = winner.application
+            key = (app.nomination_id, app.age_category)
+            groups[key].append(winner)
+
+        updated_winners = []
+
+        for key, group_winners in groups.items():
+            sorted_group = sorted(group_winners, key=lambda w: w.sum_rate, reverse=True)
+
+            current_place = 0
+            previous_score = None
+
+            for idx, winner in enumerate(sorted_group, start=1):
+                if winner.sum_rate != previous_score:
+                    current_place += 1
+                    previous_score = winner.sum_rate
+                winner.place = current_place
+                updated_winners.append(winner)
+
+        return updated_winners
+
+    def change_winners_by_contest(self):
+        contest: Contest = self.context.get("contest", None)
+
+        with transaction.atomic():
+            applications = Applications.objects.filter(contest_id=contest.id).annotate(
+                total_score=Sum("workrate__rate")
+            )
+
+            existing_winners = Winners.objects.filter(contest=contest).in_bulk(
+                field_name="application_id"
+            )
+
+            to_update: List[Winners] = []
+            to_create: List[Winners] = []
+
+            for application in applications:
+                total_score = application.total_score_application
+                winner = existing_winners.get(application.pk, None)
+
+                if not winner:
+                    to_create.append(
+                        Winners(
+                            contest=contest.id,
+                            application=application.id,
+                            rate=total_score,
+                        )
+                    )
+                    continue
+
+                if winner.sum_rate != total_score:
+                    winner.sum_rate = total_score
+                    to_update.append(winner)
+
+            if to_update:
+                Winners.objects.bulk_update(objs=to_update, fields=["rate"])
+
+            if to_create:
+                Winners.objects.bulk_create(objs=to_create)
+
+            all_winners_by_contest = Winners.objects.filter(contest=contest).select_related(
+                "application"
+            )
+
+            updated_winners = self.assign_places(list(all_winners_by_contest))
+            Winners.objects.bulk_update(updated_winners, fields=["place"])

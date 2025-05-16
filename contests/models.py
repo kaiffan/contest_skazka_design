@@ -44,5 +44,11 @@ class Contest(models.Model):
         related_name="contest_stages",
     )
 
+    winner_list = models.ManyToManyField(
+        to="applications.Applications",
+        through="winners.Winners",
+        related_name="contest_winners",
+    )
+
     class Meta:
         db_table = "contests"

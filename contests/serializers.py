@@ -626,9 +626,9 @@ class ContestWinnerSerializer(Serializer):
             if to_create:
                 Winners.objects.bulk_create(objs=to_create)
 
-            all_winners_by_contest = Winners.objects.filter(contest=contest).select_related(
-                "application"
-            )
+            all_winners_by_contest = Winners.objects.filter(
+                contest=contest
+            ).select_related("application")
 
             updated_winners = self.assign_places(list(all_winners_by_contest))
             Winners.objects.bulk_update(updated_winners, fields=["place"])

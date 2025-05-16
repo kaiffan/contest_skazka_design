@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('winners', '0002_alter_winners_unique_together_and_more'),
+        ("winners", "0002_alter_winners_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='winners',
-            name='place',
+            model_name="winners",
+            name="place",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

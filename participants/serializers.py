@@ -5,6 +5,45 @@ from participants.enums import ParticipantRole
 from participants.models import Participant
 
 
+def update_participant_in_contest_with_change_role(
+    jury_ids, contest_id, role: ParticipantRole
+) -> dict[str, list[str]]:
+    existing_jury = Participant.objects.filter(
+        user_id__in=jury_ids,
+        contest_id=contest_id,
+        role=role,
+    ).values_list("user_id", flat=True)
+
+    missing_participants = set(jury_ids) - set(existing_jury)
+
+    if missing_participants:
+        Participant.objects.bulk_create(
+            [
+                Participant(
+                    contest_id=contest_id,
+                    user_id=user_id,
+                    role=role,
+                )
+                for user_id in missing_participants
+            ]
+        )
+
+    participants_to_remove = Participant.objects.filter(
+        contest_id=contest_id,
+        role=role,
+    ).exclude(user_id__in=jury_ids)
+
+    if participants_to_remove.exists():
+        participants_to_remove.delete()
+
+    return {
+        f"added_{role}": list(missing_participants),
+        f"removed_{role}": list(
+            participants_to_remove.values_list("user_id", flat=True)
+        ),
+    }
+
+
 class JuryParticipantSerializer(Serializer):
     jury_ids = ListField(
         child=IntegerField(),
@@ -18,41 +57,11 @@ class JuryParticipantSerializer(Serializer):
     )
 
     def update_list_jury_in_contest(self) -> dict[str, list[str]]:
-        validated_jury_ids = self.validated_data["jury_ids"]
-        contest_id = self.context.get("contest_id")
-
-        existing_jury = Participant.objects.filter(
-            user_id__in=validated_jury_ids,
-            contest_id=contest_id,
+        return update_participant_in_contest_with_change_role(
+            jury_ids=self.validated_data["jury_ids"],
+            contest_id=self.context.get("contest_id"),
             role=ParticipantRole.jury.value,
-        ).values_list("user_id", flat=True)
-
-        missing_jury = set(validated_jury_ids) - set(existing_jury)
-
-        if missing_jury:
-            Participant.objects.bulk_create(
-                [
-                    Participant(
-                        contest_id=contest_id,
-                        user_id=user_id,
-                        role=ParticipantRole.jury.value,
-                    )
-                    for user_id in missing_jury
-                ]
-            )
-
-        jury_to_remove = Participant.objects.filter(
-            contest_id=contest_id,
-            role=ParticipantRole.jury.value,
-        ).exclude(user_id__in=validated_jury_ids)
-
-        if jury_to_remove.exists():
-            jury_to_remove.delete()
-
-        return {
-            "added_jury": list(missing_jury),
-            "removed_jury": list(jury_to_remove.values_list("user_id", flat=True)),
-        }
+        )
 
 
 class OrgCommitteeParticipantSerializer(Serializer):
@@ -68,50 +77,14 @@ class OrgCommitteeParticipantSerializer(Serializer):
     )
 
     def update_list_org_committee_in_contest(self) -> dict[str, list[str]]:
-        validated_org_committee_ids = self.validated_data["org_committee_ids"]
-        contest_id = self.context.get("contest_id")
-
-        existing_org_committee = Participant.objects.filter(
-            user_id__in=validated_org_committee_ids,
-            contest_id=contest_id,
+        return update_participant_in_contest_with_change_role(
+            jury_ids=self.validated_data["jury_ids"],
+            contest_id=self.context.get("contest_id"),
             role=ParticipantRole.org_committee.value,
-        ).values_list("user_id", flat=True)
-
-        missing_org_committee = set(validated_org_committee_ids) - set(
-            existing_org_committee
         )
-
-        if missing_org_committee:
-            Participant.objects.bulk_create(
-                [
-                    Participant(
-                        contest_id=contest_id,
-                        user_id=user_id,
-                        role=ParticipantRole.org_committee.value,
-                    )
-                    for user_id in missing_org_committee
-                ]
-            )
-
-        org_committee_to_remove = Participant.objects.filter(
-            contest_id=contest_id,
-            role=ParticipantRole.org_committee.value,
-        ).exclude(user_id__in=validated_org_committee_ids)
-
-        if org_committee_to_remove.exists():
-            org_committee_to_remove.delete()
-
-        return {
-            "added_org_committee": list(missing_org_committee),
-            "removed_org_committee": list(
-                org_committee_to_remove.values_list("user_id", flat=True)
-            ),
-        }
 
 
 class ParticipantSerializer(ModelSerializer[Participant]):
     class Meta:
         model = Participant
         fields = "__all__"
-
-        #TODO: провести рефакторинг двух сериалайзеров

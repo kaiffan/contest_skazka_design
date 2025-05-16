@@ -111,3 +111,6 @@ def get_all_contests_view(request: Request) -> Response:
     serializer = ContestAllSerializer(data=contest_list, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+# точка на получение всех конкурсов в которых этот пользователь овнер

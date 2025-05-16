@@ -9,7 +9,11 @@ from applications.views import (
     get_all_applications_approved_view,
     get_all_applications_rejected_view,
 )
-from work_rate.views import work_rate_view, get_all_rated_works_in_contest_view
+from work_rate.views import (
+    work_rate_view,
+    get_all_rated_works_in_contest_view,
+    update_rated_work_view,
+)
 
 urlpatterns = [
     path(route="send", view=send_applications_view, name="send_application_view"),
@@ -34,6 +38,9 @@ urlpatterns = [
     ),
     path(route="", view=get_application_view, name="get_application_view"),
     path(route="rate", view=work_rate_view, name="work_rate_view"),
+    path(
+        route="rate/update", view=update_rated_work_view, name="update_rated_work_view"
+    ),
     path(
         route="all/rate",
         view=get_all_rated_works_in_contest_view,

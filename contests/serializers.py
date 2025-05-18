@@ -406,7 +406,7 @@ class ContestChangeNominationSerializer(Serializer):
 
             return None
 
-
+#TODO: доделать сериалайзер согласно новым условиям
 class ContestChangeStageSerializer(Serializer):
     contest_stage_list = ListField(child=JSONField(), required=True, write_only=True)
 
@@ -457,100 +457,46 @@ class ContestChangeStageSerializer(Serializer):
 
         return data
 
-    def update_contest_stages_in_contest(self):
-        contest: Contest = self.context.get("contest", None)
-        contest_stages = self.validated_data.get("contest_stage_list")
+    def change_contest_stages_in_contest(self):
+        contest = self.context.get("contest", None)
+        contest_stage_list = self.validated_data.get("contest_stage_list", None)
 
-        contest_stage_names: Set[str] = {stage.get("name") for stage in contest_stages}
+        if not contest_stage_list:
+            raise ValidationError(detail="contest_stage_list cannot be empty", code=404)
 
-        requested_stage_data = {
-            stage["name"]: {
-                "start_date": stage["start_date"],
-                "end_date": stage["end_date"],
-            }
-            for stage in contest_stages
-        }
+        existing_stages = ContestsContestStage.objects.filter(contest=contest)
+        existing_stages_data = {stage.stage_id: stage for stage in existing_stages}
 
-        with transaction.atomic():
-            existing_names_contest_stage: Set[str] = set(
-                ContestStage.objects.filter(
-                    name__in=list(contest_stage_names)
-                ).values_list("name", flat=True)
-            )
+        stages_to_create = []
+        stages_to_update = []
 
-            new_names_contest_stage: Set[str] = (
-                contest_stage_names - existing_names_contest_stage
-            )
+        for contest_stage in contest_stage_list:
+            stage_id = contest_stage.get("stage_id")
+            start_date = contest_stage.get("start_date")
+            end_date = contest_stage.get("end_date")
 
-            if new_names_contest_stage:
-                ContestStage.objects.bulk_create(
-                    [ContestStage(name=name) for name in new_names_contest_stage]
-                )
-
-            contest_stage_name_ids: Set = {
-                ContestStage.objects.filter(
-                    name__in=list(contest_stage_names)
-                ).values_list("id", flat=True)
-            }
-
-            all_links_contest_stages = ContestsContestStage.objects.filter(
-                contest=contest
-            ).all()
-            existing_stage_ids = {link.stage_id for link in all_links_contest_stages}
-
-            ids_contest_stage_to_remove = existing_stage_ids - contest_stage_name_ids
-            ids_contest_stage_to_add = contest_stage_name_ids - existing_stage_ids
-            ids_contest_stage_to_update = contest_stage_name_ids & existing_stage_ids
-
-            if ids_contest_stage_to_remove:
-                ContestsContestStage.objects.filter(
-                    contest=contest, stage_id__in=ids_contest_stage_to_remove
-                ).delete()
-
-            if ids_contest_stage_to_add:
-                all_stages = ContestStage.objects.filter(
-                    id__in=ids_contest_stage_to_add
-                )
-
-                ContestsContestStage.objects.bulk_create(
-                    [
-                        ContestsContestStage(
-                            contest_id=contest.id,
-                            stage_id=stage.id,
-                            start_date=requested_stage_data[stage.name]["start_date"],
-                            end_date=requested_stage_data[stage.name]["end_date"],
-                        )
-                        for stage in all_stages
-                        if stage.name in requested_stage_data
-                    ]
-                )
-
-            if ids_contest_stage_to_update:
-                ccontest_stage_in_db = ContestsContestStage.objects.filter(
-                    contest=contest, stage_id__in=ids_contest_stage_to_update
-                ).select_related("stage")
-
-                to_update = []
-                for ccontest_stage in ccontest_stage_in_db:
-                    stage_name = ccontest_stage.stage.name
-                    dates_to_update = requested_stage_data.get(stage_name, None)
-
-                    if not dates_to_update:
-                        continue
-
-                    if (
-                        ccontest_stage.start_date != dates_to_update["start_date"]
-                        or ccontest_stage.end_date != dates_to_update["end_date"]
-                    ):
-                        ccontest_stage.start_date = dates_to_update["start_date"]
-                        ccontest_stage.end_date = dates_to_update["end_date"]
-                        to_update.append(ccontest_stage)
-                if to_update:
-                    ContestsContestStage.objects.bulk_update(
-                        to_update, fields=["start_date", "end_date"]
+            if stage_id in existing_stages_data:
+                stage = existing_stages_data[stage_id]
+                stage.start_date = start_date
+                stage.end_date = end_date
+                stages_to_update.append(stage)
+            else:
+                stages_to_create.append(
+                    ContestsContestStage(
+                        contest=contest,
+                        stage_id=stage_id,
+                        start_date=start_date,
+                        end_date=end_date
                     )
+                )
 
-        return None
+        if stages_to_create:
+            ContestsContestStage.objects.bulk_create(objs=stages_to_create)
+
+        if stages_to_update:
+            ContestsContestStage.objects.bulk_update(objs=stages_to_update, fields=["start_date", "end_date"])
+
+        return
 
 
 class ContestWinnerSerializer(Serializer):

@@ -39,12 +39,7 @@ def update_contest_view(request: Request) -> Response:
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        contest = Contest.objects.get(id=request.contest_id)
-    except Contest.DoesNotExist:
-        return Response(
-            data={"error": "Contest not found"}, status=status.HTTP_404_NOT_FOUND
-        )
+    contest = get_object_or_404(Contest, id=request.contest_id)
 
     serializer.update(instance=contest, validated_data=serializer.validated_data)
 
@@ -114,3 +109,4 @@ def get_all_contests_view(request: Request) -> Response:
 
 
 # точка на получение всех конкурсов в которых этот пользователь овнер
+# фильтрация конкурсов

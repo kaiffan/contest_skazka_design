@@ -92,8 +92,8 @@ class ContestAllSerializer(ModelSerializer[Contest]):
             "contest_stage",
         ]
 
-    def get_contest_stage(self, instance):
-        return get_current_contest_stage(instance=instance)
+    def get_contest_stage(self, contest):
+        return get_current_contest_stage(contest=contest)
 
 
 class CreateBaseContestSerializer(ModelSerializer[Contest]):
@@ -406,7 +406,8 @@ class ContestChangeNominationSerializer(Serializer):
 
             return None
 
-#TODO: доделать сериалайзер согласно новым условиям
+
+# TODO: доделать сериалайзер согласно новым условиям
 class ContestChangeStageSerializer(Serializer):
     contest_stage_list = ListField(child=JSONField(), required=True, write_only=True)
 
@@ -486,7 +487,7 @@ class ContestChangeStageSerializer(Serializer):
                         contest=contest,
                         stage_id=stage_id,
                         start_date=start_date,
-                        end_date=end_date
+                        end_date=end_date,
                     )
                 )
 
@@ -494,7 +495,9 @@ class ContestChangeStageSerializer(Serializer):
             ContestsContestStage.objects.bulk_create(objs=stages_to_create)
 
         if stages_to_update:
-            ContestsContestStage.objects.bulk_update(objs=stages_to_update, fields=["start_date", "end_date"])
+            ContestsContestStage.objects.bulk_update(
+                objs=stages_to_update, fields=["start_date", "end_date"]
+            )
 
         return
 

@@ -1,23 +1,28 @@
 from datetime import date
 from typing import Dict, Any
 
+from django.core.cache import cache
+
 from contests.models import Contest
+from contests_contest_stage.models import ContestsContestStage
 
 
-def get_current_contest_stage(instance: Contest) -> Dict[str, Any]:
-    today = date.today()
-    current_stage = next(
-        (
-            stage
-            for stage in instance.contest_stage.through.objects.filter(contest=instance)
-            if stage.start_date <= today <= stage.end_date
-        ),
-        None,
-    )
+def get_current_contest_stage(contest: Contest) -> Dict[str, Any]:
+    current_stage = cache.get(key="current_contest_stage", default=None)
+
+    if not current_stage:
+        current_stage = ContestsContestStage.objects.filter(
+            contest_id=contest.id,
+            start_date__lte=date.today(),
+            end_date__gte=date.today(),
+        ).first()
+
+        if current_stage:
+            cache.set("current_contest_stage", current_stage, 60 * 60 * 12)
 
     if current_stage:
         return {
-            "name": current_stage.contest_stage.name,
+            "name": current_stage.stage.name,
             "start_date": current_stage.start_date,
             "end_date": current_stage.end_date,
         }

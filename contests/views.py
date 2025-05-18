@@ -13,6 +13,7 @@ from contests.serializers import (
     ContestByIdSerializer,
     ContestAllSerializer,
 )
+from participants.enums import ParticipantRole
 from participants.permissions import IsContestOwnerPermission
 
 
@@ -108,5 +109,19 @@ def get_all_contests_view(request: Request) -> Response:
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-# точка на получение всех конкурсов в которых этот пользователь овнер
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+def get_all_contests_owner_view(request: Request) -> Response:
+    contests = Contest.objects.filter(
+        participant__user=request.user,
+        participant__role=ParticipantRole.owner.value,
+    ).distinct()
+
+    serializer = ContestAllSerializer(data=contests, many=True)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 # фильтрация конкурсов

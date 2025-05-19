@@ -123,7 +123,7 @@ def logout_view(request: Request) -> Response:
 
 @api_view(http_method_names=["PUT"])
 @permission_classes(permission_classes=[IsAuthenticated])
-def reset_password(request: Request) -> Response:
+def reset_password_view(request: Request) -> Response:
     serializer = PasswordResetSerializer(
         data=request.data, context={"user": request.user}
     )

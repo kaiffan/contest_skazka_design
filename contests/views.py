@@ -24,7 +24,7 @@ def create_contest_view(request: Request) -> Response:
         data=request.data, context={"user_id": request.user.id}
     )
 
-    if not serializer.is_valid():
+    if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     serializer.create(validated_data=serializer.validated_data)
@@ -37,7 +37,7 @@ def create_contest_view(request: Request) -> Response:
 def update_contest_view(request: Request) -> Response:
     serializer = UpdateBaseContestSerializer(data=request.data)
 
-    if not serializer.is_valid():
+    if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     contest = get_object_or_404(Contest, id=request.contest_id)
@@ -120,8 +120,6 @@ def get_all_contests_owner_view(request: Request) -> Response:
     serializer = ContestAllSerializer(data=contests, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-
 
 
 # фильтрация конкурсов

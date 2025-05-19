@@ -33,14 +33,17 @@ def contest_data_update_view(request) -> Response:
 @api_view(http_method_names=["PATCH"])
 @permission_classes(permission_classes=[IsAuthenticated])
 def user_data_update_view(request) -> Response:
-    serializer = UserDataPatchSerializer(data=request.data, partial=True)
+    serializer = UserDataPatchSerializer(
+        data=request.data, instance=request.user, partial=True
+    )
 
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    serializer.save()
+    serializer.update(instance=request.user, validated_data=serializer.validated_data)
+
     return Response(
-        data={"message": "Данные успешно обновлены", "data": serializer.data},
+        data={"message": "Данные успешно обновлены"},
         status=status.HTTP_200_OK,
     )
 

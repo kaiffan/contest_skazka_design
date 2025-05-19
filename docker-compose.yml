@@ -25,16 +25,3 @@ services:
           cpus: '0.25'
           memory: 256M
     restart: unless-stopped
-  minio-service:
-    image: minio/minio:latest
-    container_name: s3_minio
-    volumes:
-      - ./storage/minio:/data
-    ports:
-      - "9000:9000"
-      - "9099:9099"
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin-strong
-    command: server --address ":9099" --console-address ":9000" /data
-    restart: unless-stopped

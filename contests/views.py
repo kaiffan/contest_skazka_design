@@ -6,12 +6,14 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 
 from authentication.permissions import IsAdminSystemPermission
+from contests.filter import ContestFilter
 from contests.models import Contest
 from contests.serializers import (
     CreateBaseContestSerializer,
     UpdateBaseContestSerializer,
     ContestByIdSerializer,
     ContestAllSerializer,
+    ContestAllOwnerSerializer,
 )
 from participants.enums import ParticipantRole
 from participants.permissions import IsContestOwnerPermission
@@ -100,11 +102,13 @@ def get_contest_by_id(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
 def get_all_contests_view(request: Request) -> Response:
     contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
 
-    serializer = ContestAllSerializer(data=contest_list, many=True)
+    contest_filter = ContestFilter(data=request.GET, queryset=contest_list)
+    filter_queryset = contest_filter.qs
+
+    serializer = ContestAllSerializer(instance=filter_queryset, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
@@ -117,9 +121,6 @@ def get_all_contests_owner_view(request: Request) -> Response:
         participant__role=ParticipantRole.owner.value,
     ).distinct()
 
-    serializer = ContestAllSerializer(data=contests, many=True)
+    serializer = ContestAllOwnerSerializer(data=contests, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-
-# фильтрация конкурсов

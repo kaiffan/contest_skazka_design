@@ -88,7 +88,7 @@ class ContestAllSerializer(ModelSerializer[Contest]):
         fields = [
             "title",
             "avatar",
-            "contest_categories",
+            "contest_category",
             "contest_stage",
         ]
 
@@ -96,8 +96,25 @@ class ContestAllSerializer(ModelSerializer[Contest]):
         return get_current_contest_stage(contest=contest)
 
 
+class ContestAllOwnerSerializer(ModelSerializer[Contest]):
+    count_application = SerializerMethodField()
+    count_participants = SerializerMethodField()
+
+    class Meta:
+        model = Contest
+        fields = ["title", "avatar", "count_application", "count_participants"]
+
+    def get_count_application(self, contest):
+        return Applications.objects.filter(contest=contest).count()
+
+    def get_count_participants(self, contest):
+        return Participant.objects.filter(
+            contest=contest, role=ParticipantRole.jury.value
+        ).count()
+
+
 class CreateBaseContestSerializer(ModelSerializer[Contest]):
-    contest_categories_name = CharField(write_only=True)
+    contest_category_name = CharField(write_only=True)
     age_category = ListField(child=IntegerField(), write_only=True)
     region_id = IntegerField()
 
@@ -110,24 +127,22 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
             "link_to_rules",
             "organizer",
             "region_id",
-            "contest_categories_name",
+            "contest_category_name",
             "age_category",
         ]
         extra_kwargs = {
             "title": {"required": True},
             "description": {"required": True},
-            "avatar": {"required": True},
-            "link_to_rules": {"required": True},
+            "avatar": {"required": False},
+            "link_to_rules": {"required": False},
             "organizer": {"required": True},
             "region_id": {"required": True},
-            "contest_categories_name": {"required": True},
+            "contest_category_name": {"required": True},
             "age_category": {"required": True},
         }
 
     def create(self, validated_data):
-        name_contest_categories: str = validated_data.pop(
-            "contest_categories_name", None
-        )
+        name_contest_categories: str = validated_data.pop("contest_category_name", None)
 
         age_category = validated_data.pop("age_category", None)
 
@@ -174,9 +189,7 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
 
 
 class UpdateBaseContestSerializer(ModelSerializer[Contest]):
-    contest_categories_name = CharField(
-        write_only=True, required=False, allow_blank=True
-    )
+    contest_category_name = CharField(write_only=True, required=False, allow_blank=True)
     age_category = ListField(
         child=IntegerField(), write_only=True, required=False, allow_null=True
     )
@@ -192,7 +205,7 @@ class UpdateBaseContestSerializer(ModelSerializer[Contest]):
             "organizer",
             "region_id",
             "age_category",
-            "contest_categories_name",
+            "contest_category_name",
         ]
         extra_kwargs = {
             "title": {"required": False},
@@ -229,12 +242,12 @@ class UpdateBaseContestSerializer(ModelSerializer[Contest]):
         return value
 
     def update(self, instance, validated_data):
-        category_name = validated_data.pop("contest_categories_name", None)
+        category_name = validated_data.pop("contest_category_name", None)
         if category_name:
             contest_category, _ = ContestCategories.objects.get_or_create(
                 name=category_name
             )
-            instance.contest_categories_id = contest_category.id
+            instance.contest_category_id = contest_category.id
 
         age_category = validated_data.pop("age_category", None)
 

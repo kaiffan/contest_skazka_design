@@ -1,0 +1,59 @@
+from typing import Any
+
+from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import get_object_or_404
+
+from contests.models import Contest
+from contests.utils import get_current_contest_stage
+
+
+class BaseStagePermission(permissions.BasePermission):
+    allowed_stage = None  # Например: 'submission'
+    message = "Это действие доступно только на определённой стадии."
+
+    def get_contest_id(self, request):
+        """Извлечение contest_id из запроса"""
+        contest_id = request.contest_id
+        if not contest_id:
+            raise PermissionDenied(detail="Not contest_id in header")
+
+        return contest_id
+
+    def has_permission(self, request, view):
+        if self.allowed_stage is None:
+            raise NotImplementedError("Необходимо указать allowed_stage в подклассе.")
+
+        contest_id = self.get_contest_id(request)
+
+        try:
+            contest = Contest.objects.get(id=contest_id)
+        except Contest.DoesNotExist:
+            raise PermissionDenied("Конкурс не найден.")
+
+        current_stage: dict[str, Any] = get_current_contest_stage(contest=contest)
+
+        if current_stage["name"] != self.allowed_stage:
+            return False
+
+        return True
+
+
+class CanSubmitApplication(BaseStagePermission):
+    allowed_stage = 'Сбор заявок'
+    message = "Заявку можно отправить только на стадии: 'Сбор заявок'."
+
+
+class CanCheckWorks(BaseStagePermission):
+    allowed_stage = 'Проверка работ'
+    message = "Проверка работ возможна только на стадии: 'Проверка работ'."
+
+
+class CanFinalizeResults(BaseStagePermission):
+    allowed_stage = 'Подведение итогов'
+    message = "Итоги можно подводить только на стадии: 'Подведение итогов'."
+
+
+class CanAccessAfterEnding(BaseStagePermission):
+    allowed_stage = 'Конец'
+    message = "Доступ разрешён только после завершения конкурса."

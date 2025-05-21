@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -13,7 +14,8 @@ from authentication.serializers import (
     LogoutSerializer,
     PasswordResetSerializer,
 )
-from authentication.throttle import LoginAnonThrottle
+from contest_backend.settings import settings
+from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
 from authentication.utils import set_refresh_cookie, delete_refresh_cookie
 from email_confirmation.models import EmailConfirmationLogin
 
@@ -24,6 +26,7 @@ from email_confirmation.models import EmailConfirmationLogin
         AllowAny,
     ]
 )
+@throttle_classes(throttle_classes=[IpBasedThrottle])
 def registration_view(request: Request) -> Response:
     serializer = RegistrationSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
@@ -43,7 +46,7 @@ def registration_view(request: Request) -> Response:
         AllowAny,
     ]
 )
-@throttle_classes(throttle_classes=[LoginAnonThrottle])
+@throttle_classes(throttle_classes=[IpBasedThrottle])
 def login_view(request: Request) -> Response:
     serializer = LoginSerializer(data=request.data)
 
@@ -69,19 +72,19 @@ def login_view(request: Request) -> Response:
 
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[AllowAny])
-@throttle_classes(throttle_classes=[LoginAnonThrottle])
+@throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
 def confirm_login_view(request: Request) -> Response:
     code = request.data.get("code")
 
     if not code:
         return Response(
-            data={"detail": "Код обязателен."},
+            data={"detail": "Код подтверждения обязателен."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    if len(code) != 8:
+    if len(code) != settings.email_credentials.CODE_DIGITS:
         return Response(
-            data={"detail": "Неверная длина кода."},
+            data={"detail": "Неверная длина кода подтверждения."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -93,22 +96,23 @@ def confirm_login_view(request: Request) -> Response:
         )
     except EmailConfirmationLogin.DoesNotExist:
         return Response(
-            data={"detail": "Неверный или использованный код."},
+            data={"detail": "Неверный или использованный код подтверждения."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     if confirmation.is_expired():
         return Response(
-            data={"detail": "Код истёк."},
+            data={"detail": "Код подтверждения истёк."},
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    confirmation.is_used = True
-    confirmation.save(update_fields=["is_used"])
+    with transaction.atomic():
+        confirmation.is_used = True
+        confirmation.save(update_fields=["is_used"])
 
-    user = confirmation.user
-    user.is_email_confirmed = True
-    user.save(update_fields=["is_email_confirmed"])
+        user = confirmation.user
+        user.is_email_confirmed = True
+        user.save(update_fields=["is_email_confirmed"])
 
     response = Response(
         data={
@@ -128,6 +132,7 @@ def confirm_login_view(request: Request) -> Response:
         AllowAny,
     ]
 )
+@throttle_classes(throttle_classes=[IpBasedThrottle])
 def cookie_tokens_refresh_view(request) -> Response:
     refresh_token: str = request.COOKIES.get("refresh_token", None)
 
@@ -202,3 +207,9 @@ def reset_password_view(request: Request) -> Response:
     return Response(
         data={"message": "Пароль успешно изменён."}, status=status.HTTP_200_OK
     )
+
+
+@api_view(http_method_names=["PUT"])
+@permission_classes(permission_classes=[AllowAny])
+def restore_password_view(request: Request) -> Response:
+    pass

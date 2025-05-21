@@ -10,3 +10,4 @@ class EmailCredentials(ConfigBase):
     PORT: int
     HOST_USER: str
     HOST_PASSWORD: str
+    CODE_DIGITS: int

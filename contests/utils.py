@@ -18,13 +18,15 @@ def get_current_contest_stage(contest: Contest) -> Dict[str, Any]:
         ).first()
 
         if current_stage:
-            cache.set("current_contest_stage", current_stage, 60 * 60 * 12)
+            cache.set(
+                key="current_contest_stage", value=current_stage, timeout=60 * 60 * 12
+            )
 
-    if current_stage:
-        return {
-            "name": current_stage.stage.name,
-            "start_date": current_stage.start_date,
-            "end_date": current_stage.end_date,
-        }
+    if not current_stage:
+        return {"name": "Contest stage is not defined"}
 
-    return {"name": "Contest stage is not defined"}
+    return {
+        "name": current_stage.stage.name,
+        "start_date": current_stage.start_date,
+        "end_date": current_stage.end_date,
+    }

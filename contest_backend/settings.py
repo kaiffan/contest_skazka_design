@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework_simplejwt",
     "rest_framework",
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -32,13 +33,13 @@ INSTALLED_APPS = [
     "contests",
     "contests_contest_stage",
     "criteria",
+    "email_confirmation",
     "nomination",
     "participants",
     "regions",
     "users",
     "winners",
     "work_rate",
-    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,13 @@ MIDDLEWARE = [
     "contests.middleware.ContestHeaderMiddleware",
     "corsheaders.middleware.CorsMiddleware",
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "D:\Projects\PyCharm\contest_backend\django_cache",
+    }
+}
 
 ROOT_URLCONF = "contest_backend.urls"
 
@@ -119,6 +127,16 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = settings.email_credentials.HOST
+EMAIL_PORT = settings.email_credentials.PORT
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = settings.email_credentials.HOST_USER
+EMAIL_HOST_PASSWORD = settings.email_credentials.HOST_PASSWORD
+
+CODE_CONFIRMATION_SALT = "24bc15f5-297b-42e1-888e-28a22ae873ca"
 
 CORS_ALLOW_ALL_ORIGINS = True
 

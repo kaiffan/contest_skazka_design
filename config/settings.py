@@ -1,3 +1,4 @@
+from config.email_credentials import EmailCredentials
 from config.postgres_credentials import PostgresCredentials
 from config.token_credentials import TokenCredentials
 from functools import lru_cache
@@ -11,6 +12,7 @@ class Settings(BaseSettings):
         default_factory=PostgresCredentials
     )
     token_credentials: TokenCredentials = Field(default_factory=TokenCredentials)
+    email_credentials: EmailCredentials = Field(default_factory=EmailCredentials)
 
 
 @lru_cache

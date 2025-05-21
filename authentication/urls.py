@@ -5,6 +5,7 @@ from authentication.views import (
     logout_view,
     cookie_tokens_refresh_view,
     reset_password_view,
+    confirm_login_view,
 )
 
 from rest_framework_simplejwt.views import TokenVerifyView
@@ -16,6 +17,6 @@ urlpatterns = [
     path(route="verify", view=TokenVerifyView.as_view(), name="token_verify_view"),
     path(route="refresh", view=cookie_tokens_refresh_view, name="token_refresh_view"),
     path(route="reset", view=reset_password_view, name="reset_password_view"),
-    # Обновление пароля
+    path(route="confirm_login", view=confirm_login_view, name="confirm_login_view"),
     # Восстановление пароля
 ]

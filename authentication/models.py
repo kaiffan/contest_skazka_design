@@ -1,3 +1,4 @@
+import random
 from datetime import date
 
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -53,6 +54,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_email_confirmed = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

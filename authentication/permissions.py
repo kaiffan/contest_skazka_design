@@ -5,6 +5,6 @@ from authentication.enums import UserRole
 
 class IsAdminSystemPermission(BasePermission):
     def has_permission(self, request, view):
-        if request.user.user_role == UserRole.admin.value:
-            return True
-        return False
+        if not request.user.user_role == UserRole.admin.value:
+            return False
+        return True

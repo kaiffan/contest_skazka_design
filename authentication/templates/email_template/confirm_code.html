@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение входа</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            padding: 20px;
+            color: #333;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2a7ae2;
+        }
+        .code {
+            font-size: 28px;
+            font-weight: bold;
+            color: #000;
+            background-color: #f0f0f0;
+            padding: 12px 24px;
+            display: inline-block;
+            border-radius: 6px;
+            letter-spacing: 3px;
+            margin: 20px 0;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <h1>Подтверждение входа</h1>
+        <p>Вы запрашивали вход в систему. Пожалуйста, используйте код ниже, чтобы подтвердить свою личность:</p>
+
+        <div class="code">{{ code }}</div>
+
+        <p>Этот код действителен в течение <strong>{{ valid_minutes }} минут</strong>. Не сообщайте его никому.</p>
+
+        <p>Если вы не запрашивали вход — просто проигнорируйте это письмо.</p>
+
+        <div class="footer">
+            С уважением,<br>
+            Команда Skazka Design
+        </div>
+    </div>
+</body>
+</html>

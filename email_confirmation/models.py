@@ -1,4 +1,5 @@
-import hmac
+import uuid
+from hmac import new
 from string import ascii_letters, digits
 from secrets import choice
 from datetime import timedelta
@@ -13,6 +14,8 @@ class EmailConfirmationLogin(models.Model):
     code_hash = models.CharField(
         max_length=255, unique=True, db_index=True, editable=False
     )
+    session_id = models.CharField(name="session_id", max_length=255, editable=False, db_index=True)
+    attempt_number = models.PositiveIntegerField(name="attempt_number", editable=False, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
 
@@ -32,7 +35,11 @@ class EmailConfirmationLogin(models.Model):
             raise ValueError("CODE_CONFIRMATION_SALT must be set in settings")
 
         code_bytes = code.encode("utf-8")
-        return hmac.new(key=key, msg=code_bytes, digestmod=sha512).hexdigest()
+        return new(key=key, msg=code_bytes, digestmod=sha512).hexdigest()
+
+    @classmethod
+    def generate_session_id(cls) -> str:
+        return uuid.uuid4().hex
 
     class Meta:
         db_table = "email_confirmation"

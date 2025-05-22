@@ -55,10 +55,28 @@ def login_view(request: Request) -> Response:
 
     user = serializer.validated_data
 
-    EmailConfirmationLogin.objects.filter(user=user, is_used=False).delete()
+    session_id = request.session.get("email_login_session_id")
+    if not session_id:
+        session_id = EmailConfirmationLogin.generate_session_id()
+        request.session["email_login_session_id"] = session_id
 
-    code, code_hash = EmailConfirmationLogin.generate_code()
-    EmailConfirmationLogin.objects.create(user=user, code_hash=code_hash)
+    with transaction.atomic():
+        attempt_number = (
+                EmailConfirmationLogin.objects.filter(session_id=session_id).count() + 1
+        )
+
+        EmailConfirmationLogin.objects.filter(user=user, is_used=False).delete()
+
+        code, code_hash = EmailConfirmationLogin.generate_code()
+        confirmation = EmailConfirmationLogin.objects.create(
+            user=user,
+            code_hash=code_hash,
+            session_id=session_id,
+            attempt_number=attempt_number,
+        )
+
+    request.session["login_attempt"] = confirmation.id
+    request.session.modified = True
 
     send_confirmation_email(user_email=user.email, code=code)
 
@@ -75,10 +93,18 @@ def login_view(request: Request) -> Response:
 @throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
 def confirm_login_view(request: Request) -> Response:
     code = request.data.get("code")
+    attempt_id = request.session.get("login_attempt")
+    session_id = request.session.get("email_login_session_id")
 
     if not code:
         return Response(
             data={"detail": "Код подтверждения обязателен."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not attempt_id or not session_id:
+        return Response(
+            data={"detail": "Сессия не найдена или код не указан."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -92,7 +118,10 @@ def confirm_login_view(request: Request) -> Response:
 
     try:
         confirmation = EmailConfirmationLogin.objects.select_related("user").get(
-            code_hash=code_hash, is_used=False
+            id=attempt_id,
+            session_id=session_id,
+            code_hash=code_hash,
+            is_used=False,
         )
     except EmailConfirmationLogin.DoesNotExist:
         return Response(
@@ -113,6 +142,9 @@ def confirm_login_view(request: Request) -> Response:
         user = confirmation.user
         user.is_email_confirmed = True
         user.save(update_fields=["is_email_confirmed"])
+
+    request.session.pop("login_attempt", None)
+    request.session.pop("email_login_session_id", None)
 
     response = Response(
         data={

@@ -11,3 +11,4 @@ class EmailCredentials(ConfigBase):
     HOST_USER: str
     HOST_PASSWORD: str
     CODE_DIGITS: int
+    CODE_CONFIRMATION_SALT: str

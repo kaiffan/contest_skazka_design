@@ -104,7 +104,7 @@ def confirm_login_view(request: Request) -> Response:
 
     if not attempt_id or not session_id:
         return Response(
-            data={"detail": "Сессия не найдена или код не указан."},
+            data={"detail": "Сессия не найдена или код попытки не указан."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

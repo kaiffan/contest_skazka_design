@@ -10,6 +10,7 @@ from regions.serializers import RegionSerializer
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[])
 def all_regions_user_view(request):
+    # возвращать по совпадению
     regions = Region.objects.exclude(name="Онлайн").all()
 
     serializer = RegionSerializer(regions, many=True)

@@ -6,6 +6,7 @@ from contests.views import (
     delete_contest_view,
     get_all_contests_view,
     get_contest_by_id,
+    get_all_contests_owner_view,
 )
 
 urlpatterns = [
@@ -15,4 +16,9 @@ urlpatterns = [
     path(route="admin/delete", view=delete_contest_view, name="delete_contest_view"),
     path(route="id", view=get_contest_by_id, name="get_contest_by_id_view"),
     path(route="all", view=get_all_contests_view, name="get_all_contests_view"),
+    path(
+        route="all/owner",
+        view=get_all_contests_owner_view,
+        name="get_all_contests_owner_view",
+    ),
 ]

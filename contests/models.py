@@ -12,7 +12,10 @@ class Contest(models.Model):
     avatar = models.CharField(name="avatar", max_length=255, null=False, default=" ")
     link_to_rules = models.CharField(name="link_to_rules", max_length=255, null=False)
     organizer = models.CharField(name="organizer", max_length=255, null=False)
-    # призовые места
+    prizes = models.TextField(name="prizes", null=False)
+    contacts_for_participants = models.CharField(
+        name="contacts_for_participants", max_length=255, null=False
+    )
     is_draft = models.BooleanField(name="is_draft", null=False, default=True)
     is_deleted = models.BooleanField(name="is_deleted", null=False, default=False)
     is_published = models.BooleanField(name="is_published", null=False, default=False)

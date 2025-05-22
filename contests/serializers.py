@@ -37,9 +37,11 @@ from winners.models import Winners
 class ContestByIdSerializer(ModelSerializer[Contest]):
     jury = SerializerMethodField()
     criteria = SerializerMethodField()
+    contest_category = SerializerMethodField()
     nomination = SerializerMethodField()
     age_categories = SerializerMethodField()
     contest_stage = SerializerMethodField()
+    region_name = SerializerMethodField()
 
     class Meta:
         model = Contest
@@ -55,6 +57,10 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "age_categories",
             "contest_stage",
             "jury",
+            "prizes",
+            "contacts_for_participants",
+            "region_name",
+            "contest_category",
         ]
 
     def get_jury(self, instance):
@@ -62,6 +68,12 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             contest_id=instance.id, role=ParticipantRole.jury.value
         ).all()
         return ParticipantSerializer(jury_list, many=True).data
+
+    def get_contest_category(self, instance):
+        return instance.contest_category.name
+
+    def get_region_name(self, instance):
+        return instance.region.name
 
     def get_criteria(self, instance):
         criteria_list = instance.criteria.all()
@@ -98,16 +110,25 @@ class ContestAllSerializer(ModelSerializer[Contest]):
 
 class ContestAllOwnerSerializer(ModelSerializer[Contest]):
     count_application = SerializerMethodField()
-    count_participants = SerializerMethodField()
+    count_jury = SerializerMethodField()
 
     class Meta:
         model = Contest
-        fields = ["title", "avatar", "count_application", "count_participants"]
+        fields = [
+            "id",
+            "title",
+            "avatar",
+            "count_application",
+            "count_jury",
+            "is_draft",
+            "is_published",
+            "is_deleted",
+        ]
 
     def get_count_application(self, contest):
         return Applications.objects.filter(contest=contest).count()
 
-    def get_count_participants(self, contest):
+    def get_count_jury(self, contest):
         return Participant.objects.filter(
             contest=contest, role=ParticipantRole.jury.value
         ).count()
@@ -126,6 +147,8 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
             "avatar",
             "link_to_rules",
             "organizer",
+            "prizes",
+            "contacts_for_participants",
             "region_id",
             "contest_category_name",
             "age_category",
@@ -137,11 +160,13 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
             "link_to_rules": {"required": False},
             "organizer": {"required": True},
             "region_id": {"required": True},
+            "prizes": {"required": False},
+            "contacts_for_participants": {"required": False},
             "contest_category_name": {"required": True},
             "age_category": {"required": True},
         }
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> Contest:
         name_contest_categories: str = validated_data.pop("contest_category_name", None)
 
         age_category = validated_data.pop("age_category", None)
@@ -152,9 +177,9 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
             name=name_contest_categories
         )
 
-        validated_data["contest_categories_id"] = contest_category.id
-
-        contest = Contest.objects.create(**validated_data)
+        contest = Contest.objects.create(
+            contest_category_id=contest_category.id, **validated_data
+        )
         contest.age_category.add(*age_categories)
 
         user_id = self.context.get("user_id")
@@ -162,6 +187,8 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
         Participant.objects.create(
             contest_id=contest.id, user_id=user_id, role=ParticipantRole.owner.value
         )
+
+        return contest
 
     def validate_region_id(self, region_id: int):
         if not Region.objects.filter(id=region_id).exists():
@@ -202,6 +229,8 @@ class UpdateBaseContestSerializer(ModelSerializer[Contest]):
             "description",
             "avatar",
             "link_to_rules",
+            "prizes",
+            "contacts_for_participants",
             "organizer",
             "region_id",
             "age_category",
@@ -215,6 +244,7 @@ class UpdateBaseContestSerializer(ModelSerializer[Contest]):
             "organizer": {"required": False},
             "region_id": {"required": False},
             "age_category": {"required": False},
+            "contest_category_name": {"required": False},
         }
 
     def validate_region_id(self, region_id: int):

@@ -8,11 +8,14 @@ def check_contest_role_permission(
 ) -> bool:
     if not contest_id:
         return False
+
     is_role = Participant.objects.filter(
         contest_id=contest_id,
         user_id=user_id,
-        role=role,
+        role=role.value,
     ).exists()
+
+    print(is_role)
 
     if not is_role:
         logger.warning(msg=f"Пользователь {user_id} не имеет роли {role}.")

@@ -10,7 +10,7 @@ class IsContestOwnerPermission(BasePermission):
         return check_contest_role_permission(
             contest_id=request.contest_id,
             user_id=request.user.id,
-            role=ParticipantRole.owner.value,
+            role=ParticipantRole.owner,
         )
 
 

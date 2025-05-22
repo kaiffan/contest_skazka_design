@@ -10,7 +10,7 @@ from age_categories.models import AgeCategories
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated])
-def get_age_categories(request: Request) -> Response:
+def get_age_categories_view(request: Request) -> Response:
     age_categories = AgeCategories.objects.all()
 
     serializer = AgeCategoriesSerializer(age_categories, many=True)

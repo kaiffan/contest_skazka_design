@@ -29,9 +29,12 @@ def create_contest_view(request: Request) -> Response:
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    serializer.create(validated_data=serializer.validated_data)
+    contest = serializer.create(validated_data=serializer.validated_data)
 
-    return Response(status=status.HTTP_201_CREATED)
+    return Response(
+        data={"contest_id": contest.id, "message": "Contest created successfully"},
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(http_method_names=["PATCH"])
@@ -76,19 +79,6 @@ def delete_contest_view(request: Request) -> Response:
     )
 
 
-@api_view(http_method_names=["DELETE"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
-def delete_contest_view(request: Request) -> Response:
-    contest = get_object_or_404(Contest, id=request.contest_id)
-
-    contest.is_deleted = True
-    contest.save()
-
-    return Response(
-        data={"message": "Contest successfully deleted"}, status=status.HTTP_200_OK
-    )
-
-
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated])
 def get_contest_by_id(request: Request) -> Response:
@@ -114,13 +104,13 @@ def get_all_contests_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(permission_classes=[IsAuthenticated])
 def get_all_contests_owner_view(request: Request) -> Response:
     contests = Contest.objects.filter(
         participant__user=request.user,
         participant__role=ParticipantRole.owner.value,
     ).distinct()
 
-    serializer = ContestAllOwnerSerializer(data=contests, many=True)
+    serializer = ContestAllOwnerSerializer(instance=contests, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)

@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid4
 from hmac import new
 from string import ascii_letters, digits
 from secrets import choice
@@ -43,7 +43,7 @@ class EmailConfirmationLogin(models.Model):
 
     @classmethod
     def generate_session_id(cls) -> str:
-        return uuid.uuid4().hex
+        return uuid4().hex
 
     class Meta:
         db_table = "email_confirmation"

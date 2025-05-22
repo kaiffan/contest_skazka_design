@@ -58,7 +58,7 @@ def user_data_get_view(request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
 def all_users_view(request) -> Response:
-    email: str = request.query_params.get("filter", None)
+    email: str = request.data.get("filter", None)
 
     queryset = Users.objects.all()
 

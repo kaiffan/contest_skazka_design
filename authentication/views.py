@@ -78,14 +78,18 @@ def login_view(request: Request) -> Response:
     request.session["login_attempt"] = confirmation.id
     request.session.modified = True
 
-    send_confirmation_email(user_email=user.email, code=code)
+    # send_confirmation_email(user_email=user.email, code=code)
 
-    return Response(
+    response = Response(
         data={
-            "message": "Код подтверждения отправлен на вашу почту. Введите его для завершения входа."
+            "message": "Вход подтверждён.",
+            "token_type": "Bearer",
+            "access_token": user.tokens.get("access"),
         },
         status=status.HTTP_200_OK,
     )
+    set_refresh_cookie(response=response, value=user.tokens.get("refresh"))
+    return response
 
 
 @api_view(http_method_names=["POST"])
@@ -146,16 +150,9 @@ def confirm_login_view(request: Request) -> Response:
     request.session.pop("login_attempt", None)
     request.session.pop("email_login_session_id", None)
 
-    response = Response(
-        data={
-            "message": "Вход подтверждён.",
-            "token_type": "Bearer",
-            "access_token": user.tokens.get("access"),
-        },
-        status=status.HTTP_200_OK,
-    )
-    set_refresh_cookie(response=response, value=user.tokens.get("refresh"))
-    return response
+    # отправлять токен тут, но пока из-за недеплоя перенесли в логин
+
+    # return response
 
 
 @api_view(http_method_names=["POST"])

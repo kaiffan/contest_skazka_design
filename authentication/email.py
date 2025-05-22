@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 
 def send_confirmation_email(user_email: str, code: str):
     subject = "Подтверждение входа"
-    message = render_to_string(
+    html_template = render_to_string(
         template_name="email_template/confirm_code.html",
         context={
             "code": code,
@@ -13,9 +13,9 @@ def send_confirmation_email(user_email: str, code: str):
     )
     email = EmailMessage(
         subject=subject,
-        body=message,
+        body=html_template,
         from_email="manager@skazka-design.ru",
         to=[user_email],
     )
-    email.content_subtype = "html"  # для HTML-писем
+    email.content_subtype = "html"
     email.send()

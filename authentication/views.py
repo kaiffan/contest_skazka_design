@@ -62,7 +62,7 @@ def login_view(request: Request) -> Response:
 
     with transaction.atomic():
         attempt_number = (
-                EmailConfirmationLogin.objects.filter(session_id=session_id).count() + 1
+            EmailConfirmationLogin.objects.filter(session_id=session_id).count() + 1
         )
 
         EmailConfirmationLogin.objects.filter(user=user, is_used=False).delete()

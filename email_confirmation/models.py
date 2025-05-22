@@ -14,8 +14,12 @@ class EmailConfirmationLogin(models.Model):
     code_hash = models.CharField(
         max_length=255, unique=True, db_index=True, editable=False
     )
-    session_id = models.CharField(name="session_id", max_length=255, editable=False, db_index=True)
-    attempt_number = models.PositiveIntegerField(name="attempt_number", editable=False, default=1)
+    session_id = models.CharField(
+        name="session_id", max_length=255, editable=False, db_index=True
+    )
+    attempt_number = models.PositiveIntegerField(
+        name="attempt_number", editable=False, default=1
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
 

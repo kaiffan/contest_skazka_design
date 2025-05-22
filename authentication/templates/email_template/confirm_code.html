@@ -4,61 +4,198 @@
     <meta charset="UTF-8">
     <title>Подтверждение входа</title>
     <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
             color: #333;
         }
+
         .email-container {
             background-color: #ffffff;
-            border-radius: 8px;
+            border-radius: 12px;
             max-width: 500px;
-            margin: 0 auto;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            width: 100%;
+            margin: 30px auto;
+            padding: 30px 40px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e6ed;
+            animation: fadeIn 0.6s ease-out;
         }
+
+        .logo {
+            display: block;
+            width: 120px;
+            margin: 0 auto 20px;
+        }
+
         h1 {
-            color: #2a7ae2;
+            text-align: center;
+            color: #4e1609;
+            font-size: 24px;
+            margin-top: 0;
+            animation: fadeIn 0.5s ease-in-out;
         }
+
+        .code-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 25px 0;
+        }
+
         .code {
-            font-size: 28px;
+            display: flex;
+            align-items: center;
+            font-size: 34px;
             font-weight: bold;
             color: #000;
-            background-color: #f0f0f0;
-            padding: 12px 24px;
-            display: inline-block;
-            border-radius: 6px;
-            letter-spacing: 3px;
-            margin: 20px 0;
+            letter-spacing: 4px;
+            background-color: #f9f9f9;
+            padding: 16px 24px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.7s ease-in-out;
+            user-select: all;
         }
+
+        .copy-button {
+            margin-left: 10px;
+            background-color: #d1d5db;
+            color: #374151;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .copy-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .copy-button:hover {
+            background-color: #9ca3af;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
         p {
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.7;
+            margin: 10px 0;
+            animation: fadeIn 0.8s ease-in-out;
         }
+
         .footer {
             margin-top: 30px;
             font-size: 13px;
-            color: #888;
+            color: #777;
             text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            animation: fadeIn 0.9s ease-in-out;
+        }
+
+        @media (max-width: 600px) {
+            .code-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .code {
+                font-size: 28px;
+                padding: 12px 20px;
+                text-align: center;
+            }
+
+            .copy-button {
+                width: 40px;
+                height: 40px;
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <h1>Подтверждение входа</h1>
-        <p>Вы запрашивали вход в систему. Пожалуйста, используйте код ниже, чтобы подтвердить свою личность:</p>
+<div class="email-container">
+    <img src="logo.png" alt="Логотип Skazka Design" class="logo">
 
-        <div class="code">{{ code }}</div>
+    <h1>Подтверждение входа</h1>
 
-        <p>Этот код действителен в течение <strong>{{ valid_minutes }} минут</strong>. Не сообщайте его никому.</p>
+    <p>Вы запрашивали вход в систему. Пожалуйста, используйте следующий код для подтверждения:</p>
 
-        <p>Если вы не запрашивали вход — просто проигнорируйте это письмо.</p>
-
-        <div class="footer">
-            С уважением,<br>
-            Команда Skazka Design
+    <div class="code-wrapper">
+        <div class="code" id="code"> {{ code }}
+            <button class="copy-button" onclick="copyCode()" title="Скопировать код">
+                <svg viewBox="0 0 24 24">
+                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"></path>
+                </svg>
+            </button>
         </div>
+        <div class="tooltip" id="tooltip">Скопировано!</div>
     </div>
+    <p>Этот код действителен в течение <strong>{{ valid_minutes }} минут</strong>. Не передавайте его никому.</p>
+
+    <p><em><strong>Если вы не запрашивали вход — просто проигнорируйте это письмо.</strong></em></p>
+
+    <div class="footer">
+        С уважением, команда Skazka Design
+        <br>Все права защищены.
+    </div>
+</div>
+
+<script>
+    function copyCode() {
+        const code = document.getElementById('code').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = 'Скопировано!';
+            tooltip.classList.add('show');
+
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+            }, 2000);
+        }).catch(err => {
+            console.error('Ошибка копирования: ', err);
+        });
+    }
+</script>
 </body>
 </html>

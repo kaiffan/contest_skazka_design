@@ -4,22 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('contests', '0002_initial'),
+        ("contests", "0002_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='contest',
-            name='contacts_for_participants',
-            field=models.CharField(default=' ', max_length=255),
+            model_name="contest",
+            name="contacts_for_participants",
+            field=models.CharField(default=" ", max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='contest',
-            name='prizes',
-            field=models.TextField(default=' '),
+            model_name="contest",
+            name="prizes",
+            field=models.TextField(default=" "),
             preserve_default=False,
         ),
     ]

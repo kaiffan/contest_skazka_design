@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.generics import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -13,7 +14,7 @@ from participants.permissions import IsContestOwnerPermission
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(permission_classes=[IsAuthenticated])
 def get_nominations(request: Request) -> Response:
     paginator = NominationsPaginator()
     queryset = Nominations.objects.all()
@@ -26,9 +27,10 @@ def get_nominations(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes([IsAuthenticated, IsContestOwnerPermission])
+@permission_classes([IsAuthenticated])
 def add_or_remove_nomination_contest_view(request: Request) -> Response:
-    contest = Contest.objects.get(id=request.contest_id)
+    print(request.data)
+    contest = get_object_or_404(Contest, request.data.get("contest_id", None))
 
     if not contest:
         return Response(

@@ -78,17 +78,17 @@ def login_view(request: Request) -> Response:
     request.session["login_attempt"] = confirmation.id
     request.session.modified = True
 
-    # send_confirmation_email(user_email=user.email, code=code)
-
-    response = Response(
-        data={
-            "message": "Вход подтверждён.",
-            "token_type": "Bearer",
-            "access_token": user.tokens.get("access"),
-        },
-        status=status.HTTP_200_OK,
-    )
-    set_refresh_cookie(response=response, value=user.tokens.get("refresh"))
+    send_confirmation_email(user_email=user.email, code=code)
+    # response = Response(
+    #     data={
+    #         "message": "Вход подтверждён.",
+    #         "token_type": "Bearer",
+    #         "access_token": user.tokens.get("access"),
+    #     },
+    #     status=status.HTTP_200_OK,
+    # )
+    # set_refresh_cookie(response=response, value=user.tokens.get("refresh"))
+    return Response(data={"message": "Send verification code successful"}, status=status.HTTP_200_OK)
     return response
 
 
@@ -151,8 +151,17 @@ def confirm_login_view(request: Request) -> Response:
     request.session.pop("email_login_session_id", None)
 
     # отправлять токен тут, но пока из-за недеплоя перенесли в логин
+    response = Response(
+        data={
+            "message": "Вход подтверждён.",
+            "token_type": "Bearer",
+            "access_token": user.tokens.get("access"),
+        },
+        status=status.HTTP_200_OK,
+    )
+    set_refresh_cookie(response=response, value=user.tokens.get("refresh"))
 
-    # return response
+    return response
 
 
 @api_view(http_method_names=["POST"])

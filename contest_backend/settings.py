@@ -137,7 +137,7 @@ CORS_ALLOW_HEADERS = ["accept", "content-type", "authorization", "X-Contest-Id"]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    "*"
 ]
 
 LANGUAGE_CODE = "en-us"

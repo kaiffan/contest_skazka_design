@@ -447,7 +447,7 @@ class ContestChangeNominationSerializer(Serializer):
             if nominations_to_add:
                 contest.nominations.add(*nominations_to_add)
 
-            return None
+        return None
 
 
 # TODO: доделать сериалайзер согласно новым условиям

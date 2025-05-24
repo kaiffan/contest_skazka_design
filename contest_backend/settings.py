@@ -11,7 +11,7 @@ SECRET_KEY = settings.token_credentials.SECRET_KEY
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["skazka-design.ru", "www.skazka-design.com"]
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
@@ -129,8 +129,6 @@ CODE_CONFIRMATION_SALT = settings.email_credentials.CODE_CONFIRMATION_SALT
 CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SAMESITE = "None"
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 

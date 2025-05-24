@@ -5,27 +5,46 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('contest_stage', '0001_initial'),
-        ('contests', '0001_initial'),
+        ("contest_stage", "0001_initial"),
+        ("contests", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ContestsContestStage',
+            name="ContestsContestStage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
-                ('contest', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contests.contest')),
-                ('stage', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contest_stage.conteststage')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
+                (
+                    "contest",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contests.contest",
+                    ),
+                ),
+                (
+                    "stage",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contest_stage.conteststage",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'contests_contest_stage',
-                'unique_together': {('contest', 'stage')},
+                "db_table": "contests_contest_stage",
+                "unique_together": {("contest", "stage")},
             },
         ),
     ]

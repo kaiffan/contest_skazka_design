@@ -5,27 +5,40 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('vk_news_attachments', '0001_initial'),
+        ("vk_news_attachments", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='VkNews',
+            name="VkNews",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('vk_id', models.BigIntegerField(unique=True)),
-                ('description', models.TextField()),
-                ('date', models.DateTimeField()),
-                ('url', models.URLField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('vk_attachment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='vk_news_attachments.vknewsattachment')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("vk_id", models.BigIntegerField(unique=True)),
+                ("description", models.TextField()),
+                ("date", models.DateTimeField()),
+                ("url", models.URLField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "vk_attachment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="vk_news_attachments.vknewsattachment",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'vk_news',
+                "db_table": "vk_news",
             },
         ),
     ]

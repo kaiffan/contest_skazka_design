@@ -6,51 +6,69 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('applications', '0002_initial'),
-        ('contest_stage', '0001_initial'),
-        ('contests', '0001_initial'),
-        ('contests_contest_stage', '0001_initial'),
-        ('criteria', '0001_initial'),
-        ('nomination', '0001_initial'),
-        ('participants', '0001_initial'),
-        ('regions', '0001_initial'),
-        ('winners', '0001_initial'),
+        ("applications", "0002_initial"),
+        ("contest_stage", "0001_initial"),
+        ("contests", "0001_initial"),
+        ("contests_contest_stage", "0001_initial"),
+        ("criteria", "0001_initial"),
+        ("nomination", "0001_initial"),
+        ("participants", "0001_initial"),
+        ("regions", "0001_initial"),
+        ("winners", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='contest',
-            name='contest_stage',
-            field=models.ManyToManyField(related_name='contest_stages', through='contests_contest_stage.ContestsContestStage', through_fields=('contest', 'stage'), to='contest_stage.conteststage'),
+            model_name="contest",
+            name="contest_stage",
+            field=models.ManyToManyField(
+                related_name="contest_stages",
+                through="contests_contest_stage.ContestsContestStage",
+                through_fields=("contest", "stage"),
+                to="contest_stage.conteststage",
+            ),
         ),
         migrations.AddField(
-            model_name='contest',
-            name='criteria',
-            field=models.ManyToManyField(related_name='contest_criteria', to='criteria.criteria'),
+            model_name="contest",
+            name="criteria",
+            field=models.ManyToManyField(
+                related_name="contest_criteria", to="criteria.criteria"
+            ),
         ),
         migrations.AddField(
-            model_name='contest',
-            name='nominations',
-            field=models.ManyToManyField(related_name='contest_nominations', to='nomination.nominations'),
+            model_name="contest",
+            name="nominations",
+            field=models.ManyToManyField(
+                related_name="contest_nominations", to="nomination.nominations"
+            ),
         ),
         migrations.AddField(
-            model_name='contest',
-            name='participants',
-            field=models.ManyToManyField(related_name='contest_participants', through='participants.Participant', to=settings.AUTH_USER_MODEL),
+            model_name="contest",
+            name="participants",
+            field=models.ManyToManyField(
+                related_name="contest_participants",
+                through="participants.Participant",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='contest',
-            name='region',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='regions.region'),
+            model_name="contest",
+            name="region",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="regions.region"
+            ),
         ),
         migrations.AddField(
-            model_name='contest',
-            name='winner_list',
-            field=models.ManyToManyField(related_name='contest_winners', through='winners.Winners', to='applications.applications'),
+            model_name="contest",
+            name="winner_list",
+            field=models.ManyToManyField(
+                related_name="contest_winners",
+                through="winners.Winners",
+                to="applications.applications",
+            ),
         ),
     ]

@@ -158,8 +158,8 @@ class UserFullDataSerializer(ModelSerializer[Users]):
             "competencies",
         ]
 
-class UserShortDataSerializer(ModelSerializer[Users]):
 
+class UserShortDataSerializer(ModelSerializer[Users]):
     class Meta:
         model = Users
         fields = [

@@ -5,27 +5,46 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('applications', '0001_initial'),
-        ('contests', '0001_initial'),
+        ("applications", "0001_initial"),
+        ("contests", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Winners',
+            name="Winners",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sum rate', models.PositiveIntegerField(default=0)),
-                ('place', models.PositiveIntegerField(default=0)),
-                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='applications.applications')),
-                ('contest', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contests.contest')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sum rate", models.PositiveIntegerField(default=0)),
+                ("place", models.PositiveIntegerField(default=0)),
+                (
+                    "application",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="applications.applications",
+                    ),
+                ),
+                (
+                    "contest",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contests.contest",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'winners',
-                'unique_together': {('contest', 'application')},
+                "db_table": "winners",
+                "unique_together": {("contest", "application")},
             },
         ),
     ]

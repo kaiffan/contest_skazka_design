@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,18 +14,43 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='EmailConfirmationLogin',
+            name="EmailConfirmationLogin",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code_hash', models.CharField(db_index=True, editable=False, max_length=255, unique=True)),
-                ('session_id', models.CharField(db_index=True, editable=False, max_length=255)),
-                ('attempt_number', models.PositiveIntegerField(default=1, editable=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('is_used', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "code_hash",
+                    models.CharField(
+                        db_index=True, editable=False, max_length=255, unique=True
+                    ),
+                ),
+                (
+                    "session_id",
+                    models.CharField(db_index=True, editable=False, max_length=255),
+                ),
+                (
+                    "attempt_number",
+                    models.PositiveIntegerField(default=1, editable=False),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("is_used", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'email_confirmation',
+                "db_table": "email_confirmation",
             },
         ),
     ]

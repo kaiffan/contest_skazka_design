@@ -11,7 +11,8 @@ from users.serializers import (
     ContestDataUpdateSerializer,
     UserDataPatchSerializer,
     UserFullDataSerializer,
-    AllUsersShortDataSerializer, UserShortDataSerializer,
+    AllUsersShortDataSerializer,
+    UserShortDataSerializer,
 )
 
 

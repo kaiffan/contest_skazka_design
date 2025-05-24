@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "vk_news",
     "vk_news_attachments",
     "winners",
-    "work_rate"
+    "work_rate",
 ]
 
 MIDDLEWARE = [
@@ -76,10 +76,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "contest_backend.wsgi.application"
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3'
-    }
+    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -129,21 +126,16 @@ EMAIL_HOST_PASSWORD = settings.email_credentials.HOST_PASSWORD
 
 CODE_CONFIRMATION_SALT = settings.email_credentials.CODE_CONFIRMATION_SALT
 
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "content-type",
-    "authorization",
-    "X-Contest-Id"
-]
+CORS_ALLOW_HEADERS = ["accept", "content-type", "authorization", "X-Contest-Id"]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [

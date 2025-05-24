@@ -4,24 +4,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='VkNewsAttachment',
+            name="VkNewsAttachment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('url', models.URLField(db_index=True, max_length=255, verbose_name='URL изображения')),
-                ('height', models.IntegerField(verbose_name='Высота изображения')),
-                ('width', models.IntegerField(verbose_name='Ширина изображения')),
-                ('type', models.CharField(max_length=10)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "url",
+                    models.URLField(
+                        db_index=True, max_length=255, verbose_name="URL изображения"
+                    ),
+                ),
+                ("height", models.IntegerField(verbose_name="Высота изображения")),
+                ("width", models.IntegerField(verbose_name="Ширина изображения")),
+                ("type", models.CharField(max_length=10)),
             ],
             options={
-                'db_table': 'vk_news_attachments',
+                "db_table": "vk_news_attachments",
             },
         ),
     ]

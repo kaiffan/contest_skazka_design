@@ -18,7 +18,6 @@ from age_categories.models import AgeCategories
 from age_categories.serializers import AgeCategoriesSerializer
 from applications.models import Applications
 from contest_categories.models import ContestCategories
-from contest_stage.models import ContestStage
 from contest_stage.serializers import ContestStageSerializer
 from contests.models import Contest
 from contests.utils import get_current_contest_stage
@@ -98,6 +97,7 @@ class ContestAllSerializer(ModelSerializer[Contest]):
     class Meta:
         model = Contest
         fields = [
+            "id",
             "title",
             "avatar",
             "contest_category",

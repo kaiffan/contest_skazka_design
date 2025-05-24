@@ -2,6 +2,20 @@
 
 from django.db import migrations, models
 
+def create_age_categories(apps, schema_editor):
+    AgeCategories = apps.get_model('age_categories', 'AgeCategories')
+
+    categories = [
+        {'name': 'до 6 лет', 'start_age': 0, 'end_age': 5},
+        {'name': '6+', 'start_age': 6, 'end_age': 6},
+        {'name': '12+', 'start_age': 12, 'end_age': 15},
+        {'name': '16+', 'start_age': 16, 'end_age': 17},
+        {'name': '18+', 'start_age': 18, 'end_age': 100},
+    ]
+
+    for category in categories:
+        AgeCategories.objects.get_or_create(**category)
+
 
 class Migration(migrations.Migration):
     initial = True
@@ -29,4 +43,5 @@ class Migration(migrations.Migration):
                 "db_table": "age_categories",
             },
         ),
+        migrations.RunPython(create_age_categories)
     ]

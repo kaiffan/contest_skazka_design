@@ -3,6 +3,13 @@
 from django.db import migrations, models
 
 
+contest_category_list = ["Фото", "Искусство", "наука"]
+
+def add_contest_category(apps, schema_editor):
+    ContestCategories = apps.get_model('contest_categories', 'ContestCategories')
+    for name in contest_category_list:
+        ContestCategories.objects.get_or_create(name=name)
+
 class Migration(migrations.Migration):
     initial = True
 
@@ -27,4 +34,5 @@ class Migration(migrations.Migration):
                 "db_table": "contest_category",
             },
         ),
+        migrations.RunPython(add_contest_category)
     ]

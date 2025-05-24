@@ -5,4 +5,7 @@ from rest_framework.serializers import ModelSerializer
 class ContestStageSerializer(ModelSerializer[ContestStage]):
     class Meta:
         model = ContestStage
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+        ]

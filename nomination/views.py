@@ -27,10 +27,9 @@ def get_nominations(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsContestOwnerPermission])
 def add_or_remove_nomination_contest_view(request: Request) -> Response:
-    print(request.data)
-    contest = get_object_or_404(Contest, request.data.get("contest_id", None))
+    contest = get_object_or_404(Contest, id=request.contest_id)
 
     if not contest:
         return Response(

@@ -9,9 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = settings.token_credentials.SECRET_KEY
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["skazka-design.ru", "www.skazka-design.com"]
 
 INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     "participants",
     "regions",
     "users",
+    "vk_news",
+    "vk_news_attachments",
     "winners",
     "work_rate"
 ]
@@ -53,13 +55,6 @@ MIDDLEWARE = [
     "contests.middleware.ContestHeaderMiddleware",
     "corsheaders.middleware.CorsMiddleware",
 ]
-
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "D:\Projects\PyCharm\contest_backend\django_cache",
-    }
-}
 
 ROOT_URLCONF = "contest_backend.urls"
 
@@ -137,18 +132,27 @@ EMAIL_HOST_USER = settings.email_credentials.HOST_USER
 EMAIL_HOST_PASSWORD = settings.email_credentials.HOST_PASSWORD
 
 CODE_CONFIRMATION_SALT = settings.email_credentials.CODE_CONFIRMATION_SALT
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = "None"
 
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_HEADERS = [
-    "X-CONTEST-ID",
-    "CONTENT-TYPE",
-    "AUTHORIZATION",
+    "accept",
+    "content-type",
+    "authorization",
+    "X-Contest-Id"
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 LANGUAGE_CODE = "en-us"
 

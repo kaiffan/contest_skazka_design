@@ -1,31 +1,9 @@
-FROM python:3.11-slim AS builder
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
+FROM python:3.10-slim
+# Устанавливает переменную окружения, которая гарантирует, что вывод из python будет отправлен прямо в терминал без предварительной буферизации
+ENV PYTHONUNBUFFERED 1
+# Устанавливает рабочий каталог контейнера — "app"
 WORKDIR /app
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq-dev gcc && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt ./
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-FROM python:3.11-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-WORKDIR /app
-
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /app /app
-
-RUN python3 ./manage.py migrate
-
-CMD ["gunicorn", "contest_backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Копирует все файлы из нашего локального проекта в контейнер
+ADD . /app
+# Запускает команду pip install для всех библиотек, перечисленных в requirements.txt
+RUN pip install -r requirements.txt

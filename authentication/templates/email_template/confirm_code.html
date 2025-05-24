@@ -3,199 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <title>Подтверждение входа</title>
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-
-        .email-container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 100%;
-            margin: 30px auto;
-            padding: 30px 40px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e0e6ed;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .logo {
-            display: block;
-            width: 120px;
-            margin: 0 auto 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #4e1609;
-            font-size: 24px;
-            margin-top: 0;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        .code-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin: 25px 0;
-        }
-
-        .code {
-            display: flex;
-            align-items: center;
-            font-size: 34px;
-            font-weight: bold;
-            color: #000;
-            letter-spacing: 4px;
-            background-color: #f9f9f9;
-            padding: 16px 24px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            animation: fadeIn 0.7s ease-in-out;
-            user-select: all;
-        }
-
-        .copy-button {
-            margin-left: 10px;
-            background-color: #d1d5db;
-            color: #374151;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            flex-shrink: 0;
-            position: relative;
-        }
-
-        .copy-button svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
-        .copy-button:hover {
-            background-color: #9ca3af;
-        }
-
-        .tooltip {
-            position: absolute;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 4px;
-            white-space: nowrap;
-            font-size: 13px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .tooltip.show {
-            opacity: 1;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 1.7;
-            margin: 10px 0;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-
-        .footer {
-            margin-top: 30px;
-            font-size: 13px;
-            color: #777;
-            text-align: center;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-            animation: fadeIn 0.9s ease-in-out;
-        }
-
-        @media (max-width: 600px) {
-            .code-wrapper {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .code {
-                font-size: 28px;
-                padding: 12px 20px;
-                text-align: center;
-            }
-
-            .copy-button {
-                width: 40px;
-                height: 40px;
-                margin-top: 10px;
-            }
-        }
-    </style>
 </head>
-<body>
-<div class="email-container">
-    <img src="logo.png" alt="Логотип Skazka Design" class="logo">
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #333;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; margin: 30px auto;">
+        <tr>
+            <td style="background-color: #ffffff; border-radius: 12px; padding: 30px 40px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); border: 1px solid #e0e6ed;">
 
-    <h1>Подтверждение входа</h1>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="center">
+                            <img src="data:image/png;base64,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"
+                                 alt="Логотип Skazka Design"
+                                 style="display: block; width: 120px; height: auto; margin: 0 auto 20px;">
+                        </td>
+                    </tr>
+                </table>
 
-    <p>Вы запрашивали вход в систему. Пожалуйста, используйте следующий код для подтверждения:</p>
+                <h1 style="text-align: center; color: #4e1609; font-size: 24px; margin-top: 0;">Подтверждение входа</h1>
 
-    <div class="code-wrapper">
-        <div class="code" id="code"> {{ code }}
-            <button class="copy-button" onclick="copyCode()" title="Скопировать код">
-                <svg viewBox="0 0 24 24">
-                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"></path>
-                </svg>
-            </button>
-        </div>
-        <div class="tooltip" id="tooltip">Скопировано!</div>
-    </div>
-    <p>Этот код действителен в течение <strong>{{ valid_minutes }} минут</strong>. Не передавайте его никому.</p>
+                <p style="font-size: 16px; line-height: 1.7; margin: 10px 0;">
+                    Вы запрашивали вход в систему. Пожалуйста, используйте следующий код для подтверждения:
+                </p>
 
-    <p><em><strong>Если вы не запрашивали вход — просто проигнорируйте это письмо.</strong></em></p>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 25px 0;">
+                    <tr>
+                        <td align="center">
+                            <div style="display: inline-block; text-align: center; font-size: 34px; font-weight: bold; color: #000;
+                                        letter-spacing: 4px; background-color: #f9f9f9; padding: 16px 24px; border-radius: 10px;
+                                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                {{ code }}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
 
-    <div class="footer">
-        С уважением, команда Skazka Design
-        <br>Все права защищены.
-    </div>
-</div>
+                <p style="font-size: 16px; line-height: 1.7; margin: 10px 0;">
+                    Этот код действителен в течение <strong>{{ valid_minutes }} минут</strong>. Не передавайте его никому.
+                </p>
 
-<script>
-    function copyCode() {
-        const code = document.getElementById('code').innerText;
-        navigator.clipboard.writeText(code).then(() => {
-            const tooltip = document.getElementById('tooltip');
-            tooltip.textContent = 'Скопировано!';
-            tooltip.classList.add('show');
+                <p style="font-size: 16px; line-height: 1.7; margin: 10px 0;">
+                    <em><strong>Если вы не запрашивали вход — просто проигнорируйте это письмо.</strong></em>
+                </p>
 
-            setTimeout(() => {
-                tooltip.classList.remove('show');
-            }, 2000);
-        }).catch(err => {
-            console.error('Ошибка копирования: ', err);
-        });
-    }
-</script>
+                <div style="margin-top: 30px; font-size: 13px; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+                    С уважением, команда Skazka Design<br>
+                    Все права защищены.
+                </div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

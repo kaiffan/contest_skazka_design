@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.request import Request
 
@@ -92,6 +92,17 @@ def get_contest_by_id(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[AllowAny])
+def get_all_contests_not_permissions_view(request: Request) -> Response:
+    contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
+
+    serializer = ContestAllSerializer(instance=contest_list, many=True)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
 def get_all_contests_view(request: Request) -> Response:
     contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
 

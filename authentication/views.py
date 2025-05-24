@@ -1,9 +1,12 @@
+from django.contrib.auth import login
 from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, authentication_classes
 from rest_framework import status
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
@@ -15,7 +18,7 @@ from authentication.serializers import (
     PasswordResetSerializer,
 )
 from contest_backend.settings import settings
-from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
+#from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
 from authentication.utils import set_refresh_cookie, delete_refresh_cookie
 from email_confirmation.models import EmailConfirmationLogin
 
@@ -26,7 +29,7 @@ from email_confirmation.models import EmailConfirmationLogin
         AllowAny,
     ]
 )
-@throttle_classes(throttle_classes=[IpBasedThrottle])
+#@throttle_classes(throttle_classes=[IpBasedThrottle])
 def registration_view(request: Request) -> Response:
     serializer = RegistrationSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
@@ -46,7 +49,8 @@ def registration_view(request: Request) -> Response:
         AllowAny,
     ]
 )
-@throttle_classes(throttle_classes=[IpBasedThrottle])
+@csrf_exempt
+#@throttle_classes(throttle_classes=[IpBasedThrottle])
 def login_view(request: Request) -> Response:
     serializer = LoginSerializer(data=request.data)
 
@@ -77,24 +81,15 @@ def login_view(request: Request) -> Response:
 
     request.session["login_attempt"] = confirmation.id
     request.session.modified = True
+    request.session.save()
 
     send_confirmation_email(user_email=user.email, code=code)
-    # response = Response(
-    #     data={
-    #         "message": "Вход подтверждён.",
-    #         "token_type": "Bearer",
-    #         "access_token": user.tokens.get("access"),
-    #     },
-    #     status=status.HTTP_200_OK,
-    # )
-    # set_refresh_cookie(response=response, value=user.tokens.get("refresh"))
     return Response(data={"message": "Send verification code successful"}, status=status.HTTP_200_OK)
-    return response
 
 
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[AllowAny])
-@throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
+#@throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
 def confirm_login_view(request: Request) -> Response:
     code = request.data.get("code")
     attempt_id = request.session.get("login_attempt")
@@ -150,7 +145,6 @@ def confirm_login_view(request: Request) -> Response:
     request.session.pop("login_attempt", None)
     request.session.pop("email_login_session_id", None)
 
-    # отправлять токен тут, но пока из-за недеплоя перенесли в логин
     response = Response(
         data={
             "message": "Вход подтверждён.",
@@ -170,7 +164,7 @@ def confirm_login_view(request: Request) -> Response:
         AllowAny,
     ]
 )
-@throttle_classes(throttle_classes=[IpBasedThrottle])
+#@throttle_classes(throttle_classes=[IpBasedThrottle])
 def cookie_tokens_refresh_view(request) -> Response:
     refresh_token: str = request.COOKIES.get("refresh_token", None)
 

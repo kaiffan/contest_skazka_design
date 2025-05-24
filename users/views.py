@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.request import Request
 
 from authentication.models import Users
 from participants.permissions import IsContestOwnerPermission
@@ -10,13 +11,13 @@ from users.serializers import (
     ContestDataUpdateSerializer,
     UserDataPatchSerializer,
     UserFullDataSerializer,
-    AllUsersShortDataSerializer,
+    AllUsersShortDataSerializer, UserShortDataSerializer,
 )
 
 
 @api_view(http_method_names=["PUT"])
 @permission_classes(permission_classes=[IsAuthenticated])
-def contest_data_update_view(request) -> Response:
+def contest_data_update_view(request: Request) -> Response:
     serializer = ContestDataUpdateSerializer(data=request.data)
 
     if not serializer.is_valid(raise_exception=True):
@@ -32,7 +33,7 @@ def contest_data_update_view(request) -> Response:
 
 @api_view(http_method_names=["PATCH"])
 @permission_classes(permission_classes=[IsAuthenticated])
-def user_data_update_view(request) -> Response:
+def user_data_update_view(request: Request) -> Response:
     serializer = UserDataPatchSerializer(
         data=request.data, instance=request.user, partial=True
     )
@@ -50,14 +51,21 @@ def user_data_update_view(request) -> Response:
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated])
-def user_data_get_view(request) -> Response:
+def user_data_get_view(request: Request) -> Response:
     serializer = UserFullDataSerializer(request.user)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def user_short_data_get_view(request: Request) -> Response:
+    serializer = UserShortDataSerializer(instance=request.user)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
-def all_users_view(request) -> Response:
+def all_users_view(request: Request) -> Response:
     email: str = request.data.get("filter", None)
 
     queryset = Users.objects.all()

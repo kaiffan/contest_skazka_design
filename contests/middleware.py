@@ -7,7 +7,7 @@ class ContestHeaderMiddleware:
         self.response = response
 
     def __call__(self, request):
-        contest_id = request.headers.get("X-Contest-ID", None)
+        contest_id = request.headers.get("X-Contest-Id", None)
 
         if not contest_id:
             request.contest_id = None
@@ -15,8 +15,9 @@ class ContestHeaderMiddleware:
         try:
             request.contest_id = int(contest_id)
         except (ValueError, TypeError):
+            print("Ты дурак")
             return JsonResponse(
-                data={"error": "X-Contest-ID is not a valid contest ID"},
+                data={"error": "X-Contest-Id is not a valid contest ID"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

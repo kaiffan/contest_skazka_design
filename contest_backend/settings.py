@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     "authentication",
     "competencies",
     "contest_categories",
+    "contest_criteria",
+    "contest_nominations",
     "contest_stage",
     "contests",
     "contests_contest_stage",
@@ -136,9 +138,6 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_HEADERS = ["accept", "content-type", "authorization", "X-Contest-Id"]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "*"
-]
 
 LANGUAGE_CODE = "en-us"
 

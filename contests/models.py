@@ -36,10 +36,13 @@ class Contest(models.Model):
     )
     nominations = models.ManyToManyField(
         to="nomination.Nominations",
+        through="contest_nominations.ContestNominations",
         related_name="contest_nominations",
     )
     criteria = models.ManyToManyField(
-        to="criteria.Criteria", related_name="contest_criteria"
+        to="criteria.Criteria",
+        through="contest_criteria.ContestCriteria",
+        related_name="contest_criteria",
     )
     contest_stage = models.ManyToManyField(
         to="contest_stage.ContestStage",

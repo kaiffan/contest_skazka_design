@@ -8,6 +8,8 @@ from applications.models import Applications
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from applications.validator import ApplicationValidator
+from contest_criteria.models import ContestCriteria
+from contest_criteria.serializers import ContestCriteriaSerializer
 from contests.models import Contest
 from criteria.serializers import CriteriaSerializer
 from participants.enums import ParticipantRole
@@ -49,8 +51,8 @@ class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
         ]
 
     def get_criteria(self, application: Applications):
-        contest_criterias = application.contest.criteria.all()
-        return CriteriaSerializer(contest_criterias, many=True).data
+        contest_criterias = ContestCriteria.objects.filter(contest_id=application.contest_id).all()
+        return ContestCriteriaSerializer(contest_criterias, many=True).data
 
 
 class SendApplicationsSerializer(Serializer):

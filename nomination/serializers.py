@@ -5,4 +5,4 @@ from nomination.models import Nominations
 class NominationsSerializer(ModelSerializer[Nominations]):
     class Meta:
         model = Nominations
-        fields = "__all__"
+        fields = ["name"]

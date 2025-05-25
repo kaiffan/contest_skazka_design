@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Set
+from typing import List, Dict
 from datetime import date
 
 from django.db import transaction
@@ -18,14 +18,16 @@ from age_categories.models import AgeCategories
 from age_categories.serializers import AgeCategoriesSerializer
 from applications.models import Applications
 from contest_categories.models import ContestCategories
+from contest_criteria.models import ContestCriteria
+from contest_criteria.serializers import ContestCriteriaSerializer
+from contest_nominations.models import ContestNominations
+from contest_nominations.serializers import ContestNominationsSerializer
 from contest_stage.serializers import ContestStageSerializer
 from contests.models import Contest
 from contests.utils import get_current_contest_stage
 from contests_contest_stage.models import ContestsContestStage
 from criteria.models import Criteria
-from criteria.serializers import CriteriaSerializer
 from nomination.models import Nominations
-from nomination.serializers import NominationsSerializer
 from participants.enums import ParticipantRole
 from participants.models import Participant
 from participants.serializers import ParticipantSerializer
@@ -75,12 +77,14 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
         return instance.region.name
 
     def get_criteria(self, instance):
-        criteria_list = instance.criteria.all()
-        return CriteriaSerializer(criteria_list, many=True).data
+        criteria_list = ContestCriteria.objects.filter(contest_id=instance.id).all()
+        return ContestCriteriaSerializer(criteria_list, many=True).data
 
     def get_nomination(self, instance):
-        nomination_list = instance.nominations.all()
-        return NominationsSerializer(nomination_list, many=True).data
+        nomination_list = ContestNominations.objects.filter(
+            contest_id=instance.id
+        ).all()
+        return ContestNominationsSerializer(nomination_list, many=True).data
 
     def get_age_categories(self, instance):
         age_category_list = instance.age_category.all()
@@ -320,65 +324,123 @@ class ContestChangeCriteriaSerializer(Serializer):
     def validate_criteria_list(self, data):
         if not data:
             raise ValidationError("criteria_list cannot be empty")
+
+        for idx, criteria in enumerate(data):
+            min_points = criteria.get('min_points')
+            max_points = criteria.get('max_points')
+
+            if min_points is None or max_points is None:
+                raise ValidationError({
+                    f"criteria_list[{idx}]": "Each criteria must contain 'min_points' and 'max_points'"
+                })
+
+            if min_points > max_points:
+                raise ValidationError({
+                    f"criteria_list[{idx}]": "'min_points' must be less than or equal to 'max_points'"
+                })
+
         return data
 
     def update_criteria_in_contest(self):
         contest = self.context.get("contest", None)
-        criteria_list = self.validated_data.get("criteria_list")
-        existing_criteria: List[int] = [
-            criteria.get("id")
-            for criteria in criteria_list
-            if criteria.get("id") is not None
-        ]
+        criteria_list = self.validated_data.get("criteria_list", [])
 
-        new_criteria_list: List[Criteria] = [
-            Criteria(
-                name=criteria.get("name"),
-                description=criteria.get("description"),
-                min_points=criteria.get("min_points"),
-                max_points=criteria.get("max_points"),
-            )
+        criteria_data_by_name = {
+            criteria["name"]: {
+                "description": criteria.get("description", ""),
+                "min_points": criteria.get("min_points", 0),
+                "max_points": criteria.get("max_points", 10),
+            }
             for criteria in criteria_list
-            if criteria.get("id") is None
-        ]
+            if criteria.get("name")
+        }
 
-        new_criteria_name: List[str] = [criteria.name for criteria in new_criteria_list]
+        result = {"added": [], "removed": [], "updated": []}
+        input_names = set(criteria_data_by_name.keys())
 
         with transaction.atomic():
-            existing_name_criteria = set(
-                Criteria.objects.filter(name__in=new_criteria_name).values_list(
-                    "name", flat=True
-                )
+            existing_criteria = Criteria.objects.filter(name__in=input_names)
+            existing_names_in_db = {c.name for c in existing_criteria}
+
+            new_names = input_names - existing_names_in_db
+            created_criteria = Criteria.objects.bulk_create(
+                [Criteria(name=name) for name in new_names]
             )
 
-            only_new_criteria: List[Criteria] = [
-                criteria
-                for criteria in new_criteria_list
-                if criteria.name not in existing_name_criteria
+            all_criteria = list(existing_criteria) + list(created_criteria)
+            name_to_id = {c.name: c.id for c in all_criteria}
+
+            current_relations = ContestCriteria.objects.filter(
+                contest=contest
+            ).select_related("criteria")
+            current_names = {rel.criteria.name for rel in current_relations}
+
+            current_desc_map = {
+                rel.criteria.name: {
+                    "description": rel.description,
+                    "min_points": rel.min_points,
+                    "max_points": rel.max_points,
+                }
+                for rel in current_relations
+            }
+
+            to_add = input_names - current_names
+            to_remove = current_names - input_names
+            to_check_update = input_names & current_names
+
+            to_update = [
+                name
+                for name in to_check_update
+                if (
+                    current_desc_map[name]["description"]
+                    != criteria_data_by_name[name]["description"]
+                    or current_desc_map[name]["min_points"]
+                    != criteria_data_by_name[name]["min_points"]
+                    or current_desc_map[name]["max_points"]
+                    != criteria_data_by_name[name]["max_points"]
+                )
             ]
 
-            exists_criteria_in_db: Set[int] = set(
-                contest.criteria.values_list("id", flat=True)
-            )
+            result["added"] = list(to_add)
+            result["removed"] = list(to_remove)
+            result["updated"] = list(to_update)
 
-            criteria_to_remove: Set[int] = exists_criteria_in_db - set(
-                existing_criteria
-            )
-            criteria_to_add: Set[int] = set(existing_criteria) - exists_criteria_in_db
+            if to_remove:
+                ContestCriteria.objects.filter(
+                    contest=contest, criteria__name__in=to_remove
+                ).delete()
 
-            if criteria_to_remove:
-                contest.criteria.remove(*criteria_to_remove)
+            if to_add:
+                ContestCriteria.objects.bulk_create(
+                    [
+                        ContestCriteria(
+                            contest=contest,
+                            criteria_id=name_to_id[name],
+                            description=criteria_data_by_name[name]["description"],
+                            min_points=criteria_data_by_name[name]["min_points"],
+                            max_points=criteria_data_by_name[name]["max_points"],
+                        )
+                        for name in to_add
+                    ]
+                )
 
-            if criteria_to_add:
-                contest.criteria.add(*criteria_to_add)
+            if to_update:
+                updated_relations = []
+                for name in to_update:
+                    relation = ContestCriteria.objects.get(
+                        contest=contest, criteria__name=name
+                    )
+                    relation.description = criteria_data_by_name[name]["description"]
+                    relation.min_points = criteria_data_by_name[name]["min_points"]
+                    relation.max_points = criteria_data_by_name[name]["max_points"]
+                    updated_relations.append(relation)
 
-            created_criteria_list: List[Criteria] = Criteria.objects.bulk_create(
-                objs=only_new_criteria
-            )
-            if created_criteria_list:
-                contest.criteria.add(*created_criteria_list)
+                ContestCriteria.objects.bulk_update(
+                    objs=updated_relations,
+                    fields=["description", "min_points", "max_points"],
+                )
 
-            return None
+        return result
 
 
 class ContestChangeNominationSerializer(Serializer):
@@ -392,65 +454,80 @@ class ContestChangeNominationSerializer(Serializer):
     def update_nominations_in_contest(self):
         contest = self.context.get("contest", None)
         nomination_list = self.validated_data.get("nomination_list")
-        existing_nomination: List[int] = [
-            nomination.get("id")
-            for nomination in nomination_list
-            if nomination.get("id") is not None
-        ]
 
-        new_nomination_list: List[Nominations] = [
-            Nominations(
-                name=nomination.get("name"), description=nomination.get("description")
-            )
+        nomination_dict: Dict[str, str] = {
+            nomination["name"]: nomination.get("description", "")
             for nomination in nomination_list
-            if nomination.get("id") is None
-        ]
+            if nomination.get("name")
+        }
 
-        new_nomination_names: List[str] = [
-            nomination.name for nomination in new_nomination_list
-        ]
+        input_names = set(nomination_dict.keys())
+        result = {"added": [], "removed": [], "updated": []}
 
         with transaction.atomic():
-            existing_name_nominations = set(
-                Nominations.objects.filter(name__in=new_nomination_names).values_list(
-                    "name", flat=True
-                )
+            existing_noms_in_db = Nominations.objects.filter(name__in=input_names)
+            existing_names_in_db = {nom.name for nom in existing_noms_in_db}
+
+            new_names = input_names - existing_names_in_db
+            created_noms = Nominations.objects.bulk_create(
+                [Nominations(name=name) for name in new_names]
             )
 
-            only_new_nominations: List[Nominations] = [
-                nomination
-                for nomination in new_nomination_list
-                if nomination.name not in existing_name_nominations
+            all_nominations = {
+                nom.name: nom.id
+                for nom in list(existing_noms_in_db) + list(created_noms)
+            }
+
+            current_relations = ContestNominations.objects.filter(
+                contest=contest
+            ).select_related("nomination")
+
+            current_names = {rel.nomination.name for rel in current_relations}
+            current_desc_map = {
+                rel.nomination.name: rel.description for rel in current_relations
+            }
+
+            to_add = input_names - current_names
+            to_remove = current_names - input_names
+            to_check_update = input_names & current_names
+            to_update = [
+                name
+                for name in to_check_update
+                if nomination_dict[name] != current_desc_map.get(name)
             ]
 
-            created_nominations: List[Nominations] = Nominations.objects.bulk_create(
-                objs=only_new_nominations
-            )
+            result["added"] = list(to_add)
+            result["removed"] = list(to_remove)
+            result["updated"] = list(to_update)
 
-            if created_nominations:
-                contest.nominations.add(*created_nominations)
+            if to_remove:
+                ContestNominations.objects.filter(
+                    contest=contest, nomination__name__in=to_remove
+                ).delete()
+                result["removed"] = list(to_remove)
 
-            exists_nomination_in_db: Set[int] = set(
-                contest.criteria.values_list("id", flat=True)
-            )
+            if to_add:
+                ContestNominations.objects.bulk_create(
+                    [
+                        ContestNominations(
+                            contest=contest,
+                            nomination_id=all_nominations[name],
+                            description=nomination_dict[name],
+                        )
+                        for name in to_add
+                    ]
+                )
+                result["added"] = list(to_add)
 
-            nominations_to_remove: Set[int] = exists_nomination_in_db - set(
-                existing_nomination
-            )
-            nominations_to_add: Set[int] = (
-                set(existing_nomination) - exists_nomination_in_db
-            )
+            if to_update:
+                for name in to_update:
+                    ContestNominations.objects.filter(
+                        contest=contest, nomination__name=name
+                    ).update(description=nomination_dict[name])
 
-            if nominations_to_remove:
-                contest.nominations.remove(*nominations_to_remove)
-
-            if nominations_to_add:
-                contest.nominations.add(*nominations_to_add)
-
-        return None
+        return result
 
 
-# TODO: доделать сериалайзер согласно новым условиям
 class ContestChangeStageSerializer(Serializer):
     contest_stage_list = ListField(child=JSONField(), required=True, write_only=True)
 

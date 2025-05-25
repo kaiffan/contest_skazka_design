@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="VkNewsAttachment",
+            name="ContestNominations",
             fields=[
                 (
                     "id",
@@ -21,18 +21,10 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                (
-                    "url",
-                    models.URLField(
-                        db_index=True, max_length=255, verbose_name="URL изображения"
-                    ),
-                ),
-                ("height", models.IntegerField(verbose_name="Высота изображения")),
-                ("width", models.IntegerField(verbose_name="Ширина изображения")),
-                ("type", models.CharField(max_length=10)),
+                ("description", models.CharField(max_length=255)),
             ],
             options={
-                "db_table": "vk_news_attachments",
+                "db_table": "contest_nominations",
             },
         ),
     ]

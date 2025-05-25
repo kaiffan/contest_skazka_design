@@ -6,6 +6,8 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
+from config.vk_credentials import VkCredentials
+
 
 class Settings(BaseSettings):
     postgres_credentials: PostgresCredentials = Field(
@@ -13,6 +15,7 @@ class Settings(BaseSettings):
     )
     token_credentials: TokenCredentials = Field(default_factory=TokenCredentials)
     email_credentials: EmailCredentials = Field(default_factory=EmailCredentials)
+    vk_credentials: VkCredentials = Field(default_factory=VkCredentials)
 
 
 @lru_cache

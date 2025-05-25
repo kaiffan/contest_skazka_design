@@ -51,7 +51,9 @@ class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
         ]
 
     def get_criteria(self, application: Applications):
-        contest_criterias = ContestCriteria.objects.filter(contest_id=application.contest_id).all()
+        contest_criterias = ContestCriteria.objects.filter(
+            contest_id=application.contest_id
+        ).all()
         return ContestCriteriaSerializer(contest_criterias, many=True).data
 
 

@@ -60,7 +60,7 @@ def get_all_criteria_view(request: Request) -> Response:
 
     response_data = {
         "data": serializer.data,
-        "message": f"All names by {search}" if search else "All nominations"
+        "message": f"All names by {search}" if search else "All nominations",
     }
 
     cache.set(cache_key, response_data, timeout=60 * 15)

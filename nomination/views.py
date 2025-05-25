@@ -36,7 +36,7 @@ def get_all_nominations(request: Request) -> Response:
     serializer = NominationsSerializer(instance=paginated_queryset, many=True)
     response_data = {
         "data": serializer.data,
-        "message": f"All names by {search}" if search else "All nominations"
+        "message": f"All names by {search}" if search else "All nominations",
     }
 
     cache.set(cache_key, response_data, timeout=60 * 15)

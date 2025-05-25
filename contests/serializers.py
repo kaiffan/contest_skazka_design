@@ -326,18 +326,22 @@ class ContestChangeCriteriaSerializer(Serializer):
             raise ValidationError("criteria_list cannot be empty")
 
         for idx, criteria in enumerate(data):
-            min_points = criteria.get('min_points')
-            max_points = criteria.get('max_points')
+            min_points = criteria.get("min_points")
+            max_points = criteria.get("max_points")
 
             if min_points is None or max_points is None:
-                raise ValidationError({
-                    f"criteria_list[{idx}]": "Each criteria must contain 'min_points' and 'max_points'"
-                })
+                raise ValidationError(
+                    {
+                        f"criteria_list[{idx}]": "Each criteria must contain 'min_points' and 'max_points'"
+                    }
+                )
 
             if min_points > max_points:
-                raise ValidationError({
-                    f"criteria_list[{idx}]": "'min_points' must be less than or equal to 'max_points'"
-                })
+                raise ValidationError(
+                    {
+                        f"criteria_list[{idx}]": "'min_points' must be less than or equal to 'max_points'"
+                    }
+                )
 
         return data
 

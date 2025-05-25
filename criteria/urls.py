@@ -1,10 +1,6 @@
 from django.urls import path
 
-from criteria.views import (
-    add_or_remove_criteria_contest_view,
-    get_all_criteria_view,
-    update_criteria_view,
-)
+from criteria.views import add_or_remove_criteria_contest_view, get_all_criteria_view
 
 urlpatterns = [
     path(
@@ -13,5 +9,4 @@ urlpatterns = [
         name="change_criteria_contest_view",
     ),
     path(route="", view=get_all_criteria_view, name="get_all_criteria_view"),
-    path(route="update", view=update_criteria_view, name="update_criteria_view"),
 ]

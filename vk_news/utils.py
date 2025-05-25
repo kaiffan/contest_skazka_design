@@ -87,13 +87,14 @@ def fetch_vk_posts_with_api() -> dict[str, str]:
         data = get_posts_with_api(
             token=settings.vk_credentials.TOKEN,
             domain=settings.vk_credentials.DOMAIN,
-            count=5,
-            version="5.199",
+            count=settings.vk_credentials.COUNT_POSTS,
+            version=settings.vk_credentials.API_VERSION,
         )
     except RequestException as e:
         return {"error": f"Ошибка при запросе к VK API: {str(e)}"}
 
     items = data.get("response", {}).get("items", [])
+
     if not items:
         return {"info": "Нет новых постов в ответе от VK."}
 

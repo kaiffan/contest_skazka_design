@@ -8,3 +8,5 @@ class VkCredentials(ConfigBase):
 
     TOKEN: str
     DOMAIN: str
+    COUNT_POSTS: int
+    API_VERSION: str

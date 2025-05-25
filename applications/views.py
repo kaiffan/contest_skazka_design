@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from applications.enums import ApplicationStatus
+from applications.filters import ApplicationFilter
 from applications.models import Applications
 from applications.paginator import ApplicationPaginator
 from applications.serializers import (
@@ -13,8 +14,11 @@ from applications.serializers import (
     RejectApplicationSerializer,
     ApplicationSerializer,
     ApplicationWithCriteriaSerializer,
+    UpdateApplicationSerializer,
 )
+from contests.models import Contest
 from participants.permissions import IsContestJuryPermission, IsOrgCommitteePermission
+from rest_framework.generics import get_object_or_404
 
 
 def get_filtered_applications(contest_id: str, status_filter: str):
@@ -90,19 +94,25 @@ def reject_application_view(request: Request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
 def get_all_applications_view(request: Request) -> Response:
-    return get_applications_by_status(request, ApplicationStatus.pending.value)
+    return get_applications_by_status(
+        request=request, status_filter=ApplicationStatus.pending.value
+    )
 
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def get_all_applications_rejected_view(request: Request) -> Response:
-    return get_applications_by_status(request, ApplicationStatus.accepted.value)
+    return get_applications_by_status(
+        request=request, status_filter=ApplicationStatus.accepted.value
+    )
 
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
 def get_all_applications_approved_view(request: Request) -> Response:
-    return get_applications_by_status(request, ApplicationStatus.rejected.value)
+    return get_applications_by_status(
+        request=request, status_filter=ApplicationStatus.rejected.value
+    )
 
 
 @api_view(http_method_names=["GET"])
@@ -117,6 +127,42 @@ def get_application_view(request: Request) -> Response:
         )
 
     application = Applications.objects.get(id=application_id)
-    serializer = ApplicationWithCriteriaSerializer(application)
+    serializer = ApplicationWithCriteriaSerializer(instance=application)
 
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def get_applications_user_view(request: Request) -> Response:
+    user_applications = Applications.objects.filter(contest_id=request.contest_id).all()
+
+    application_filter = ApplicationFilter(
+        request=request.GET, queryset=user_applications
+    )
+    serializer = ApplicationSerializer(instance=application_filter.qs, many=True)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["PATCH"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def update_application_view(request: Request) -> Response:
+    application_id = request.data.get("application_id", None)
+
+    if not application_id:
+        return Response(
+            data={"error": "Application id not found"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    application = Applications.objects.get(id=application_id)
+    serializer = UpdateApplicationSerializer(
+        instance=application, data=request.data, partial=True
+    )
+
+    if not serializer.is_valid(raise_exception=True):
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer.save()
     return Response(data=serializer.data, status=status.HTTP_200_OK)

@@ -23,7 +23,7 @@ def extract_photo(photo_data: dict):
     return photo_data.get("orig_photo") or max(
         photo_data.get("sizes", []),
         key=lambda size: size.get("width", 0) * size.get("height", 0),
-        default=None
+        default=None,
     )
 
 
@@ -104,6 +104,7 @@ def fetch_vk_posts_with_api() -> dict[str, str]:
             saved_count += 1
 
     return {"saved": str(saved_count), "total": str(len(items))}
+
 
 def get_news_response():
     cached = cache.get(key="latest_vk_news")

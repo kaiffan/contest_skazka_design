@@ -17,6 +17,8 @@ from participants.models import Participant
 
 
 class ApplicationSerializer(ModelSerializer[Applications]):
+    contest_title = SerializerMethodField()
+
     class Meta:
         model = Applications
         fields = [
@@ -26,10 +28,14 @@ class ApplicationSerializer(ModelSerializer[Applications]):
             "annotation",
             "status",
             "rejection_reason",
+            "contest_title",
             "contest_id",
             "user_id",
             "nomination",
         ]
+
+    def get_contest_title(self, instance: Applications):
+        return instance.contest.title
 
 
 class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
@@ -178,3 +184,9 @@ class RejectApplicationSerializer(ModelSerializer[Applications]):
         instance.status = ApplicationStatus.rejected.value
         instance.rejection_reason = validated_data.get("rejection_reason")
         instance.save()
+
+
+class UpdateApplicationSerializer(ModelSerializer[Applications]):
+    class Meta:
+        model = Applications
+        fields = ["name", "annotation", "link_to_work"]

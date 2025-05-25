@@ -37,6 +37,7 @@ from winners.models import Winners
 
 class ContestByIdSerializer(ModelSerializer[Contest]):
     jury = SerializerMethodField()
+    org_committee = SerializerMethodField()
     criteria = SerializerMethodField()
     contest_category = SerializerMethodField()
     nomination = SerializerMethodField()
@@ -58,17 +59,24 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "age_categories",
             "contest_stage",
             "jury",
+            "org_committee",
             "prizes",
             "contacts_for_participants",
             "region_name",
             "contest_category",
         ]
 
+    def get_org_committee(self, instance):
+        org_committee_list = Participant.objects.filter(
+            contest_id=instance.id, role=ParticipantRole.org_committee.value
+        ).all()
+        return ParticipantSerializer(instance=org_committee_list, many=True).data
+
     def get_jury(self, instance):
         jury_list = Participant.objects.filter(
             contest_id=instance.id, role=ParticipantRole.jury.value
         ).all()
-        return ParticipantSerializer(jury_list, many=True).data
+        return ParticipantSerializer(instance=jury_list, many=True).data
 
     def get_contest_category(self, instance):
         return instance.contest_category.name
@@ -78,21 +86,21 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
 
     def get_criteria(self, instance):
         criteria_list = ContestCriteria.objects.filter(contest_id=instance.id).all()
-        return ContestCriteriaSerializer(criteria_list, many=True).data
+        return ContestCriteriaSerializer(instance=criteria_list, many=True).data
 
     def get_nomination(self, instance):
         nomination_list = ContestNominations.objects.filter(
             contest_id=instance.id
         ).all()
-        return ContestNominationsSerializer(nomination_list, many=True).data
+        return ContestNominationsSerializer(instance=nomination_list, many=True).data
 
     def get_age_categories(self, instance):
         age_category_list = instance.age_category.all()
-        return AgeCategoriesSerializer(age_category_list, many=True).data
+        return AgeCategoriesSerializer(instance=age_category_list, many=True).data
 
     def get_contest_stage(self, instance):
         contest_stage_list = instance.contest_stage.all()
-        return ContestStageSerializer(contest_stage_list, many=True).data
+        return ContestStageSerializer(instance=contest_stage_list, many=True).data
 
 
 class ContestAllSerializer(ModelSerializer[Contest]):

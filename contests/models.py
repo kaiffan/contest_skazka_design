@@ -50,7 +50,10 @@ class Contest(models.Model):
         through_fields=("contest", "stage"),
         related_name="contest_stages",
     )
-
+    file_constraints = models.ManyToManyField(
+        to="file_constraints.FileConstraint",
+        related_name="contest_file_constraints",
+    )
     winner_list = models.ManyToManyField(
         to="applications.Applications",
         through="winners.Winners",

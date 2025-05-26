@@ -27,6 +27,7 @@ from contests.models import Contest
 from contests.utils import get_current_contest_stage
 from contests_contest_stage.models import ContestsContestStage
 from criteria.models import Criteria
+from file_constraints.models import FileConstraint
 from nomination.models import Nominations
 from participants.enums import ParticipantRole
 from participants.models import Participant
@@ -632,6 +633,41 @@ class ContestChangeStageSerializer(Serializer):
             )
 
         return
+
+
+class FileConstraintChangeSerializer(Serializer):
+    file_constraint_ids = ListField(child=JSONField(), required=True, write_only=True)
+
+    def validate_file_constraint_ids(self, value):
+        if not value:
+            raise ValidationError("Список ограничений не может быть пустым.")
+        if len(value) > 3:
+            raise ValidationError("Нельзя указать больше 3 ограничений.")
+
+        received_ids = [item.id for item in value]
+
+        existing_ids = list(FileConstraint.objects.filter(id__in=received_ids).values_list('id', flat=True))
+
+        missing_ids = set(received_ids) - set(existing_ids)
+
+        if not missing_ids:
+            return value
+
+        raise ValidationError(f"Ограничения с ID {missing_ids} не существуют.")
+
+    def update(self, instance, validated_data):
+        new_constraints = set(validated_data.get('file_constraints', []))
+        current_constraints = set(instance.file_constraints.all())
+
+        to_add = new_constraints - current_constraints
+        to_remove = current_constraints - new_constraints
+
+        if to_add:
+            instance.file_constraints.add(*to_add)
+        if to_remove:
+            instance.file_constraints.remove(*to_remove)
+
+        return instance
 
 
 class ContestWinnerSerializer(Serializer):

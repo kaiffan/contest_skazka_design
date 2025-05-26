@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "nomination",
     "participants",
     "regions",
+    "storage_s3",
     "users",
     "vk_news",
     "vk_news_attachments",

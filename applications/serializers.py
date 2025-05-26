@@ -11,7 +11,6 @@ from applications.validator import ApplicationValidator
 from contest_criteria.models import ContestCriteria
 from contest_criteria.serializers import ContestCriteriaSerializer
 from contests.models import Contest
-from criteria.serializers import CriteriaSerializer
 from participants.enums import ParticipantRole
 from participants.models import Participant
 

@@ -16,9 +16,7 @@ from applications.serializers import (
     ApplicationWithCriteriaSerializer,
     UpdateApplicationSerializer,
 )
-from contests.models import Contest
 from participants.permissions import IsContestJuryPermission, IsOrgCommitteePermission
-from rest_framework.generics import get_object_or_404
 
 
 def get_filtered_applications(contest_id: str, status_filter: str):

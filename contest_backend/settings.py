@@ -11,7 +11,7 @@ SECRET_KEY = settings.token_credentials.SECRET_KEY
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "kaiffan-contest-skazka-design-e8e6.twc1.net", "81.200.148.26"]
+ALLOWED_HOSTS = ["83.217.223.7"]
 
 INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",

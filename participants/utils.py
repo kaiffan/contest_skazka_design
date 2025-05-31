@@ -15,8 +15,6 @@ def check_contest_role_permission(
         role=role.value,
     ).exists()
 
-    print(is_role)
-
     if not is_role:
         logger.warning(msg=f"Пользователь {user_id} не имеет роли {role}.")
 

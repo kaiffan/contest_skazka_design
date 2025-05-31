@@ -15,5 +15,6 @@ urlpatterns = [
     path(route="api/v1/contest_stage/", view=include("contest_stage.urls")),
     path(route="api/v1/age_category/", view=include("age_categories.urls")),
     path(route="api/v1/news/", view=include("vk_news.urls")),
+    path(route="api/v1/participants/", view=include("participants.urls")),
     path(route="", view=include("storage_s3.urls")),
 ]

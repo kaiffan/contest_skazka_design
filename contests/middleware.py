@@ -15,7 +15,6 @@ class ContestHeaderMiddleware:
         try:
             request.contest_id = int(contest_id)
         except (ValueError, TypeError):
-            print("Ты дурак")
             return JsonResponse(
                 data={"error": "X-Contest-Id is not a valid contest ID"},
                 status=status.HTTP_400_BAD_REQUEST,

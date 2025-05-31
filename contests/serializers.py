@@ -22,16 +22,17 @@ from contest_criteria.models import ContestCriteria
 from contest_criteria.serializers import ContestCriteriaSerializer
 from contest_nominations.models import ContestNominations
 from contest_nominations.serializers import ContestNominationsSerializer
-from contest_stage.serializers import ContestStageSerializer
 from contests.models import Contest
 from contests.utils import get_current_contest_stage
 from contests_contest_stage.models import ContestsContestStage
+from contests_contest_stage.serializers import ContestsContestStageSerializer
 from criteria.models import Criteria
 from file_constraints.models import FileConstraint
+from file_constraints.serailizers import FileConstraintSerializer
 from nomination.models import Nominations
 from participants.enums import ParticipantRole
 from participants.models import Participant
-from participants.serializers import ParticipantSerializer
+from participants.serializers import ParticipantSerializer, PartisipantContestSerializer
 from regions.models import Region
 from winners.models import Winners
 
@@ -40,6 +41,7 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
     jury = SerializerMethodField()
     org_committee = SerializerMethodField()
     criteria = SerializerMethodField()
+    file_constraints = SerializerMethodField()
     contest_category = SerializerMethodField()
     nomination = SerializerMethodField()
     age_categories = SerializerMethodField()
@@ -49,6 +51,7 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
     class Meta:
         model = Contest
         fields = [
+            "id",
             "title",
             "description",
             "link_to_rules",
@@ -63,21 +66,26 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "org_committee",
             "prizes",
             "contacts_for_participants",
+            "file_constraints",
             "region_name",
             "contest_category",
         ]
+
+    def get_file_constraints(self, instance):
+        file_constraints = instance.file_constraints.all()
+        return FileConstraintSerializer(instance=file_constraints, many=True).data
 
     def get_org_committee(self, instance):
         org_committee_list = Participant.objects.filter(
             contest_id=instance.id, role=ParticipantRole.org_committee.value
         ).all()
-        return ParticipantSerializer(instance=org_committee_list, many=True).data
+        return PartisipantContestSerializer(instance=org_committee_list, many=True).data
 
     def get_jury(self, instance):
         jury_list = Participant.objects.filter(
             contest_id=instance.id, role=ParticipantRole.jury.value
         ).all()
-        return ParticipantSerializer(instance=jury_list, many=True).data
+        return PartisipantContestSerializer(instance=jury_list, many=True).data
 
     def get_contest_category(self, instance):
         return instance.contest_category.name
@@ -100,8 +108,8 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
         return AgeCategoriesSerializer(instance=age_category_list, many=True).data
 
     def get_contest_stage(self, instance):
-        contest_stage_list = instance.contest_stage.all()
-        return ContestStageSerializer(instance=contest_stage_list, many=True).data
+        contests_contest_stage_list = ContestsContestStage.objects.filter(contest_id=instance.id).all()
+        return ContestsContestStageSerializer(instance=contests_contest_stage_list, many=True).data
 
 
 class ContestAllSerializer(ModelSerializer[Contest]):
@@ -228,37 +236,21 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
         return value
 
 
-class UpdateBaseContestSerializer(ModelSerializer[Contest]):
-    contest_category_name = CharField(write_only=True, required=False, allow_blank=True)
-    age_category = ListField(
-        child=IntegerField(), write_only=True, required=False, allow_null=True
+class UpdateBaseContestSerializer(Serializer):
+    title = CharField(required=False)
+    description = CharField(required=False)
+    avatar = CharField(required=False)
+    link_to_rules = CharField(required=False)
+    prizes = CharField(required=False)
+    contacts_for_participants = CharField(required=False)
+    organizer = CharField(required=False)
+    region_id = IntegerField(required=False)
+    contest_category_name = CharField(
+        required=False
     )
-    region_id = IntegerField(required=False, allow_null=True)
-
-    class Meta:
-        model = Contest
-        fields = [
-            "title",
-            "description",
-            "avatar",
-            "link_to_rules",
-            "prizes",
-            "contacts_for_participants",
-            "organizer",
-            "region_id",
-            "age_category",
-            "contest_category_name",
-        ]
-        extra_kwargs = {
-            "title": {"required": False},
-            "description": {"required": False},
-            "avatar": {"required": False},
-            "link_to_rules": {"required": False},
-            "organizer": {"required": False},
-            "region_id": {"required": False},
-            "age_category": {"required": False},
-            "contest_category_name": {"required": False},
-        }
+    age_category = ListField(
+        child=IntegerField(), required=False
+    )
 
     def validate_region_id(self, region_id: int):
         if not Region.objects.filter(id=region_id).exists():
@@ -286,16 +278,16 @@ class UpdateBaseContestSerializer(ModelSerializer[Contest]):
 
     def update(self, instance, validated_data):
         category_name = validated_data.pop("contest_category_name", None)
+        age_category = validated_data.pop("age_category", None)
+
         if category_name:
             contest_category, _ = ContestCategories.objects.get_or_create(
                 name=category_name
             )
             instance.contest_category_id = contest_category.id
 
-        age_category = validated_data.pop("age_category", None)
-
         if age_category:
-            self._update_age_category(contest_id=instance.id)
+            self._update_age_category(contest_id=instance.id, age_category_ids=age_category)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -303,8 +295,7 @@ class UpdateBaseContestSerializer(ModelSerializer[Contest]):
         instance.save()
         return instance
 
-    def _update_age_category(self, contest_id):
-        age_category_ids = self.validated_data.pop("age_category", None)
+    def _update_age_category(self, contest_id, age_category_ids):
         contest = Contest.objects.filter(id=contest_id).first()
 
         if not contest:
@@ -594,15 +585,36 @@ class ContestChangeStageSerializer(Serializer):
     def change_contest_stages_in_contest(self):
         contest = self.context.get("contest", None)
         contest_stage_list = self.validated_data.get("contest_stage_list", None)
+        result = {"added": [], "updated": []}
 
         if not contest_stage_list:
             raise ValidationError(detail="contest_stage_list cannot be empty", code=404)
 
-        existing_stages = ContestsContestStage.objects.filter(contest=contest)
-        existing_stages_data = {stage.stage_id: stage for stage in existing_stages}
+        existing_stages = ContestsContestStage.objects.filter(contest=contest).all()
 
-        stages_to_create = []
+        if not existing_stages.exists():
+            stages_to_create = []
+
+            for item in contest_stage_list:
+                stage_id = item.get("stage_id")
+                start_date = item.get("start_date")
+                end_date = item.get("end_date")
+
+                stages_to_create.append(
+                    ContestsContestStage(
+                        contest=contest,
+                        stage_id=stage_id,
+                        start_date=start_date,
+                        end_date=end_date,
+                    )
+                )
+
+            ContestsContestStage.objects.bulk_create(objs=stages_to_create)
+            result["added"] = [stage.stage_id for stage in stages_to_create]
+            return result
+
         stages_to_update = []
+        existing_stages_data = {stage.stage_id: stage for stage in existing_stages}
 
         for contest_stage in contest_stage_list:
             stage_id = contest_stage.get("stage_id")
@@ -614,25 +626,14 @@ class ContestChangeStageSerializer(Serializer):
                 stage.start_date = start_date
                 stage.end_date = end_date
                 stages_to_update.append(stage)
-            else:
-                stages_to_create.append(
-                    ContestsContestStage(
-                        contest=contest,
-                        stage_id=stage_id,
-                        start_date=start_date,
-                        end_date=end_date,
-                    )
-                )
-
-        if stages_to_create:
-            ContestsContestStage.objects.bulk_create(objs=stages_to_create)
 
         if stages_to_update:
             ContestsContestStage.objects.bulk_update(
                 objs=stages_to_update, fields=["start_date", "end_date"]
             )
+        result["updated"] = [stage.stage_id for stage in stages_to_update]
 
-        return
+        return result
 
 
 class FileConstraintChangeSerializer(Serializer):

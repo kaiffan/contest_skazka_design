@@ -76,3 +76,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
             self.birth_date.day,
         )
         return date_today.year - self.birth_date.year - is_birthdate_in_this_year
+
+    def get_fio(self):
+        return f"{self.last_name} {self.first_name} {self.middle_name}"

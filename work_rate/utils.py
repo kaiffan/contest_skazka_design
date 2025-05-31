@@ -14,8 +14,6 @@ def validate_count_criteria_by_contest(
             "criteria_id", flat=True
         )
     )
-    print(all_criteria_ids)
-    print(rated_criteria_ids)
 
     if set(all_criteria_ids) != set(rated_criteria_ids):
         return False

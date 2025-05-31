@@ -19,4 +19,3 @@ class Participant(models.Model):
 
     class Meta:
         db_table = "participants"
-        unique_together = ("user", "contest")

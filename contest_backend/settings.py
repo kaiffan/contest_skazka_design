@@ -11,7 +11,7 @@ SECRET_KEY = settings.token_credentials.SECRET_KEY
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["83.217.223.7"]
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "authentication",
     "competencies",
     "contest_categories",
+    "file_constraints",
     "contest_criteria",
     "contest_nominations",
     "contest_stage",
@@ -133,12 +134,17 @@ CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SAMESITE = "None"
 
 CSRF_COOKIE_SECURE = True
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_NAME = 'email_login_session_id'
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 1209600
 
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_HEADERS = ["accept", "content-type", "authorization", "X-Contest-Id"]
-
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ["accept", "content-type", "authorization", "X-Contest-Id"]
 
 LANGUAGE_CODE = "en-us"
 

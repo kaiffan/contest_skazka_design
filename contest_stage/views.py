@@ -39,6 +39,6 @@ def add_or_remove_contest_stage_in_contest_view(request: Request) -> Response:
     data = serializer.change_contest_stages_in_contest()
 
     return Response(
-        data={"message": "Nominations updated successfully", "data": data},
+        data={"message": "Contest stage updated successfully", "data": data},
         status=status.HTTP_200_OK,
     )

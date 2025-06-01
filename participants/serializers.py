@@ -18,7 +18,8 @@ def update_participant_in_contest_with_change_role(
     missing_participants = set(participant_ids) - set(existing_participants_by_role)
 
     if missing_participants:
-        Participant.objects.bulk_create(objs=[
+        Participant.objects.bulk_create(
+            objs=[
                 Participant(
                     contest_id=contest_id,
                     user_id=user_id,
@@ -33,7 +34,9 @@ def update_participant_in_contest_with_change_role(
         role=role,
     ).exclude(user_id__in=participant_ids)
 
-    participants_to_remove_ids: list[int] = [participant.user.id for participant in participants_to_remove]
+    participants_to_remove_ids: list[int] = [
+        participant.user.id for participant in participants_to_remove
+    ]
 
     if participants_to_remove.exists():
         participants_to_remove.delete()
@@ -95,7 +98,4 @@ class PartisipantContestSerializer(ModelSerializer[Participant]):
 
     class Meta:
         model = Participant
-        fields = [
-            "user",
-            "role"
-        ]
+        fields = ["user", "role"]

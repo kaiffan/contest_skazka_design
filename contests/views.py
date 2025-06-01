@@ -49,7 +49,9 @@ def update_contest_view(request: Request) -> Response:
 
     serializer.update(instance=contest, validated_data=serializer.validated_data)
 
-    return Response(data={"message": "Contest successfully update"},status=status.HTTP_200_OK)
+    return Response(
+        data={"message": "Contest successfully update"}, status=status.HTTP_200_OK
+    )
 
 
 @api_view(http_method_names=["POST"])
@@ -83,7 +85,12 @@ def delete_contest_view(request: Request) -> Response:
 @permission_classes(permission_classes=[IsAuthenticated])
 def get_contest_by_id(request: Request) -> Response:
     instance = Contest.objects.prefetch_related(
-        "criteria", "nominations", "age_category", "participants", "contest_stage", "file_constraints"
+        "criteria",
+        "nominations",
+        "age_category",
+        "participants",
+        "contest_stage",
+        "file_constraints",
     ).get(id=request.contest_id)
 
     serializer = ContestByIdSerializer(instance=instance)

@@ -108,8 +108,12 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
         return AgeCategoriesSerializer(instance=age_category_list, many=True).data
 
     def get_contest_stage(self, instance):
-        contests_contest_stage_list = ContestsContestStage.objects.filter(contest_id=instance.id).all()
-        return ContestsContestStageSerializer(instance=contests_contest_stage_list, many=True).data
+        contests_contest_stage_list = ContestsContestStage.objects.filter(
+            contest_id=instance.id
+        ).all()
+        return ContestsContestStageSerializer(
+            instance=contests_contest_stage_list, many=True
+        ).data
 
 
 class ContestAllSerializer(ModelSerializer[Contest]):
@@ -245,12 +249,8 @@ class UpdateBaseContestSerializer(Serializer):
     contacts_for_participants = CharField(required=False)
     organizer = CharField(required=False)
     region_id = IntegerField(required=False)
-    contest_category_name = CharField(
-        required=False
-    )
-    age_category = ListField(
-        child=IntegerField(), required=False
-    )
+    contest_category_name = CharField(required=False)
+    age_category = ListField(child=IntegerField(), required=False)
 
     def validate_region_id(self, region_id: int):
         if not Region.objects.filter(id=region_id).exists():
@@ -287,7 +287,9 @@ class UpdateBaseContestSerializer(Serializer):
             instance.contest_category_id = contest_category.id
 
         if age_category:
-            self._update_age_category(contest_id=instance.id, age_category_ids=age_category)
+            self._update_age_category(
+                contest_id=instance.id, age_category_ids=age_category
+            )
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -647,7 +649,11 @@ class FileConstraintChangeSerializer(Serializer):
 
         received_ids = [item.id for item in value]
 
-        existing_ids = list(FileConstraint.objects.filter(id__in=received_ids).values_list('id', flat=True))
+        existing_ids = list(
+            FileConstraint.objects.filter(id__in=received_ids).values_list(
+                "id", flat=True
+            )
+        )
 
         missing_ids = set(received_ids) - set(existing_ids)
 
@@ -657,7 +663,7 @@ class FileConstraintChangeSerializer(Serializer):
         raise ValidationError(f"Ограничения с ID {missing_ids} не существуют.")
 
     def update(self, instance, validated_data):
-        new_constraints = set(validated_data.get('file_constraints', []))
+        new_constraints = set(validated_data.get("file_constraints", []))
         current_constraints = set(instance.file_constraints.all())
 
         to_add = new_constraints - current_constraints

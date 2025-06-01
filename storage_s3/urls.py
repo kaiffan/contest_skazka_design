@@ -1,6 +1,6 @@
-from .views import home
+from .views import upload_file_view
 from django.urls import path
 
 urlpatterns = [
-    path('', home),
+    path(route="upload", view=upload_file_view, name="upload_file_view"),
 ]

@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('participants', '0001_initial'),
+        ("participants", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='participant',
+            name="participant",
             unique_together=set(),
         ),
     ]

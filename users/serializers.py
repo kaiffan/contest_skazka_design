@@ -181,13 +181,8 @@ class AllUsersShortDataSerializer(ModelSerializer[Users]):
             "phone_number",
         ]
 
+
 class UserParticipantSerializer(ModelSerializer[Users]):
     class Meta:
         model = Users
-        fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "middle_name",
-            "email"
-        ]
+        fields = ["id", "first_name", "last_name", "middle_name", "email"]

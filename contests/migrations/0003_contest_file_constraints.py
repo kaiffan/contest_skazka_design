@@ -4,16 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('contests', '0002_initial'),
-        ('file_constraints', '0001_initial'),
+        ("contests", "0002_initial"),
+        ("file_constraints", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='contest',
-            name='file_constraints',
-            field=models.ManyToManyField(related_name='contest_file_constraints', to='file_constraints.fileconstraint'),
+            model_name="contest",
+            name="file_constraints",
+            field=models.ManyToManyField(
+                related_name="contest_file_constraints",
+                to="file_constraints.fileconstraint",
+            ),
         ),
     ]

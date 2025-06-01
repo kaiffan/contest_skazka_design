@@ -67,12 +67,12 @@ def user_short_data_get_view(request: Request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
 def all_users_view(request: Request) -> Response:
-    email: str = request.data.get("filter", None)
+    search: str = request.data.get("search", None)
 
     queryset = Users.objects.all()
 
-    if email:
-        queryset = queryset.filter(email=email)
+    if search:
+        queryset = queryset.filter(email__icontains=search)
 
     serializer = AllUsersShortDataSerializer(data=queryset, many=True)
 

@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('nomination', '0001_initial'),
+        ("nomination", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='nominations',
-            name='name',
+            model_name="nominations",
+            name="name",
             field=models.CharField(db_index=True, max_length=255, unique=True),
         ),
         migrations.AddIndex(
-            model_name='nominations',
-            index=models.Index(fields=['name'], name='nominations_name_31ec4d_idx'),
+            model_name="nominations",
+            index=models.Index(fields=["name"], name="nominations_name_31ec4d_idx"),
         ),
     ]

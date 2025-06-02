@@ -10,7 +10,7 @@ def set_refresh_cookie(response, value) -> NoReturn:
         value=value,
         httponly=True,
         secure=True,
-        samesite="Lax",
+        samesite="None",
         path=settings.token_credentials.REFRESH_COOKIE_PATH,
         max_age=settings.token_credentials.REFRESH_COOKIE_MAX_AGE,
     )

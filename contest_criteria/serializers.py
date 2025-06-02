@@ -19,3 +19,24 @@ class ContestCriteriaSerializer(ModelSerializer[ContestCriteria]):
 
     def get_criteria_name(self, instance):
         return Criteria.objects.get(id=instance.criteria_id).name
+
+
+class ContestCriteriaFullSerializer(ModelSerializer[ContestCriteria]):
+    criteria_name = SerializerMethodField()
+    criteria_id = SerializerMethodField()
+
+    class Meta:
+        model = ContestCriteria
+        fields = [
+            "criteria_id",
+            "criteria_name",
+            "description",
+            "min_points",
+            "max_points",
+        ]
+
+    def get_criteria_name(self, instance):
+        return Criteria.objects.get(id=instance.criteria_id).name
+
+    def get_criteria_id(self, instance):
+        return Criteria.objects.get(id=instance.criteria_id).id

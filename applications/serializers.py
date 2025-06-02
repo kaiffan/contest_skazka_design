@@ -9,7 +9,9 @@ from rest_framework.serializers import ModelSerializer, Serializer
 
 from applications.validator import ApplicationValidator
 from contest_criteria.models import ContestCriteria
-from contest_criteria.serializers import ContestCriteriaSerializer
+from contest_criteria.serializers import ContestCriteriaFullSerializer
+from contest_nominations.models import ContestNominations
+from contest_nominations.serializers import ContestNominationsSerializer
 from contests.models import Contest
 from participants.enums import ParticipantRole
 from participants.models import Participant
@@ -39,6 +41,7 @@ class ApplicationSerializer(ModelSerializer[Applications]):
 
 class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
     criteria = SerializerMethodField()
+    nomination = SerializerMethodField()
 
     class Meta:
         model = Applications
@@ -55,11 +58,19 @@ class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
             "criteria",
         ]
 
-    def get_criteria(self, application: Applications):
+    def get_criteria(self, application):
         contest_criterias = ContestCriteria.objects.filter(
             contest_id=application.contest_id
         ).all()
-        return ContestCriteriaSerializer(contest_criterias, many=True).data
+        return ContestCriteriaFullSerializer(instance=contest_criterias, many=True).data
+
+    def get_nomination(self, application):
+        contest_nominations = ContestNominations.objects.filter(
+            contest_id=application.contest_id,
+            nomination_id=application.nomination_id,
+        ).get()
+
+        return ContestNominationsSerializer(instance=contest_nominations).data
 
 
 class SendApplicationsSerializer(Serializer):

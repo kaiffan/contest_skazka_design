@@ -23,7 +23,7 @@ def get_current_contest_stage(contest: Contest) -> Dict[str, Any]:
             )
 
     if not current_stage:
-        return {"name": "Contest stage is not defined"}
+        return {"name": "Закончен"}
 
     return {
         "name": current_stage.stage.name,

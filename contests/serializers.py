@@ -32,7 +32,7 @@ from file_constraints.serailizers import FileConstraintSerializer
 from nomination.models import Nominations
 from participants.enums import ParticipantRole
 from participants.models import Participant
-from participants.serializers import ParticipantSerializer, PartisipantContestSerializer
+from participants.serializers import PartisipantContestSerializer
 from regions.models import Region
 from winners.models import Winners
 

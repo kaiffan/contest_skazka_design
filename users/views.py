@@ -74,6 +74,6 @@ def all_users_view(request: Request) -> Response:
     if search:
         queryset = queryset.filter(email__icontains=search)
 
-    serializer = AllUsersShortDataSerializer(data=queryset, many=True)
+    serializer = AllUsersShortDataSerializer(instance=queryset, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)

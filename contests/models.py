@@ -31,8 +31,7 @@ class Contest(models.Model):
         related_name="contest_participants",
     )
     age_category = models.ManyToManyField(
-        to="age_categories.AgeCategories",
-        related_name="contest_age_categories",
+        to="age_categories.AgeCategories", related_name="contest_age_categories"
     )
     nominations = models.ManyToManyField(
         to="nomination.Nominations",
@@ -50,8 +49,9 @@ class Contest(models.Model):
         through_fields=("contest", "stage"),
         related_name="contest_stages",
     )
-    file_constraints = models.ManyToManyField(
+    file_constraint = models.ManyToManyField(
         to="file_constraints.FileConstraint",
+        through="contest_file_constraints.ContestFileConstraints",
         related_name="contest_file_constraints",
     )
     winner_list = models.ManyToManyField(

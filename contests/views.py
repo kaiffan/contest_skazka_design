@@ -90,7 +90,7 @@ def get_contest_by_id(request: Request) -> Response:
         "age_category",
         "participants",
         "contest_stage",
-        "file_constraints",
+        "file_constraint",
     ).get(id=request.contest_id)
 
     serializer = ContestByIdSerializer(instance=instance)

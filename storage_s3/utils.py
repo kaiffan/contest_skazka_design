@@ -6,6 +6,8 @@ from django.core.files.uploadedfile import UploadedFile
 from config.settings import get_settings
 from boto3.session import Session
 
+from contest_file_constraints.models import ContestFileConstraints
+from contests.models import Contest
 from file_constraints.models import FileConstraint
 from storage_s3.enums import TypeUploads
 
@@ -116,11 +118,14 @@ def get_file_constraint_by_type(
         return {"No folder": []}
 
     if type_uploads.value == TypeUploads.APPLICATION.value:
-        contest_constraints = FileConstraint.objects.filter(contest_id=contest_id).all()
+        contest = Contest.objects.get(id=contest_id)
+        contest_constraints = ContestFileConstraints.objects.filter(
+            contest=contest
+        ).all()
 
-        constraint = {
-            f"applications/{constraint.id}": constraint.file_formats.split(sep=",")
+        return {
+            f"applications/{constraint.file_constraints.name}": constraint.file_constraints.file_formats.split(
+                sep=","
+            )
             for constraint in contest_constraints
         }
-
-    return constraint

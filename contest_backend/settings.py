@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "contest_criteria",
     "contest_nominations",
     "contest_stage",
+    "contest_file_constraints",
     "contests",
     "contests_contest_stage",
     "criteria",

@@ -40,10 +40,10 @@ def upload_file_view(request: Request) -> Response:
     )
 
     try:
-        public_url = upload_file_to_storage(
+        file_url: str = upload_file_to_storage(
             uploaded_file=uploaded_file, file_constraints=file_constraints
         )
-        return Response(data={"url": public_url}, status=status.HTTP_201_CREATED)
+        return Response(data={"link_to_file": file_url}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response(
             data={"error": f"Ошибка при загрузке файла: {str(e)}"},
@@ -69,9 +69,10 @@ def upload_contest_work_view(request: Request) -> Response:
             data={"error": "Файл не предоставлен"}, status=status.HTTP_400_BAD_REQUEST
         )
 
-    if not upload_type:
+    if upload_type != TypeUploads.APPLICATION.value:
         return Response(
-            data={"error": "Тип файла отсутствует"}, status=status.HTTP_400_BAD_REQUEST
+            data={"error": "Данный тип файла не поддерживается"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
@@ -89,10 +90,10 @@ def upload_contest_work_view(request: Request) -> Response:
     )
 
     try:
-        public_url = upload_file_to_storage(
+        file_url: str = upload_file_to_storage(
             uploaded_file=uploaded_file, file_constraints=file_constraints
         )
-        return Response(data={"url": public_url}, status=status.HTTP_201_CREATED)
+        return Response(data={"link_to_file": file_url}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response(
             data={"error": f"Ошибка при загрузке файла: {str(e)}"},

@@ -20,6 +20,8 @@ from applications.models import Applications
 from contest_categories.models import ContestCategories
 from contest_criteria.models import ContestCriteria
 from contest_criteria.serializers import ContestCriteriaSerializer
+from contest_file_constraints.models import ContestFileConstraints
+from contest_file_constraints.serializers import ContestFileConstraintsSerializer
 from contest_nominations.models import ContestNominations
 from contest_nominations.serializers import ContestNominationsSerializer
 from contests.models import Contest
@@ -41,7 +43,7 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
     jury = SerializerMethodField()
     org_committee = SerializerMethodField()
     criteria = SerializerMethodField()
-    file_constraints = SerializerMethodField()
+    file_constraint = SerializerMethodField()
     contest_category = SerializerMethodField()
     nomination = SerializerMethodField()
     age_categories = SerializerMethodField()
@@ -66,14 +68,18 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "org_committee",
             "prizes",
             "contacts_for_participants",
-            "file_constraints",
+            "file_constraint",
             "region_name",
             "contest_category",
         ]
 
-    def get_file_constraints(self, instance):
-        file_constraints = instance.file_constraints.all()
-        return FileConstraintSerializer(instance=file_constraints, many=True).data
+    def get_file_constraint(self, instance):
+        contest_file_constraints = ContestFileConstraints.objects.filter(
+            contest=instance
+        ).all()
+        return ContestFileConstraintsSerializer(
+            instance=contest_file_constraints, many=True
+        ).data
 
     def get_org_committee(self, instance):
         org_committee_list = Participant.objects.filter(

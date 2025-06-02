@@ -2,6 +2,18 @@
 
 from django.db import migrations, models
 
+def create_file_constraints(apps, schema_editor):
+    FileConstraint = apps.get_model("file_constraints", "FileConstraint")
+
+    file_constraints = [
+        {"name": "Images", "file_format": "jpeg,jpg,png,webp"},
+        {"name": "Videos", "file_format": "mp4,webm"},
+        {"name": "Text", "file_format": "docx,txt,pdf"},
+    ]
+
+    for file_constraint in file_constraints:
+        FileConstraint.objects.get_or_create(**file_constraint)
+
 
 class Migration(migrations.Migration):
     initial = True
@@ -28,4 +40,5 @@ class Migration(migrations.Migration):
                 "db_table": "file_constraint",
             },
         ),
+        migrations.RunPython()
     ]

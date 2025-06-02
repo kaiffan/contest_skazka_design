@@ -4,7 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from participants.permissions import IsContestOwnerPermission, IsOrgCommitteePermission
 from storage_s3.enums import TypeUploads
 from storage_s3.utils import upload_file_to_storage, get_file_constraint_by_type
 
@@ -54,9 +53,7 @@ def upload_file_view(request: Request) -> Response:
 @api_view(http_method_names=["POST"])
 @permission_classes(
     permission_classes=[
-        IsAuthenticated,
-        IsContestOwnerPermission,
-        IsOrgCommitteePermission,
+        IsAuthenticated
     ]
 )
 def upload_contest_work_view(request: Request) -> Response:
@@ -69,12 +66,6 @@ def upload_contest_work_view(request: Request) -> Response:
             data={"error": "Файл не предоставлен"}, status=status.HTTP_400_BAD_REQUEST
         )
 
-    if upload_type != TypeUploads.APPLICATION.value:
-        return Response(
-            data={"error": "Данный тип файла не поддерживается"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
     try:
         type_uploads: TypeUploads = TypeUploads(upload_type)
     except ValueError:
@@ -82,6 +73,12 @@ def upload_contest_work_view(request: Request) -> Response:
             data={
                 "error": f"Некорректный тип загрузки. Допустимые значения: {[t.value for t in TypeUploads]}"
             },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if upload_type != TypeUploads.APPLICATION.value:
+        return Response(
+            data={"error": "Данный тип заявки не поддерживается"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

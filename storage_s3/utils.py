@@ -27,7 +27,7 @@ def upload_file_to_storage(
     uploaded_file: UploadedFile, file_constraints: dict[str, list[str]]
 ) -> str:
     """
-    Загружает файл в облако (S3), предварительно проверив его формат.
+    Загружает файл в облако (например, S3), предварительно проверив его формат.
 
     Аргументы:
         uploaded_file (UploadedFile): Загруженный пользователем файл.
@@ -41,23 +41,33 @@ def upload_file_to_storage(
     except IndexError:
         raise ValueError("Файл не имеет расширения")
 
-    allowed_formats = []
-    for formats in file_constraints.values():
-        allowed_formats.extend([fmt.lower() for fmt in formats])
+    normalized_constraints = {
+        folder: {ext.lower() for ext in formats}
+        for folder, formats in file_constraints.items()
+    }
 
-    if not allowed_formats:
-        raise ValueError("Не найдено разрешённых форматов для загрузки")
+    target_folder = next(
+        (
+            folder
+            for folder, formats in normalized_constraints.items()
+            if file_extension in formats
+        ),
+        None,
+    )
 
-    if file_extension not in allowed_formats:
+    if not target_folder:
+        allowed_extensions = sorted(
+            {ext for formats in normalized_constraints.values() for ext in formats}
+        )
         raise ValueError(
             f"Формат файла '{file_extension}' не поддерживается. "
-            f"Поддерживаемые форматы: {', '.join(set(allowed_formats))}"
+            f"Допустимые форматы: {', '.join(allowed_extensions)}"
         )
 
     client = get_sesion_s3()
 
-    cloud_file_name = f"{uuid4()}.{uploaded_file.name}"
-    file_key = f"avatar/{cloud_file_name}"
+    unique_filename = f"{uuid4()}.{file_extension}"
+    file_key = f"{target_folder}/{unique_filename}"
 
     with NamedTemporaryFile(delete=False) as tmp_file:
         file_path = tmp_file.name
@@ -68,7 +78,7 @@ def upload_file_to_storage(
     try:
         client.upload_file(
             file_path,
-            "skazka-design",
+            settings.yandex_s3_credentials.BACKET_NAME,
             file_key,
         )
 

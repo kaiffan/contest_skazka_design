@@ -9,3 +9,4 @@ class YandexS3Credentials(ConfigBase):
     ID_KEY: str
     SECRET_KEY: str
     ENDPOINT_URL: str
+    BACKET_NAME: str

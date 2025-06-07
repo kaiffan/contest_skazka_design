@@ -59,8 +59,7 @@ def approve_application_view(request: Request) -> Response:
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    application = Applications.objects.get(id=serializer.validated_data["id"])
-    serializer.update(instance=application, validated_data={})
+    serializer.save()
 
     return Response(
         data={
@@ -78,8 +77,7 @@ def reject_application_view(request: Request) -> Response:
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    application = Applications.objects.get(id=serializer.validated_data["id"])
-    serializer.update(instance=application, validated_data=serializer.validated_data)
+    serializer.save()
 
     return Response(
         data={
@@ -130,17 +128,21 @@ def get_application_view(request: Request) -> Response:
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_applications_user_view(request: Request) -> Response:
-    user_applications = Applications.objects.filter(contest_id=request.contest_id).all()
+    user_applications = Applications.objects.filter(user_id=request.user.id)
 
     application_filter = ApplicationFilter(
         request=request.GET, queryset=user_applications
     )
-    serializer = ApplicationSerializer(instance=application_filter.qs, many=True)
 
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+    paginator = ApplicationPaginator()
+
+    paginated_queryset = paginator.paginate_queryset(queryset=application_filter.qs, request=request)
+    serializer = ApplicationSerializer(instance=paginated_queryset, many=True)
+
+    return paginator.get_paginated_response(data=serializer.data)
 
 
 @api_view(http_method_names=["PATCH"])

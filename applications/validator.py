@@ -13,3 +13,5 @@ class ApplicationValidator:
 
         if application.status == application_status:
             raise ValidationError(f"Application already {application_status}")
+
+        return application

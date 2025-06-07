@@ -7,7 +7,7 @@ class Applications(models.Model):
     name = models.CharField(name="name", max_length=255, null=False)
     annotation = models.CharField(name="annotation", max_length=255, null=False)
     link_to_work = models.CharField(
-        name="link_to_work", max_length=255, null=False, default="asdasdasd"
+        name="link_to_work", max_length=255, null=False, default="Not found"
     )
     status = models.CharField(
         name="status",

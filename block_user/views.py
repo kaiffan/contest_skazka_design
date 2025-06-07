@@ -7,17 +7,25 @@ from rest_framework.request import Request
 from authentication.permissions import IsAdminSystemPermission
 from block_user.models import UserBlock
 from block_user.paginator import BlockUserPagination
-from block_user.serializers import BlockUserSerializer, UnblockUserSerializer, AllBlockUsersSerializer
+from block_user.serializers import (
+    BlockUserSerializer,
+    UnblockUserSerializer,
+    AllBlockUsersSerializer,
+)
 
 
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
 def block_user_view(request: Request) -> Response:
-    serializer = BlockUserSerializer(data=request.data, context={"blocked_by_id": request.user.id})
+    serializer = BlockUserSerializer(
+        data=request.data, context={"blocked_by_id": request.user.id}
+    )
     if not serializer.is_valid(raise_exception=True):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     serializer.save()
-    return Response(data={"success": "Пользователь успешно заблокирован"}, status=status.HTTP_200_OK)
+    return Response(
+        data={"success": "Пользователь успешно заблокирован"}, status=status.HTTP_200_OK
+    )
 
 
 @api_view(http_method_names=["POST"])
@@ -28,13 +36,20 @@ def unblock_user_view(request: Request) -> Response:
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     serializer.save()
-    return Response(data={"success": "Пользователь успешно разблокирован"}, status=status.HTTP_200_OK)
+    return Response(
+        data={"success": "Пользователь успешно разблокирован"},
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
 def get_all_blocked_users_view(request: Request) -> Response:
-    queryset = UserBlock.objects.prefetch_related("user", "blocked_by").filter(is_blocked=True).all()
+    queryset = (
+        UserBlock.objects.prefetch_related("user", "blocked_by")
+        .filter(is_blocked=True)
+        .all()
+    )
 
     paginator = BlockUserPagination()
     result_page = paginator.paginate_queryset(queryset=queryset, request=request)

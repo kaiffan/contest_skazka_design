@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,19 +14,51 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserBlock',
+            name="UserBlock",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('blocked_until', models.DateTimeField(verbose_name='Заблокирован до')),
-                ('unblocked_at', models.DateTimeField(blank=True, null=True, verbose_name='Разблокирован в')),
-                ('is_blocked', models.BooleanField(default=True, verbose_name='Статус блокировки')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('blocked_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_blocks_created', to=settings.AUTH_USER_MODEL, verbose_name='Кем заблокирован')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_blocks', to=settings.AUTH_USER_MODEL, verbose_name='Заблокированный пользователь')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("blocked_until", models.DateTimeField(verbose_name="Заблокирован до")),
+                (
+                    "unblocked_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Разблокирован в"
+                    ),
+                ),
+                (
+                    "is_blocked",
+                    models.BooleanField(default=True, verbose_name="Статус блокировки"),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "blocked_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_blocks_created",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Кем заблокирован",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_blocks",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Заблокированный пользователь",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'user_blocks',
+                "db_table": "user_blocks",
             },
         ),
     ]

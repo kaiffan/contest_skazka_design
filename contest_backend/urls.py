@@ -19,5 +19,4 @@ urlpatterns = [
     path(route="api/v1/storage/", view=include("storage_s3.urls")),
     path(route="api/v1/file_constraints/", view=include("file_constraints.urls")),
     path(route="api/v1/admin/", view=include("block_user.urls")),
-
 ]

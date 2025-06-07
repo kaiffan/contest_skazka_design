@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -8,8 +7,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from authentication.email import send_confirmation_email
-from authentication.permissions import IsAdminSystemPermission
 from authentication.serializers import (
     RegistrationSerializer,
     LoginSerializer,
@@ -19,7 +16,7 @@ from authentication.serializers import (
 from contest_backend.settings import settings
 
 # from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
-from authentication.utils import set_refresh_cookie, delete_refresh_cookie
+from authentication.utils import set_refresh_cookie, delete_refresh_cookie, send_confirmation_code
 from email_confirmation.models import EmailConfirmationLogin
 
 
@@ -43,53 +40,69 @@ def registration_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(
-    permission_classes=[
-        AllowAny,
-    ]
-)
-@csrf_exempt
+@permission_classes(permission_classes=[AllowAny])
 def login_view(request: Request) -> Response:
     serializer = LoginSerializer(data=request.data)
-
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     user = serializer.validated_data
 
-    session_id = request.session.get("email_login_session_id")
-    if not session_id:
-        session_id = EmailConfirmationLogin.generate_session_id()
-        request.session["email_login_session_id"] = session_id
+    session_id = EmailConfirmationLogin.generate_session_id()
+    request.session["email_login_session_id"] = session_id
 
-    with transaction.atomic():
-        attempt_number = (
-            EmailConfirmationLogin.objects.filter(session_id=session_id).count() + 1
-        )
-
-        if attempt_number > 3:
-            return Response(
-                data={"message": "Count attempt_number more 3"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        EmailConfirmationLogin.objects.filter(user=user, is_used=False).delete()
-
-        code, code_hash = EmailConfirmationLogin.generate_code()
-        confirmation = EmailConfirmationLogin.objects.create(
-            user=user,
-            code_hash=code_hash,
-            session_id=session_id,
-            attempt_number=attempt_number,
-        )
+    confirmation, error = send_confirmation_code(user=user, session_id=session_id)
+    if error:
+        return Response(data=error, status=status.HTTP_401_UNAUTHORIZED)
 
     request.session["login_attempt"] = confirmation.id
-    request.session.modified = True
+    request.session["session_id"] = session_id
     request.session.save()
 
-    send_confirmation_email(user_email=user.email, code=code)
     return Response(
-        data={"message": "Send verification code successful"}, status=status.HTTP_200_OK
+        data={"message": "Код отправлен на почту"},
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def resend_code_view(request: Request) -> Response:
+    session_id = request.session.get("email_login_session_id")
+    attempt_id = request.session.get("login_attempt")
+
+    if not session_id or not attempt_id:
+        return Response(
+            data={"detail": "Нет активной сессии или попытки."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        confirmation = EmailConfirmationLogin.objects.select_related("user").get(
+            id=attempt_id,
+            session_id=session_id,
+            is_used=False
+        )
+
+        if not confirmation.is_expired():
+            return Response(
+                data={"error": "Предыдущий код ещё не истёк. Пожалуйста, подождите и отправьте запрос после истечения!"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        _, error = send_confirmation_code(confirmation.user, session_id, resend=True)
+        if error:
+            return error
+
+    except EmailConfirmationLogin.DoesNotExist:
+        return Response(
+            data={"detail": "Не найдено активной попытки подтверждения."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    return Response(
+        data={"message": "Код успешно отправлен повторно"},
+        status=status.HTTP_200_OK
     )
 
 
@@ -97,9 +110,9 @@ def login_view(request: Request) -> Response:
 @permission_classes(permission_classes=[AllowAny])
 # @throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
 def confirm_login_view(request: Request) -> Response:
-    code = request.data.get("code")
-    attempt_id = request.session.get("login_attempt")
-    session_id = request.session.get("email_login_session_id")
+    code = request.data.get("code", None)
+    attempt_id = request.session.get("login_attempt", None)
+    session_id = request.session.get("email_login_session_id", None)
 
     if not code:
         return Response(
@@ -147,6 +160,8 @@ def confirm_login_view(request: Request) -> Response:
         user = confirmation.user
         user.is_email_confirmed = True
         user.save(update_fields=["is_email_confirmed"])
+
+        # удаление всех попыток
 
     request.session.pop("login_attempt", None)
     request.session.pop("email_login_session_id", None)

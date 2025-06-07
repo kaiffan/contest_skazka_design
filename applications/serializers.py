@@ -19,6 +19,7 @@ from participants.models import Participant
 
 class ApplicationSerializer(ModelSerializer[Applications]):
     contest_title = SerializerMethodField()
+    nomination_name = SerializerMethodField()
 
     class Meta:
         model = Applications
@@ -31,12 +32,15 @@ class ApplicationSerializer(ModelSerializer[Applications]):
             "rejection_reason",
             "contest_title",
             "contest_id",
+            "nomination_name",
             "user_id",
-            "nomination",
         ]
 
     def get_contest_title(self, instance: Applications):
         return instance.contest.title
+
+    def get_nomination_name(self, instance: Applications):
+        return instance.nomination.name
 
 
 class ApplicationWithCriteriaSerializer(ModelSerializer[Applications]):
@@ -146,60 +150,54 @@ class SendApplicationsSerializer(Serializer):
         return application
 
 
-class ApproveApplicationSerializer(ModelSerializer[Applications]):
-    class Meta:
-        model = Applications
-        fields = ["id"]
-        extra_kwargs = {"id": {"required": True}}
+class ApproveApplicationSerializer(Serializer):
+    application_id = IntegerField(required=True)
 
-    def validate(self, data):
-        application_id = data.get("id")
-
-        ApplicationValidator.validate_application(
-            application_id=application_id,
+    def validate_application_id(self, value):
+        instance = ApplicationValidator.validate_application(
+            application_id=value,
             application_status=ApplicationStatus.accepted.value,
         )
-
-        return data
+        self.instance = instance
+        return value
 
     def update(self, instance, validated_data):
         instance.status = ApplicationStatus.accepted.value
         instance.rejection_reason = None
-        instance.save()
+        instance.save(update_fields=["status", "rejection_reason"])
 
         Participant.objects.create(
             user_id=instance.user_id, contest_id=instance.contest_id
         )
 
+        return instance
 
-class RejectApplicationSerializer(ModelSerializer[Applications]):
-    class Meta:
-        model = Applications
-        fields = ["id", "rejection_reason"]
-        extra_kwargs = {
-            "id": {"required": True},
-            "rejection_reason": {"required": True},
-        }
+    def save(self, **kwargs):
+        return self.update(self.instance, self.validated_data)
 
-    def validate(self, data):
-        application_id = data.get("id")
 
-        ApplicationValidator.validate_application(
+class RejectApplicationSerializer(Serializer):
+    application_id = IntegerField(required=True)
+    rejection_reason = CharField(required=True)
+
+    def validate_application_id(self, application_id):
+        instance = ApplicationValidator.validate_application(
             application_id=application_id,
             application_status=ApplicationStatus.rejected.value,
         )
 
-        rejection_reason = data.get("rejection_reason")
-
-        if not rejection_reason:
-            raise ValidationError("Rejection reason cannot be empty")
-
-        return data
+        self.instance = instance
+        return application_id
 
     def update(self, instance, validated_data):
         instance.status = ApplicationStatus.rejected.value
         instance.rejection_reason = validated_data.get("rejection_reason")
-        instance.save()
+        instance.save(update_fields=["status", "rejection_reason"])
+
+        return instance
+
+    def save(self, **kwargs):
+        return self.update(self.instance, self.validated_data)
 
 
 class UpdateApplicationSerializer(ModelSerializer[Applications]):

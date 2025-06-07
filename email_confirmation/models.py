@@ -18,7 +18,7 @@ class EmailConfirmationLogin(models.Model):
         name="session_id", max_length=255, editable=False, db_index=True
     )
     attempt_number = models.PositiveIntegerField(
-        name="attempt_number", editable=False, default=1
+        name="attempt_number", editable=False, default=0
     )
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)

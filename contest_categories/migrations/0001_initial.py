@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-contest_category_list = ["Фото", "Искусство", "наука"]
+contest_category_list = ["Фото", "Искусство", "Наука"]
 
 
 def add_contest_category(apps, schema_editor):

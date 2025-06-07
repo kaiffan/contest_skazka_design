@@ -109,7 +109,7 @@ class LogoutSerializer(Serializer[Users]):
             refresh_token = RefreshToken(self.token)
             refresh_token.blacklist()
         except TokenError:
-            raise AuthenticationFailed("Refresh token is invalid")
+            raise AuthenticationFailed(detail={"error": "Refresh token is invalid"})
 
 
 class PasswordResetSerializer(ModelSerializer[Users]):
@@ -125,7 +125,7 @@ class PasswordResetSerializer(ModelSerializer[Users]):
         current_password = data.get("current_password")
 
         if not check_password(password=current_password, encoded=user.password):
-            raise ValidationError({"current_password": "Текущий пароль неверен."})
+            raise ValidationError(detail={"error": "Текущий пароль неверен."}, code=401)
 
         return data
 

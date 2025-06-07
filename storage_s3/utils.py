@@ -2,13 +2,13 @@ from os import unlink
 from tempfile import NamedTemporaryFile
 from uuid import uuid4
 from django.core.files.uploadedfile import UploadedFile
+from rest_framework.serializers import ValidationError
 
 from config.settings import get_settings
 from boto3.session import Session
 
 from contest_file_constraints.models import ContestFileConstraints
 from contests.models import Contest
-from file_constraints.models import FileConstraint
 from storage_s3.enums import TypeUploads
 
 settings = get_settings()
@@ -41,7 +41,7 @@ def upload_file_to_storage(
     try:
         file_extension = uploaded_file.name.rsplit(sep=".", maxsplit=1)[1].lower()
     except IndexError:
-        raise ValueError("Файл не имеет расширения")
+        raise ValidationError(detail={"error": "Файл не имеет расширения"}, code=400)
 
     normalized_constraints = {
         folder: {ext.lower() for ext in formats}
@@ -61,9 +61,12 @@ def upload_file_to_storage(
         allowed_extensions = sorted(
             {ext for formats in normalized_constraints.values() for ext in formats}
         )
-        raise ValueError(
-            f"Формат файла '{file_extension}' не поддерживается. "
-            f"Допустимые форматы: {', '.join(allowed_extensions)}"
+        raise ValidationError(
+            detail={
+                "error": f"Формат файла '{file_extension}' не поддерживается. "
+                f"Допустимые форматы: {', '.join(allowed_extensions)}"
+            },
+            code=400,
         )
 
     client = get_sesion_s3()

@@ -223,7 +223,7 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
 
     def validate_region_id(self, region_id: int):
         if not Region.objects.filter(id=region_id).exists():
-            raise ValidationError("Region does not exist")
+            raise ValidationError(detail={"error": "Region does not exist"}, code=400)
         return region_id
 
     def validate_age_category(self, value):
@@ -241,7 +241,10 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
         ]
 
         if invalid_age_categories:
-            raise ValidationError(f"Invalid age category IDs: {invalid_age_categories}")
+            raise ValidationError(
+                detail={"error": f"Invalid age category IDs: {invalid_age_categories}"},
+                code=400,
+            )
 
         return value
 
@@ -265,7 +268,9 @@ class UpdateBaseContestSerializer(Serializer):
 
     def validate_age_category(self, value):
         if not value:
-            raise ValidationError("Age categories cannot be empty")
+            raise ValidationError(
+                detail={"error": "Age categories cannot be empty"}, code=400
+            )
 
         existing_ids = set(
             AgeCategories.objects.filter(id__in=value).values_list("id", flat=True)
@@ -278,7 +283,10 @@ class UpdateBaseContestSerializer(Serializer):
         ]
 
         if invalid_age_categories:
-            raise ValidationError(f"Invalid age category IDs: {invalid_age_categories}")
+            raise ValidationError(
+                detail={"error": f"Invalid age category IDs: {invalid_age_categories}"},
+                code=400,
+            )
 
         return value
 
@@ -339,16 +347,18 @@ class ContestChangeCriteriaSerializer(Serializer):
 
             if min_points is None or max_points is None:
                 raise ValidationError(
-                    {
+                    detail={
                         f"criteria_list[{idx}]": "Each criteria must contain 'min_points' and 'max_points'"
-                    }
+                    },
+                    code=400,
                 )
 
             if min_points > max_points:
                 raise ValidationError(
-                    {
+                    detail={
                         f"criteria_list[{idx}]": "'min_points' must be less than or equal to 'max_points'"
-                    }
+                    },
+                    code=400,
                 )
 
         return data
@@ -460,7 +470,9 @@ class ContestChangeNominationSerializer(Serializer):
 
     def validate_nomination_list(self, data):
         if not data:
-            raise ValidationError("nomination_list cannot be empty")
+            raise ValidationError(
+                detail={"error": "nomination_list cannot be empty"}, code=400
+            )
         return data
 
     def update_nominations_in_contest(self):
@@ -545,7 +557,9 @@ class ContestChangeStageSerializer(Serializer):
 
     def validate_contest_stage_list(self, data):
         if not data:
-            raise ValidationError("contest_stage_list cannot be empty")
+            raise ValidationError(
+                detail={"error": "contest_stage_list cannot be empty"}, code=400
+            )
 
         stages_with_dates = []
 
@@ -561,11 +575,16 @@ class ContestChangeStageSerializer(Serializer):
                 end_date: date = date.fromisoformat(end_date_str)
             except ValueError:
                 raise ValidationError(
-                    f"Invalid date format. Use YYYY-MM-DD. Got: start_date={start_date_str}, end_date={end_date_str}"
+                    detail={
+                        "error": f"Invalid date format. Use YYYY-MM-DD. Got: start_date={start_date_str}, end_date={end_date_str}"
+                    },
+                    code=400,
                 )
 
             if start_date >= end_date:
-                raise ValidationError("date_start must be before date_end")
+                raise ValidationError(
+                    detail={"error": "date_start must be before date_end"}, code=400
+                )
 
             stages_with_dates.append(
                 {
@@ -582,8 +601,11 @@ class ContestChangeStageSerializer(Serializer):
             if previous_end is not None:
                 if previous_end > current_stage_start:
                     raise ValidationError(
-                        f"Stages have overlapping time ranges: previous end_date "
-                        f"({previous_end}) > next start_date ({current_stage_start})"
+                        detail={
+                            "error": f"Stages have overlapping time ranges: previous end_date "
+                            f"({previous_end}) > next start_date ({current_stage_start})"
+                        },
+                        code=400,
                     )
 
             previous_end = current_stage_end
@@ -596,7 +618,9 @@ class ContestChangeStageSerializer(Serializer):
         result = {"added": [], "updated": []}
 
         if not contest_stage_list:
-            raise ValidationError(detail="contest_stage_list cannot be empty", code=404)
+            raise ValidationError(
+                detail={"error": "contest_stage_list cannot be empty"}, code=404
+            )
 
         existing_stages = ContestsContestStage.objects.filter(contest=contest).all()
 
@@ -649,9 +673,13 @@ class FileConstraintChangeSerializer(Serializer):
 
     def validate_file_constraint_ids(self, value):
         if not value:
-            raise ValidationError("Список ограничений не может быть пустым.")
+            raise ValidationError(
+                detail={"error": "Список ограничений не может быть пустым."}, code=400
+            )
         if len(value) > 3:
-            raise ValidationError("Нельзя указать больше 3 ограничений.")
+            raise ValidationError(
+                detail={"error": "Нельзя указать больше 3 ограничений."}, code=400
+            )
 
         received_ids = [item.get("id") for item in value]
 
@@ -666,7 +694,9 @@ class FileConstraintChangeSerializer(Serializer):
         if not missing_ids:
             return value
 
-        raise ValidationError(f"Ограничения с ID {missing_ids} не существуют.")
+        raise ValidationError(
+            detail={"error": f"Ограничения с ID {missing_ids} не существуют."}, code=400
+        )
 
     def update(self, instance, validated_data):
         file_constraint_ids = validated_data.get("file_constraint_ids", [])

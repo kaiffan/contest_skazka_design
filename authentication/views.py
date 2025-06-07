@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from authentication.email import send_confirmation_email
+from authentication.permissions import IsAdminSystemPermission
 from authentication.serializers import (
     RegistrationSerializer,
     LoginSerializer,
@@ -246,7 +247,7 @@ def reset_password_view(request: Request) -> Response:
     )
 
 
-@api_view(http_method_names=["PUT"])
-@permission_classes(permission_classes=[AllowAny])
-def restore_password_view(request: Request) -> Response:
+@api_view(http_method_names=["POST"])
+@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+def block_user_view(request: Request) -> Response:
     pass

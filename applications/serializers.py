@@ -89,7 +89,9 @@ class SendApplicationsSerializer(Serializer):
             contest = Contest.objects.get(id=contest_id)
 
             if not contest:
-                raise ValidationError("Contest does not exist")
+                raise ValidationError(
+                    detail={"error": "Contest does not exist"}, code=404
+                )
 
             exists_application = Applications.objects.filter(
                 nomination_id=nomination_id, contest_id=contest.id, user_id=user.id
@@ -100,11 +102,12 @@ class SendApplicationsSerializer(Serializer):
 
             if not (contest_region == user_region or contest_region == "Онлайн"):
                 raise ValidationError(
-                    detail="This application does not belong to this region", code=403
+                    detail={"error": "This application does not belong to this region"},
+                    code=403,
                 )
 
             if exists_application:
-                raise ValidationError("Application already exists")
+                raise ValidationError(detail={"error": "Application already exists"})
 
             is_iternal_role = (
                 Participant.objects.filter(contest_id=contest.id, user_id=user.id)
@@ -113,7 +116,10 @@ class SendApplicationsSerializer(Serializer):
             )
 
             if is_iternal_role:
-                raise ValidationError("Participant role don't send application")
+                raise ValidationError(
+                    detail={"error": "Participant role don't send application"},
+                    code=400,
+                )
 
         return data
 

@@ -24,10 +24,15 @@ class ContestDataUpdateSerializer(Serializer):
 
     def validate_competencies(self, value):
         if not value:
-            raise ValidationError("Competencies cannot be empty")
+            raise ValidationError(
+                detail={"error": "Competencies cannot be empty"}, code=400
+            )
 
         if len(value) != len(set(value)):
-            raise ValidationError("Competencies cannot contain duplicate competencies")
+            raise ValidationError(
+                detail={"error": "Competencies cannot contain duplicate competencies"},
+                code=400,
+            )
 
         return value
 
@@ -100,7 +105,9 @@ class UserDataPatchSerializer(Serializer):
 
         if user_with_email:
             raise ValidationError(
-                detail="Пользователь с такой электронной почтой уже существует.",
+                detail={
+                    "error": "Пользователь с такой электронной почтой уже существует."
+                },
                 code=400,
             )
 
@@ -108,7 +115,9 @@ class UserDataPatchSerializer(Serializer):
 
     def validate_region_id(self, value):
         if not Region.objects.filter(id=value).exists():
-            raise ValidationError(detail="Регион с таким ID не существует.", code=400)
+            raise ValidationError(
+                detail={"error": "Регион с таким ID не существует."}, code=400
+            )
         return value
 
     def update(self, instance, validated_data):
@@ -153,13 +162,7 @@ class UserShortDataSerializer(ModelSerializer[Users]):
 class AllUsersShortDataSerializer(ModelSerializer[Users]):
     class Meta:
         model = Users
-        fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "middle_name",
-            "email"
-        ]
+        fields = ["id", "first_name", "last_name", "middle_name", "email"]
 
 
 class UserParticipantSerializer(ModelSerializer[Users]):

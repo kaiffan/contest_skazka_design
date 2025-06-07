@@ -23,9 +23,11 @@ class WorkRateSerializer(Serializer):
         try:
             application = Applications.objects.get(id=value)
         except Applications.DoesNotExist:
-            raise ValidationError("Invalid application_id")
+            raise ValidationError(detail={"error": "Invalid application_id"}, code=400)
         if application.status != ApplicationStatus.accepted.value:
-            raise ValidationError("Application status must be accepted")
+            raise ValidationError(
+                detail={"error": "Application status must be accepted"}, code=400
+            )
 
         return value
 
@@ -33,12 +35,12 @@ class WorkRateSerializer(Serializer):
         contest: Contest = self.context.get("contest")
 
         if not value:
-            raise ValidationError(detail="Invalid criteria_id", code=404)
+            raise ValidationError(detail={"error": "Invalid criteria_id"}, code=404)
         exists_in_contest = contest.criteria.filter(id=value).exists()
 
         if not exists_in_contest:
             raise ValidationError(
-                detail="Does not exists criteria_id in contest", code=404
+                detail={"error": "Does not exists criteria_id in contest"}, code=404
             )
         return value
 
@@ -48,17 +50,25 @@ class WorkRateSerializer(Serializer):
         for data in init_data:
             criteria_id = data.get("criteria_id", None)
             if not criteria_id:
-                raise ValidationError("criteria_id is required to validate rate")
+                raise ValidationError(
+                    detail={"error": "criteria_id is required to validate rate"},
+                    code=400,
+                )
             try:
                 contest_criteria = ContestCriteria.objects.get(id=criteria_id)
             except Criteria.DoesNotExist:
-                raise ValidationError("Criteria does not exist")
+                raise ValidationError(
+                    detail={"error": "Criteria does not exist"}, code=404
+                )
             if (
                 value < contest_criteria.min_points
                 or value > contest_criteria.max_points
             ):
                 raise ValidationError(
-                    f"Rate must be between {contest_criteria.min_points} and {contest_criteria.max_points}"
+                    detail={
+                        "error": f"Rate must be between {contest_criteria.min_points} and {contest_criteria.max_points}"
+                    },
+                    code=400,
                 )
             return value
 

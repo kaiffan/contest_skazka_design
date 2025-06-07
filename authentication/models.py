@@ -16,9 +16,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
     middle_name = models.CharField(
         name="middle_name", max_length=255, null=False, default="Отсутствует"
     )
-    phone_number = models.CharField(
-        name="phone_number", max_length=255, null=False, unique=True
-    )
     email = models.EmailField(name="email", max_length=255, unique=True, null=False)
     birth_date = models.DateField(name="birth_date", null=False)
     password = models.CharField(name="password", max_length=255, null=False)

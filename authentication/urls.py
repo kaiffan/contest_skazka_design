@@ -18,5 +18,4 @@ urlpatterns = [
     path(route="refresh", view=cookie_tokens_refresh_view, name="token_refresh_view"),
     path(route="reset", view=reset_password_view, name="reset_password_view"),
     path(route="confirm_login", view=confirm_login_view, name="confirm_login_view"),
-    # Восстановление пароля
 ]

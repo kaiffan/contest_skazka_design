@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from contests.models import Contest
+from participants.models import Participant
 from work_rate.utils import validate_count_criteria_by_contest
 
 from participants.permissions import IsContestJuryPermission
@@ -18,9 +19,16 @@ from work_rate.serializers import WorkRateSerializer, WorkRateAllSerializer
 @permission_classes(permission_classes=[IsAuthenticated])  # , IsContestJuryPermission
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
+    jury_id = (
+        Participant.objects.filter(
+            contest_id=request.contest_id, user_id=request.user.id
+        )
+        .get()
+        .id
+    )
 
     serializer = WorkRateSerializer(
-        data=request.data, many=True, context={"contest": contest}
+        data=request.data, many=True, context={"contest": contest, "jury_id": jury_id}
     )
 
     if not serializer.is_valid(raise_exception=True):
@@ -46,7 +54,7 @@ def work_rate_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])  # , IsContestJuryPermission
+@permission_classes([IsAuthenticated])
 def get_all_rated_works_in_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

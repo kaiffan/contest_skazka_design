@@ -1,17 +1,10 @@
-from django.contrib.auth import login
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-    throttle_classes,
-    authentication_classes,
-)
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
@@ -35,7 +28,6 @@ from email_confirmation.models import EmailConfirmationLogin
         AllowAny,
     ]
 )
-# @throttle_classes(throttle_classes=[IpBasedThrottle])
 def registration_view(request: Request) -> Response:
     serializer = RegistrationSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
@@ -56,7 +48,6 @@ def registration_view(request: Request) -> Response:
     ]
 )
 @csrf_exempt
-# @throttle_classes(throttle_classes=[IpBasedThrottle])
 def login_view(request: Request) -> Response:
     serializer = LoginSerializer(data=request.data)
 
@@ -74,6 +65,12 @@ def login_view(request: Request) -> Response:
         attempt_number = (
             EmailConfirmationLogin.objects.filter(session_id=session_id).count() + 1
         )
+
+        if attempt_number > 3:
+            return Response(
+                data={"message": "Count attempt_number more 3"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         EmailConfirmationLogin.objects.filter(user=user, is_used=False).delete()
 

@@ -66,7 +66,6 @@ class UserDataPatchSerializer(Serializer):
     first_name = CharField(required=False)
     last_name = CharField(required=False)
     middle_name = CharField(required=False)
-    phone_number = CharField(required=False)
     email = EmailField(required=False)
     avatar_link = URLField(required=False)
     birth_date = DateField(required=False)
@@ -76,23 +75,6 @@ class UserDataPatchSerializer(Serializer):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.required = False
-
-    def validate_phone_number(self, value):
-        if not value:
-            return value
-
-        instance = self.instance
-
-        user_with_phone = (
-            Users.objects.filter(phone_number=value).exclude(pk=instance.pk).first()
-        )
-
-        if user_with_phone:
-            raise ValidationError(
-                detail="Пользователь с таким номером телефона уже существует.", code=400
-            )
-
-        return value
 
     def validate_birth_date(self, value):
         if not value:
@@ -149,7 +131,6 @@ class UserFullDataSerializer(ModelSerializer[Users]):
             "first_name",
             "last_name",
             "middle_name",
-            "phone_number",
             "email",
             "birth_date",
             "avatar_link",
@@ -177,8 +158,7 @@ class AllUsersShortDataSerializer(ModelSerializer[Users]):
             "first_name",
             "last_name",
             "middle_name",
-            "email",
-            "phone_number",
+            "email"
         ]
 
 

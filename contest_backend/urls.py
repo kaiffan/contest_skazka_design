@@ -17,4 +17,5 @@ urlpatterns = [
     path(route="api/v1/news/", view=include("vk_news.urls")),
     path(route="api/v1/participants/", view=include("participants.urls")),
     path(route="api/v1/storage/", view=include("storage_s3.urls")),
+    path(route="api/v1/file_constraints/", view=include("file_constraints.urls")),
 ]

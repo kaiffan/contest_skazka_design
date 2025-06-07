@@ -88,7 +88,7 @@ def upload_file_to_storage(
         unlink(file_path)
 
     endpoint_url: str = settings.yandex_s3_credentials.ENDPOINT_URL.rstrip("/")
-    return f"{endpoint_url}/skazka-design/{file_key}"
+    return f"{endpoint_url}/{settings.yandex_s3_credentials.BACKET_NAME}/{file_key}"
 
 
 def get_file_constraint_by_type(
@@ -111,7 +111,7 @@ def get_file_constraint_by_type(
     if type_uploads.value == TypeUploads.AVATAR.value:
         return {"avatars": ["jpg", "jpeg", "png", "webp"]}
 
-    if type_uploads == TypeUploads.RULES.value:
+    if type_uploads.value == TypeUploads.RULES.value:
         return {"rules": ["pdf", "doc", "docx"]}
 
     if not contest_id:

@@ -8,7 +8,8 @@ from applications.views import (
     get_application_view,
     get_all_applications_approved_view,
     get_all_applications_rejected_view,
-    update_application_view, get_applications_user_view,
+    update_application_view,
+    get_applications_user_view,
 )
 from work_rate.views import (
     work_rate_view,
@@ -47,6 +48,10 @@ urlpatterns = [
         view=get_all_rated_works_in_contest_view,
         name="get_all_rated_works_view",
     ),
-    path(route="all/user", view=get_applications_user_view, name="get_applications_user_view"),
+    path(
+        route="all/user",
+        view=get_applications_user_view,
+        name="get_applications_user_view",
+    ),
     path(route="update", view=update_application_view, name="update_application_view"),
 ]

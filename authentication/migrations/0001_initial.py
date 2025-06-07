@@ -43,7 +43,6 @@ class Migration(migrations.Migration):
                     "middle_name",
                     models.CharField(default="Отсутствует", max_length=255),
                 ),
-                ("phone_number", models.CharField(max_length=255, unique=True)),
                 ("email", models.EmailField(max_length=255, unique=True)),
                 ("birth_date", models.DateField()),
                 ("password", models.CharField(max_length=255)),

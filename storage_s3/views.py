@@ -51,11 +51,7 @@ def upload_file_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(
-    permission_classes=[
-        IsAuthenticated
-    ]
-)
+@permission_classes(permission_classes=[IsAuthenticated])
 def upload_contest_work_view(request: Request) -> Response:
     uploaded_file = request.FILES.get("file")
     upload_type: str = request.data.get("upload_type", None)

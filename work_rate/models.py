@@ -20,6 +20,11 @@ class WorkRate(models.Model):
         blank=False,
     )
 
+    jury = models.ForeignKey(
+        to="participants.Participant",
+        on_delete=models.CASCADE,
+    )
+
     class Meta:
         db_table = "work_rate"
-        unique_together = ("criteria", "application")
+        unique_together = ("criteria", "application", "jury")

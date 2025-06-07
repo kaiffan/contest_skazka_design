@@ -14,7 +14,6 @@ class UsersManager(BaseUserManager):
         email,
         first_name,
         last_name,
-        phone_number,
         birth_date,
         region_id,
     ):
@@ -24,8 +23,6 @@ class UsersManager(BaseUserManager):
             raise ValidationError("Пользователь должен иметь имя.")
         if not last_name:
             raise ValidationError("Пользователь должен иметь фамилию.")
-        if not phone_number:
-            raise ValidationError("Пользователь должен иметь номер телефона.")
         if not birth_date:
             raise ValidationError("Пользователь должен иметь дату рождения.")
         if not region_id:
@@ -36,7 +33,6 @@ class UsersManager(BaseUserManager):
         email,
         first_name,
         last_name,
-        phone_number,
         birth_date,
         region_id,
         password=None,
@@ -46,7 +42,6 @@ class UsersManager(BaseUserManager):
             email=email,
             first_name=first_name,
             last_name=last_name,
-            phone_number=phone_number,
             birth_date=birth_date,
             region_id=region_id,
         )
@@ -62,7 +57,6 @@ class UsersManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
             middle_name=middle_name,
-            phone_number=phone_number,
             birth_date=birth_date,
             region_id=region_id,
         )
@@ -77,7 +71,6 @@ class UsersManager(BaseUserManager):
         first_name,
         last_name,
         middle_name,
-        phone_number,
         birth_date,
         region,
         password,
@@ -89,7 +82,6 @@ class UsersManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
             middle_name=middle_name,
-            phone_number=phone_number,
             birth_date=birth_date,
             password=password,
             region_id=region.id,

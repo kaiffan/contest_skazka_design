@@ -653,7 +653,7 @@ class FileConstraintChangeSerializer(Serializer):
         if len(value) > 3:
             raise ValidationError("Нельзя указать больше 3 ограничений.")
 
-        received_ids = [item.id for item in value]
+        received_ids = [item.get("id") for item in value]
 
         existing_ids = list(
             FileConstraint.objects.filter(id__in=received_ids).values_list(
@@ -669,16 +669,23 @@ class FileConstraintChangeSerializer(Serializer):
         raise ValidationError(f"Ограничения с ID {missing_ids} не существуют.")
 
     def update(self, instance, validated_data):
-        new_constraints = set(validated_data.get("file_constraints", []))
-        current_constraints = set(instance.file_constraints.all())
+        file_constraint_ids = validated_data.get("file_constraint_ids", [])
 
-        to_add = new_constraints - current_constraints
-        to_remove = current_constraints - new_constraints
+        new_constraint_ids = set(constraint["id"] for constraint in file_constraint_ids)
+
+        current_constraints = instance.file_constraint.all()
+        current_constraint_ids = set(
+            constraint.id for constraint in current_constraints
+        )
+
+        to_add = new_constraint_ids - current_constraint_ids
+        to_remove = current_constraint_ids - new_constraint_ids
 
         if to_add:
-            instance.file_constraints.add(*to_add)
+            instance.file_constraint.add(*to_add)
+
         if to_remove:
-            instance.file_constraints.remove(*to_remove)
+            instance.file_constraint.remove(*to_remove)
 
         return instance
 

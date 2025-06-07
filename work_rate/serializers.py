@@ -6,8 +6,11 @@ from rest_framework.serializers import ModelSerializer, Serializer
 
 from applications.enums import ApplicationStatus
 from applications.models import Applications
+from applications.serializers import ApplicationSerializer
+from contest_criteria.models import ContestCriteria
 from contests.models import Contest
 from criteria.models import Criteria
+from participants.models import Participant
 from work_rate.models import WorkRate
 
 
@@ -40,22 +43,29 @@ class WorkRateSerializer(Serializer):
         return value
 
     def validate_rate(self, value):
-        criteria_id = self.initial_data.get("criteria_id")
-        if not criteria_id:
-            raise ValidationError("criteria_id is required to validate rate")
-        try:
-            criteria = Criteria.objects.get(id=criteria_id)
-        except Criteria.DoesNotExist:
-            raise ValidationError("Criteria does not exist")
-        if value < criteria.min_points or value > criteria.max_points:
-            raise ValidationError(
-                f"Rate must be between {criteria.min_points} and {criteria.max_points}"
-            )
-        return value
+        init_data = self.initial_data
+
+        for data in init_data:
+            criteria_id = data.get("criteria_id", None)
+            if not criteria_id:
+                raise ValidationError("criteria_id is required to validate rate")
+            try:
+                contest_criteria = ContestCriteria.objects.get(id=criteria_id)
+            except Criteria.DoesNotExist:
+                raise ValidationError("Criteria does not exist")
+            if (
+                value < contest_criteria.min_points
+                or value > contest_criteria.max_points
+            ):
+                raise ValidationError(
+                    f"Rate must be between {contest_criteria.min_points} and {contest_criteria.max_points}"
+                )
+            return value
 
     @transaction.atomic
     def create(self, validated_data):
-        return WorkRate.objects.create(**validated_data)
+        jury_id = self.context.get("jury_id")
+        return WorkRate.objects.create(jury_id=jury_id, **validated_data)
 
     def update(self, instance, validated_data):
         instance.rate = validated_data.get("rate", instance.rate)
@@ -65,5 +75,12 @@ class WorkRateSerializer(Serializer):
 
 
 class WorkRateAllSerializer(Serializer):
-    application_id = IntegerField()
+    application = ApplicationSerializer()
     total = IntegerField()
+
+    def to_representation(self, instance):
+        application = Applications.objects.get(id=instance["application_id"])
+        return {
+            "application": ApplicationSerializer(application).data,
+            "total": instance["total"],
+        }

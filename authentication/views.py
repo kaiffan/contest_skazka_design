@@ -245,9 +245,3 @@ def reset_password_view(request: Request) -> Response:
     return Response(
         data={"message": "Пароль успешно изменён."}, status=status.HTTP_200_OK
     )
-
-
-@api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
-def block_user_view(request: Request) -> Response:
-    pass

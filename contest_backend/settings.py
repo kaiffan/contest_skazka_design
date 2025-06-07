@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "age_categories",
     "applications",
     "authentication",
+    "block_user",
     "competencies",
     "contest_categories",
     "file_constraints",

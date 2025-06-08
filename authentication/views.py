@@ -93,7 +93,7 @@ def resend_code_view(request: Request) -> Response:
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        _, error = send_confirmation_code(confirmation.user, session_id, resend=True)
+        _, error = send_confirmation_code(confirmation.user, session_id)
         if error:
             return Response(data=error, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -162,8 +162,6 @@ def confirm_login_view(request: Request) -> Response:
         user = confirmation.user
         user.is_email_confirmed = True
         user.save(update_fields=["is_email_confirmed"])
-
-        # удаление всех попыток
 
     request.session.pop("login_attempt", None)
     request.session.pop("email_login_session_id", None)

@@ -7,7 +7,8 @@ from contests.views import (
     get_all_contests_view,
     get_contest_by_id,
     get_all_contests_owner_view,
-    get_all_contests_not_permissions_view, get_all_contests_jury_view,
+    get_all_contests_not_permissions_view,
+    get_all_contests_jury_view,
 )
 
 urlpatterns = [
@@ -31,5 +32,5 @@ urlpatterns = [
         route="all/jury",
         view=get_all_contests_jury_view,
         name="get_all_contests_jury_view",
-    )
+    ),
 ]

@@ -22,6 +22,7 @@ class EmailConfirmationLogin(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
+    locked_until = models.DateTimeField(null=True, blank=True)
 
     @classmethod
     def generate_code(cls) -> tuple[str, str]:

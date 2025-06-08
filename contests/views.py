@@ -14,7 +14,8 @@ from contests.serializers import (
     UpdateBaseContestSerializer,
     ContestByIdSerializer,
     ContestAllSerializer,
-    ContestAllOwnerSerializer, ContestAllJurySerializer,
+    ContestAllOwnerSerializer,
+    ContestAllJurySerializer,
 )
 from participants.enums import ParticipantRole
 from participants.permissions import IsContestOwnerPermission, IsContestJuryPermission
@@ -150,5 +151,3 @@ def get_all_contests_jury_view(request: Request) -> Response:
 
     serializer = ContestAllJurySerializer(instance=conntests, many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-

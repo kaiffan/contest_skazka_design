@@ -76,6 +76,7 @@ class UserValidator:
                 detail={"error": "Пароль должен содержать минимум 10 символов."},
                 code=400,
             )
+
         if len(set(value)) < 5:
             raise ValidationError(
                 detail={
@@ -83,6 +84,7 @@ class UserValidator:
                 },
                 code=400,
             )
+
         if not search(pattern=r"[A-Z]", string=value):
             raise ValidationError(
                 detail={
@@ -90,6 +92,7 @@ class UserValidator:
                 },
                 code=400,
             )
+
         if not search(pattern=r"[a-z]", string=value):
             raise ValidationError(
                 detail={
@@ -102,6 +105,7 @@ class UserValidator:
                 detail={"error": "Пароль должен содержать хотя бы одну цифру."},
                 code=400,
             )
+
         if not search(pattern=r"[!@#$%^&*(),.?\":{}|<>]", string=value):
             raise ValidationError(
                 detail={

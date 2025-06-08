@@ -18,6 +18,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from authentication.models import Users
 from django.contrib.auth import authenticate
 
+from authentication.validator import UserValidator
+from regions.models import Region
+
 
 class RegistrationSerializer(ModelSerializer[Users]):
     region_id = IntegerField()
@@ -45,18 +48,46 @@ class RegistrationSerializer(ModelSerializer[Users]):
             "region_id": {"required": True},
         }
 
-    def create(self, validated_data):
-        return Users.objects.create_user(**validated_data)
+    def validate_first_name(self, value):
+        return UserValidator.validate_full_name(value=value)
+
+    def validate_last_name(self, value):
+        return UserValidator.validate_full_name(value=value)
+
+    def validate_middle_name(self, value):
+        return UserValidator.validate_full_name(value=value)
 
     def validate_email(self, value):
+        UserValidator.validate_email(email=value)
         if Users.objects.filter(email=value).exists():
-            raise ValidationError("A user with that email already exists.")
+            raise ValidationError(
+                detail={"error": "A user with that email already exists."}, code=400
+            )
         return value
+
+    def validate_password(self, value):
+        return UserValidator.validate_password(value=value)
 
     def validate_birth_date(self, value):
         if value > datetime.now().date():
-            raise ValidationError("Birth date cannot be in the future.")
+            raise ValidationError(
+                detail={"error": "Birth date cannot be in the future."}, code=400
+            )
         return value
+
+    def validate_region_id(self, value):
+        if not value:
+            raise ValidationError(
+                detail={"error": "Регион не может быть пустым"},
+                code=400,
+            )
+
+        if not Region.objects.filter(id=value).exists():
+            raise ValidationError(detail={"error": "Region does not exist"}, code=400)
+        return value
+
+    def create(self, validated_data):
+        return Users.objects.create_user(**validated_data)
 
 
 class LoginSerializer(Serializer[Users]):
@@ -77,18 +108,27 @@ class LoginSerializer(Serializer[Users]):
         password = data.get("password")
 
         if not email:
-            raise ValidationError("An email address is required to log in.")
+            raise ValidationError(
+                detail={"error": "An email address is required to log in."}, code=400
+            )
 
         if not password:
-            raise ValidationError("A password is required to log in.")
+            raise ValidationError(
+                detail={"error": "A password is required to log in."}, code=400
+            )
 
         user = authenticate(username=email, password=password)
 
         if not user:
-            raise ValidationError("A user with this email and password was not found.")
+            raise ValidationError(
+                detail={"error": "A user with this email and password was not found."},
+                code=404,
+            )
 
         if not user.is_active:
-            raise ValidationError("This user is not currently activated.")
+            raise ValidationError(
+                detail={"error": "This user is not currently activated."}, code=400
+            )
 
         return user
 

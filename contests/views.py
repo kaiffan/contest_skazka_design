@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from authentication.permissions import IsAdminSystemPermission
 from contests.filter import ContestFilter
 from contests.models import Contest
+from contests.paginator import ContestPaginator
 from contests.serializers import (
     CreateBaseContestSerializer,
     UpdateBaseContestSerializer,
@@ -114,11 +115,16 @@ def get_all_contests_view(request: Request) -> Response:
     contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
 
     contest_filter = ContestFilter(data=request.GET, queryset=contest_list)
-    filter_queryset = contest_filter.qs
 
-    serializer = ContestAllSerializer(instance=filter_queryset, many=True)
+    paginator = ContestPaginator()
 
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+    paginated_queryset = paginator.paginate_queryset(
+        queryset=contest_filter.qs, request=request
+    )
+
+    serializer = ContestAllSerializer(instance=paginated_queryset, many=True)
+
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(http_method_names=["GET"])

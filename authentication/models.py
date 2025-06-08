@@ -1,4 +1,7 @@
-import random
+from hmac import new
+from hashlib import sha512
+
+from config.settings import get_settings
 from datetime import date
 
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -16,7 +19,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     middle_name = models.CharField(
         name="middle_name", max_length=255, null=False, default="Отсутствует"
     )
-    email = models.EmailField(name="email", max_length=255, unique=True, null=False)
+    email = models.CharField(name="email", max_length=255, unique=True, null=False)
     birth_date = models.DateField(name="birth_date", null=False)
     password = models.CharField(name="password", max_length=255, null=False)
     registration_date = models.DateTimeField(

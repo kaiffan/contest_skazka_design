@@ -16,7 +16,11 @@ from authentication.serializers import (
 from contest_backend.settings import settings
 
 # from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
-from authentication.utils import set_refresh_cookie, delete_refresh_cookie, send_confirmation_code
+from authentication.utils import (
+    set_refresh_cookie,
+    delete_refresh_cookie,
+    send_confirmation_code,
+)
 from email_confirmation.models import EmailConfirmationLogin
 
 
@@ -60,8 +64,7 @@ def login_view(request: Request) -> Response:
     request.session.save()
 
     return Response(
-        data={"message": "Код отправлен на почту"},
-        status=status.HTTP_200_OK
+        data={"message": "Код отправлен на почту"}, status=status.HTTP_200_OK
     )
 
 
@@ -74,20 +77,20 @@ def resend_code_view(request: Request) -> Response:
     if not session_id or not attempt_id:
         return Response(
             data={"detail": "Нет активной сессии или попытки."},
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
         confirmation = EmailConfirmationLogin.objects.select_related("user").get(
-            id=attempt_id,
-            session_id=session_id,
-            is_used=False
+            id=attempt_id, session_id=session_id, is_used=False
         )
 
         if not confirmation.is_expired():
             return Response(
-                data={"error": "Предыдущий код ещё не истёк. Пожалуйста, подождите и отправьте запрос после истечения!"},
-                status=status.HTTP_401_UNAUTHORIZED
+                data={
+                    "error": "Предыдущий код ещё не истёк. Пожалуйста, подождите и отправьте запрос после истечения!"
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         _, error = send_confirmation_code(confirmation.user, session_id, resend=True)
@@ -97,12 +100,11 @@ def resend_code_view(request: Request) -> Response:
     except EmailConfirmationLogin.DoesNotExist:
         return Response(
             data={"detail": "Не найдено активной попытки подтверждения."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
 
     return Response(
-        data={"message": "Код успешно отправлен повторно"},
-        status=status.HTTP_200_OK
+        data={"message": "Код успешно отправлен повторно"}, status=status.HTTP_200_OK
     )
 
 

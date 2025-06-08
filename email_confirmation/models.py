@@ -34,7 +34,7 @@ class EmailConfirmationLogin(models.Model):
 
     @staticmethod
     def hash_code(code: str) -> str:
-        key = getattr(settings, "CODE_CONFIRMATION_SALT", None).encode("utf-8")
+        key = getattr(settings, "CODE_CONFIRMATION_SALT", None).encode(encoding="utf-8")
         if not key:
             raise ValueError("CODE_CONFIRMATION_SALT must be set in settings")
 

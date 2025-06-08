@@ -1,8 +1,6 @@
 from typing import NoReturn
 
 from django.db import transaction
-from rest_framework import status
-from rest_framework.response import Response
 
 from authentication.email import send_confirmation_email
 from config.settings import get_settings
@@ -33,9 +31,7 @@ def delete_refresh_cookie(response) -> NoReturn:
 def send_confirmation_code(user, session_id, resend=False):
     with transaction.atomic():
         confirmation = EmailConfirmationLogin.objects.filter(
-            user=user,
-            session_id=session_id,
-            is_used=False
+            user=user, session_id=session_id, is_used=False
         ).first()
 
         if resend:
@@ -49,7 +45,6 @@ def send_confirmation_code(user, session_id, resend=False):
 
         if attempt_number > 3:
             return None, {"error": "Превышено количество попыток"}
-        
 
         code, code_hash = EmailConfirmationLogin.generate_code()
         confirmation = EmailConfirmationLogin.objects.create(

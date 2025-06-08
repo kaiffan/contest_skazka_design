@@ -128,18 +128,18 @@ def get_application_view(request: Request) -> Response:
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
 def get_applications_user_view(request: Request) -> Response:
     user_applications = Applications.objects.filter(user_id=request.user.id)
 
-    application_filter = ApplicationFilter(
-        request=request.GET, queryset=user_applications
-    )
+    application_filter = ApplicationFilter(data=request.GET, queryset=user_applications)
 
     paginator = ApplicationPaginator()
 
-    paginated_queryset = paginator.paginate_queryset(queryset=application_filter.qs, request=request)
+    paginated_queryset = paginator.paginate_queryset(
+        queryset=application_filter.qs, request=request
+    )
     serializer = ApplicationSerializer(instance=paginated_queryset, many=True)
 
     return paginator.get_paginated_response(data=serializer.data)

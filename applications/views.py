@@ -99,15 +99,21 @@ def get_all_applications_view(request: Request) -> Response:
 @permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def get_all_applications_rejected_view(request: Request) -> Response:
     return get_applications_by_status(
-        request=request, status_filter=ApplicationStatus.accepted.value
+        request=request, status_filter=ApplicationStatus.rejected.value
     )
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsOrgCommitteePermission,
+        IsContestJuryPermission,
+    ]
+)
 def get_all_applications_approved_view(request: Request) -> Response:
     return get_applications_by_status(
-        request=request, status_filter=ApplicationStatus.rejected.value
+        request=request, status_filter=ApplicationStatus.accepted.value
     )
 
 

@@ -22,6 +22,7 @@ class EmailConfirmationLogin(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True)
     locked_until = models.DateTimeField(null=True, blank=True)
 
     @classmethod

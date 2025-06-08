@@ -8,7 +8,7 @@ from contests_contest_stage.models import ContestsContestStage
 
 
 def get_current_contest_stage(contest: Contest) -> Dict[str, Any]:
-    current_stage = cache.get(key="current_contest_stage", default=None)
+    current_stage = cache.get(key=f"current_contest_stage_{contest.id}", default=None)
 
     if not current_stage:
         current_stage = ContestsContestStage.objects.filter(
@@ -19,7 +19,9 @@ def get_current_contest_stage(contest: Contest) -> Dict[str, Any]:
 
         if current_stage:
             cache.set(
-                key="current_contest_stage", value=current_stage, timeout=60 * 60 * 12
+                key=f"current_contest_stage_{contest.id}",
+                value=current_stage,
+                timeout=60 * 30,
             )
 
     if not current_stage:

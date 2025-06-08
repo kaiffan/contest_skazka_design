@@ -18,7 +18,7 @@ from contests.serializers import (
     ContestAllJurySerializer,
 )
 from participants.enums import ParticipantRole
-from participants.permissions import IsContestOwnerPermission, IsContestJuryPermission
+from participants.permissions import IsContestOwnerPermission
 
 
 @api_view(http_method_names=["POST"])
@@ -118,7 +118,6 @@ def get_all_contests_view(request: Request) -> Response:
     contest_filter = ContestFilter(data=request.GET, queryset=contest_list)
 
     paginator = ContestPaginator()
-
     paginated_queryset = paginator.paginate_queryset(
         queryset=contest_filter.qs, request=request
     )
@@ -132,7 +131,7 @@ def get_all_contests_view(request: Request) -> Response:
 @permission_classes(permission_classes=[IsAuthenticated])
 def get_all_contests_owner_view(request: Request) -> Response:
     contests = Contest.objects.filter(
-        participant__user=request.user,
+        participant__user_id=request.user.id,
         participant__role=ParticipantRole.owner.value,
     ).distinct()
 
@@ -142,7 +141,7 @@ def get_all_contests_owner_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(permission_classes=[IsAuthenticated])
 def get_all_contests_jury_view(request: Request) -> Response:
     conntests = Contest.objects.filter(
         participant__user_id=request.user.id,

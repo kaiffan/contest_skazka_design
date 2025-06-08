@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from contest_criteria.models import ContestCriteria
+from contest_criteria.serializers import ContestCriteriaFullSerializer
 from contests.models import Contest
 from contests.serializers import ContestChangeCriteriaSerializer
 from criteria.models import Criteria
@@ -47,7 +49,6 @@ def get_all_criteria_view(request: Request) -> Response:
         return Response(data=cached_data, status=status.HTTP_200_OK)
 
     queryset = Criteria.objects.only("name").all()
-
     search = request.query_params.get("search", None)
 
     if search:
@@ -66,3 +67,14 @@ def get_all_criteria_view(request: Request) -> Response:
     cache.set(cache_key, response_data, timeout=60 * 15)
 
     return paginator.get_paginated_response(response_data)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def get_criteria_by_contest_view(request: Request) -> Response:
+    criteria_by_contest = ContestCriteria.objects.filter(
+        contest_id=request.contest_id
+    ).all()
+
+    serializer = ContestCriteriaFullSerializer(instance=criteria_by_contest, many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)

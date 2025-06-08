@@ -31,7 +31,6 @@ from contests_contest_stage.models import ContestsContestStage
 from contests_contest_stage.serializers import ContestsContestStageSerializer
 from criteria.models import Criteria
 from file_constraints.models import FileConstraint
-from file_constraints.serailizers import FileConstraintSerializer
 from nomination.models import Nominations
 from participants.enums import ParticipantRole
 from participants.models import Participant

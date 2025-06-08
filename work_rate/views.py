@@ -6,29 +6,26 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from applications.models import Applications
 from contests.models import Contest
-from participants.models import Participant
 from work_rate.utils import validate_count_criteria_by_contest
 
 from participants.permissions import IsContestJuryPermission
 from work_rate.models import WorkRate
-from work_rate.serializers import WorkRateSerializer, WorkRateAllSerializer
+from work_rate.serializers import (
+    WorkRateSerializer,
+    WorkRateContestAllSerializer,
+    ApplicationRatesSerializer,
+)
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated])  # , IsContestJuryPermission
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
-    jury_id = (
-        Participant.objects.filter(
-            contest_id=request.contest_id, user_id=request.user.id
-        )
-        .get()
-        .id
-    )
-
     serializer = WorkRateSerializer(
-        data=request.data, many=True, context={"contest": contest, "jury_id": jury_id}
+        data=request.data,
+        context={"contest": contest, "jury_id": request.user.id},
     )
 
     if not serializer.is_valid(raise_exception=True):
@@ -54,7 +51,7 @@ def work_rate_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def get_all_rated_works_in_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -64,37 +61,44 @@ def get_all_rated_works_in_contest_view(request: Request) -> Response:
         .annotate(total=Sum("rate"))
     )
 
-    serializer = WorkRateAllSerializer(work_rates, many=True)
+    serializer = WorkRateContestAllSerializer(instance=work_rates, many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+def get_all_rated_works_view(request: Request) -> Response:
+    contest = get_object_or_404(Contest, id=request.contest_id)
+
+    application_ids = (
+        WorkRate.objects.filter(application__contest_id=contest.id)
+        .values_list("application_id", flat=True)
+        .distinct()
+        .all()
+    )
+
+    application_queryset = Applications.objects.filter(
+        id__in=application_ids
+    ).all()
+
+    serializer = ApplicationRatesSerializer(instance=application_queryset, many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated])  # , IsContestJuryPermission
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def update_rated_work_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
-    for _, element in enumerate(request.data):
-        application_id = element.get("application_id")
-        criteria_id = element.get("criteria_id")
+    serializer = WorkRateSerializer(
+        data=request.data, context={"jury_id": request.user.id, "contest": contest}
+    )
 
-        try:
-            work_rate = WorkRate.objects.get(
-                application_id=application_id,
-                criteria_id=criteria_id,
-                application__contest=contest,
-            )
-        except WorkRate.DoesNotExist:
-            return Response(
-                data={"message": "Work rate not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = WorkRateSerializer(
-            instance=work_rate, data=element, partial=True, context={"contest": contest}
-        )
-        if not serializer.is_valid(raise_exception=True):
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer.update(instance=work_rate, validated_data=serializer.validated_data)
-
-    return Response(data="Update successfuly", status=status.HTTP_200_OK)
+    serializer.update(instance=None, validated_data=serializer.validated_data)
+    return Response(
+        data={"message": "Updated success"},
+        status=status.HTTP_200_OK,
+    )

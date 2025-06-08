@@ -64,15 +64,14 @@ def send_confirmation_code(
 
         if confirmation.attempt_number >= 3:
             confirmation.locked_until = now + timedelta(minutes=15)
-            confirmation.save()
+            confirmation.save(update_fields=["locked_until"])
             return None, {
                 "error": f"Превышено количество попыток. Блокировка до {confirmation.locked_until.strftime('%H:%M:%S')}"
             }
 
         confirmation.code_hash = code_hash
         confirmation.attempt_number += 1
-        confirmation.save()
+        confirmation.save(update_fields=["code_hash", "attempt_number"])
 
         send_confirmation_email(user_email=user.email, code=code)
-
         return confirmation, None

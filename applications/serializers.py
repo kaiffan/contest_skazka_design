@@ -33,6 +33,7 @@ class ApplicationSerializer(ModelSerializer[Applications]):
             "contest_title",
             "contest_id",
             "nomination_name",
+            "age_category",
             "user_id",
         ]
 

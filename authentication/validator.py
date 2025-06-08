@@ -77,7 +77,12 @@ class UserValidator:
                 code=400,
             )
         if len(set(value)) < 5:
-            raise ValidationError(detail={"error": "Пароль должен содержать хотя бы 5 уникальных символов."}, code=400)
+            raise ValidationError(
+                detail={
+                    "error": "Пароль должен содержать хотя бы 5 уникальных символов."
+                },
+                code=400,
+            )
         if not search(pattern=r"[A-Z]", string=value):
             raise ValidationError(
                 detail={

@@ -95,7 +95,7 @@ def resend_code_view(request: Request) -> Response:
 
         _, error = send_confirmation_code(confirmation.user, session_id, resend=True)
         if error:
-            return error
+            return Response(data=error, status=status.HTTP_401_UNAUTHORIZED)
 
     except EmailConfirmationLogin.DoesNotExist:
         return Response(

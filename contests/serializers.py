@@ -16,6 +16,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 
 from age_categories.models import AgeCategories
 from age_categories.serializers import AgeCategoriesSerializer
+from applications.enums import ApplicationStatus
 from applications.models import Applications
 from contest_categories.models import ContestCategories
 from contest_criteria.models import ContestCriteria
@@ -164,6 +165,28 @@ class ContestAllOwnerSerializer(ModelSerializer[Contest]):
             contest=contest, role=ParticipantRole.jury.value
         ).count()
 
+class ContestAllJurySerializer(ModelSerializer[Contest]):
+    current_stage = SerializerMethodField()
+    count_application = SerializerMethodField()
+
+    class Meta:
+        model = Contest
+        fields = [
+            "id",
+            "avatar",
+            "title",
+            "current_stage",
+            "count_application"
+        ]
+
+    def get_count_application(self, contest):
+        return Applications.objects.filter(
+            status=ApplicationStatus.accepted.value,
+            contest=contest
+        ).count()
+
+    def get_current_stage(self, contest):
+        return get_current_contest_stage(contest=contest)
 
 class CreateBaseContestSerializer(ModelSerializer[Contest]):
     contest_category_name = CharField(write_only=True)

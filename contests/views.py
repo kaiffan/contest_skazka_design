@@ -14,10 +14,10 @@ from contests.serializers import (
     UpdateBaseContestSerializer,
     ContestByIdSerializer,
     ContestAllSerializer,
-    ContestAllOwnerSerializer,
+    ContestAllOwnerSerializer, ContestAllJurySerializer,
 )
 from participants.enums import ParticipantRole
-from participants.permissions import IsContestOwnerPermission
+from participants.permissions import IsContestOwnerPermission, IsContestJuryPermission
 
 
 @api_view(http_method_names=["POST"])
@@ -138,3 +138,17 @@ def get_all_contests_owner_view(request: Request) -> Response:
     serializer = ContestAllOwnerSerializer(instance=contests, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+def get_all_contests_jury_view(request: Request) -> Response:
+    conntests = Contest.objects.filter(
+        participant__user_id=request.user.id,
+        participant__role=ParticipantRole.jury.value,
+    )
+
+    serializer = ContestAllJurySerializer(instance=conntests, many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+

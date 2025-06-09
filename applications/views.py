@@ -59,11 +59,12 @@ def approve_application_view(request: Request) -> Response:
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    serializer.save()
+    approved_apps = serializer.save()
 
     return Response(
         data={
-            "message": "Application approved",
+            "detail": f"{len(approved_apps)} заявок одобрено",
+            "ids": [application.id for application in approved_apps],
         },
         status=status.HTTP_200_OK,
     )

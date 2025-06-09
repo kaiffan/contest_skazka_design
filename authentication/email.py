@@ -8,7 +8,7 @@ def send_confirmation_email(user_email: str, code: str):
         template_name="email_template/confirm_code.html",
         context={
             "code": code,
-            "valid_minutes": 10,
+            "valid_minutes": 5,
         },
     )
     email = EmailMessage(

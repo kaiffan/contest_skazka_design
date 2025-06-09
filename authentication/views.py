@@ -13,10 +13,9 @@ from authentication.serializers import (
     LogoutSerializer,
     PasswordResetSerializer,
 )
-from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
 from contest_backend.settings import settings
 
-# from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
+from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
 from authentication.utils import (
     set_refresh_cookie,
     delete_refresh_cookie,

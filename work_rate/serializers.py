@@ -1,7 +1,12 @@
 from django.db import transaction
 from rest_framework.serializers import ModelSerializer
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import IntegerField, ListField, SerializerMethodField
+from rest_framework.fields import (
+    IntegerField,
+    ListField,
+    SerializerMethodField,
+    CharField,
+)
 from rest_framework.serializers import Serializer
 
 from applications.enums import ApplicationStatus
@@ -178,3 +183,10 @@ class ApplicationRatesSerializer(ModelSerializer[Applications]):
             }
             for work_rate in work_rates
         ]
+
+
+class RateSummarySerializer(Serializer):
+    application_id = IntegerField()
+    jury_id = IntegerField()
+    full_name = CharField()
+    total_rates = IntegerField()

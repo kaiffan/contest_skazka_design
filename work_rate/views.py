@@ -1,4 +1,5 @@
-from django.db.models import Sum
+from django.db.models import Sum, F, Value, Count
+from django.db.models.functions import Concat
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
@@ -16,6 +17,7 @@ from work_rate.serializers import (
     WorkRateSerializer,
     WorkRateContestAllSerializer,
     ApplicationRatesSerializer,
+    RateSummarySerializer,
 )
 
 
@@ -77,9 +79,7 @@ def get_all_rated_works_view(request: Request) -> Response:
         .all()
     )
 
-    application_queryset = Applications.objects.filter(
-        id__in=application_ids
-    ).all()
+    application_queryset = Applications.objects.filter(id__in=application_ids).all()
 
     serializer = ApplicationRatesSerializer(instance=application_queryset, many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
@@ -102,3 +102,29 @@ def update_rated_work_view(request: Request) -> Response:
         data={"message": "Updated success"},
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def get_rated_work_by_jury_in_contest_view(request: Request) -> Response:
+    contest = get_object_or_404(Contest, id=request.contest_id)
+
+    rates = (
+        WorkRate.objects.filter(application__contest_id=contest.id)
+        .select_related("application", "jury__user")
+        .annotate(
+            full_name=Concat(
+                F("jury__user__last_name"),
+                Value(" "),
+                F("jury__user__first_name"),
+                Value(" "),
+                F("jury__user__middle_name"),
+            )
+        )
+        .values("application_id", "jury_id", "full_name")
+        .annotate(total_rates=Count("id"))
+        .order_by("application_id")
+    )
+
+    serializer = RateSummarySerializer(rates, many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)

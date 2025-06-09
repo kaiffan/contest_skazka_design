@@ -85,7 +85,24 @@ def delete_contest_view(request: Request) -> Response:
 
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated])
-def get_contest_by_id(request: Request) -> Response:
+def get_contest_by_id_view(request: Request) -> Response:
+    instance = Contest.objects.prefetch_related(
+        "criteria",
+        "nominations",
+        "age_category",
+        "participants",
+        "contest_stage",
+        "file_constraint",
+    ).get(id=request.contest_id)
+
+    serializer = ContestByIdSerializer(instance=instance)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+def get_contest_by_id_owner_view(request: Request) -> Response:
     instance = Contest.objects.prefetch_related(
         "criteria",
         "nominations",

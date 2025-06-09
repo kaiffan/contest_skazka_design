@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, IntegerField, CharField
+from rest_framework.fields import SerializerMethodField, IntegerField, CharField, ListField
 
 from applications.enums import ApplicationStatus
 from applications.models import Applications
@@ -152,26 +152,43 @@ class SendApplicationsSerializer(Serializer):
 
 
 class ApproveApplicationSerializer(Serializer):
-    application_id = IntegerField(required=True)
+    application_ids = ListField(
+        child=IntegerField(),
+        required=True,
+        allow_empty=False
+    )
 
-    def validate_application_id(self, value):
-        instance = ApplicationValidator.validate_application(
-            application_id=value,
-            application_status=ApplicationStatus.accepted.value,
-        )
-        self.instance = instance
+    def validate_application_ids(self, value):
+        validated_instances = []
+
+        for app_id in value:
+            instance = ApplicationValidator.validate_application(
+                application_id=app_id,
+                application_status=ApplicationStatus.accepted.value,
+            )
+            validated_instances.append(instance)
+
+        self.instance = validated_instances
         return value
 
-    def update(self, instance, validated_data):
-        instance.status = ApplicationStatus.accepted.value
-        instance.rejection_reason = None
-        instance.save(update_fields=["status", "rejection_reason"])
+    @transaction.atomic
+    def update(self, instances, validated_data):
+        approved_applications = []
 
-        Participant.objects.create(
-            user_id=instance.user_id, contest_id=instance.contest_id
-        )
+        for application in instances:
+            application.status = ApplicationStatus.accepted.value
+            application.rejection_reason = None
+            application.save(update_fields=["status", "rejection_reason"])
 
-        return instance
+            Participant.objects.create(
+                user_id=application.user_id,
+                contest_id=application.contest_id,
+                role=ParticipantRole.member.value
+            )
+
+            approved_applications.append(application)
+
+        return approved_applications
 
     def save(self, **kwargs):
         return self.update(self.instance, self.validated_data)

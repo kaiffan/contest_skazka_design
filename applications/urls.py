@@ -15,7 +15,7 @@ from work_rate.views import (
     work_rate_view,
     get_all_rated_works_in_contest_view,
     update_rated_work_view,
-    get_all_rated_works_view,
+    get_all_rated_works_view, get_rated_work_by_jury_in_contest_view,
 )
 
 urlpatterns = [
@@ -57,5 +57,8 @@ urlpatterns = [
     path(route="update", view=update_application_view, name="update_application_view"),
     path(
         route="all/rate", view=get_all_rated_works_view, name="get_all_rated_works_view"
+    ),
+    path(
+        route="jury/stats", view=get_rated_work_by_jury_in_contest_view, name="get_rated_work_by_jury_in_contest_view"
     ),
 ]

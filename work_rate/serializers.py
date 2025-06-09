@@ -186,7 +186,6 @@ class ApplicationRatesSerializer(ModelSerializer[Applications]):
 
 
 class RateSummarySerializer(Serializer):
-    application_id = IntegerField()
     jury_id = IntegerField()
     full_name = CharField()
     total_rates = IntegerField()

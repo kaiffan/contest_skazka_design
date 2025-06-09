@@ -105,25 +105,22 @@ def update_rated_work_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
 def get_rated_work_by_jury_in_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
     rates = (
         WorkRate.objects.filter(application__contest_id=contest.id)
-        .select_related("application", "jury__user")
+        .select_related("jury__user")
         .annotate(
             full_name=Concat(
                 F("jury__user__last_name"),
                 Value(" "),
-                F("jury__user__first_name"),
-                Value(" "),
-                F("jury__user__middle_name"),
+                F("jury__user__first_name")
             )
         )
-        .values("application_id", "jury_id", "full_name")
-        .annotate(total_rates=Count("id"))
-        .order_by("application_id")
+        .values("jury_id", "full_name")
+        .annotate(total_rates=Count("application_id", distinct=True))
     )
 
     serializer = RateSummarySerializer(rates, many=True)

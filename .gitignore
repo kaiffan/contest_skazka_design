@@ -179,3 +179,4 @@ migration
 alembic.ini
 
 pgdata
+.env

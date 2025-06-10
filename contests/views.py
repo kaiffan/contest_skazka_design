@@ -57,7 +57,7 @@ def update_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+@permission_classes(permission_classes=[IsAuthenticated])
 def publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -71,7 +71,7 @@ def publish_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["DELETE"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+@permission_classes(permission_classes=[IsAuthenticated])
 def delete_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

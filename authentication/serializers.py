@@ -19,42 +19,33 @@ from authentication.models import Users
 from django.contrib.auth import authenticate
 
 from authentication.validator import UserValidator
-from regions.models import Region
 
 
 class RegistrationSerializer(ModelSerializer[Users]):
-    region_id = IntegerField()
 
     class Meta:
         model = Users
         fields = [
             "first_name",
             "last_name",
-            "middle_name",
             "email",
             "avatar_link",
             "birth_date",
-            "password",
-            "region_id",
+            "password"
         ]
 
         extra_kwargs = {
             "first_name": {"required": True},
             "last_name": {"required": True},
-            "middle_name": {"required": False},
             "email": {"required": True},
             "birth_date": {"required": True},
-            "password": {"required": True},
-            "region_id": {"required": True},
+            "password": {"required": True}
         }
 
     def validate_first_name(self, value):
         return UserValidator.validate_full_name(value=value)
 
     def validate_last_name(self, value):
-        return UserValidator.validate_full_name(value=value)
-
-    def validate_middle_name(self, value):
         return UserValidator.validate_full_name(value=value)
 
     def validate_email(self, value):
@@ -73,17 +64,6 @@ class RegistrationSerializer(ModelSerializer[Users]):
             raise ValidationError(
                 detail={"error": "Birth date cannot be in the future."}, code=400
             )
-        return value
-
-    def validate_region_id(self, value):
-        if not value:
-            raise ValidationError(
-                detail={"error": "Регион не может быть пустым"},
-                code=400,
-            )
-
-        if not Region.objects.filter(id=value).exists():
-            raise ValidationError(detail={"error": "Region does not exist"}, code=400)
         return value
 
     def create(self, validated_data):

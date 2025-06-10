@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
         ("auth", "0012_alter_user_first_name_max_length"),
         ("authentication", "0001_initial"),
         ("contests", "0002_initial"),
-        ("regions", "0001_initial"),
     ]
 
     operations = [
@@ -35,13 +34,6 @@ class Migration(migrations.Migration):
                 related_query_name="user",
                 to="auth.group",
                 verbose_name="groups",
-            ),
-        ),
-        migrations.AddField(
-            model_name="users",
-            name="region",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="regions.region"
             ),
         ),
         migrations.AddField(

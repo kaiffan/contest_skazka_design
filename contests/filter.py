@@ -6,7 +6,6 @@ from contests.models import Contest
 
 
 class ContestFilter(FilterSet):
-    region = NumberFilter(field_name="region__id")
     contest_category = NumberFilter(field_name="contest_category__id")
     age_category = ModelMultipleChoiceFilter(
         field_name="age_category__id",
@@ -22,7 +21,6 @@ class ContestFilter(FilterSet):
     class Meta:
         model = Contest
         fields = [
-            "region",
             "contest_category",
             "age_category",
             "contest_stage",

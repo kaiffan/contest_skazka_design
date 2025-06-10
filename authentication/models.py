@@ -12,9 +12,6 @@ from authentication.managers import UsersManager
 class Users(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(name="first_name", max_length=255, null=False)
     last_name = models.CharField(name="last_name", max_length=255, null=False)
-    middle_name = models.CharField(
-        name="middle_name", max_length=255, null=False, default="Отсутствует"
-    )
     email = models.EmailField(name="email", max_length=255, unique=True, null=False)
     birth_date = models.DateField(name="birth_date", null=False)
     password = models.CharField(name="password", max_length=255, null=False)
@@ -25,7 +22,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         name="avatar_link",
         max_length=255,
         null=False,
-        default="http://localhost:3000/static/images/default_avatar.jpg",
+        default="https://storage.yandexcloud.net/skazka-design/avatars/0463135f-1ca2-4ae6-a35a-729b0c914a87.jpeg",
     )
     user_role = models.CharField(
         name="user_role",
@@ -37,7 +34,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
     education_or_work = models.CharField(
         name="education_or_work", max_length=255, null=False, default="Отсутствует"
     )
-    region = models.ForeignKey(to="regions.Region", on_delete=models.CASCADE)
 
     competencies = models.ManyToManyField(
         to="competencies.Competencies", related_name="user_competencies"
@@ -74,4 +70,4 @@ class Users(AbstractBaseUser, PermissionsMixin):
         return date_today.year - self.birth_date.year - is_birthdate_in_this_year
 
     def get_fio(self):
-        return f"{self.last_name} {self.first_name} {self.middle_name}"
+        return f"{self.last_name} {self.first_name}"

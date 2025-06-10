@@ -3,13 +3,17 @@ from django.db import models
 from contest_categories.models import ContestCategories
 from criteria.models import Criteria
 from nomination.models import Nominations
-from regions.models import Region
 
 
 class Contest(models.Model):
     title = models.CharField(name="title", max_length=255, unique=True, null=False)
     description = models.CharField(name="description", max_length=255, null=False)
-    avatar = models.CharField(name="avatar", max_length=255, null=False, default=" ")
+    avatar = models.CharField(
+        name="avatar",
+        max_length=255,
+        null=False,
+        default="https://storage.yandexcloud.net/skazka-design/avatars/ce9e66fa-74ac-437a-a0f9-ae2954be1de7.jpg",
+    )
     link_to_rules = models.CharField(name="link_to_rules", max_length=255, null=False)
     organizer = models.CharField(name="organizer", max_length=255, null=False)
     prizes = models.TextField(name="prizes", null=False)
@@ -23,7 +27,6 @@ class Contest(models.Model):
     contest_category = models.ForeignKey(
         to="contest_categories.ContestCategories", on_delete=models.CASCADE
     )
-    region = models.ForeignKey(to="regions.Region", on_delete=models.CASCADE)
 
     participants = models.ManyToManyField(
         to="authentication.Users",

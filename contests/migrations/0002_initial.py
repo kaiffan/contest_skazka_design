@@ -18,7 +18,6 @@ class Migration(migrations.Migration):
         ("criteria", "0001_initial"),
         ("nomination", "0001_initial"),
         ("participants", "0001_initial"),
-        ("regions", "0001_initial"),
         ("winners", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -59,13 +58,6 @@ class Migration(migrations.Migration):
                 related_name="contest_participants",
                 through="participants.Participant",
                 to=settings.AUTH_USER_MODEL,
-            ),
-        ),
-        migrations.AddField(
-            model_name="contest",
-            name="region",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="regions.region"
             ),
         ),
         migrations.AddField(

@@ -35,7 +35,6 @@ from nomination.models import Nominations
 from participants.enums import ParticipantRole
 from participants.models import Participant
 from participants.serializers import PartisipantContestSerializer
-from regions.models import Region
 from winners.models import Winners
 
 
@@ -48,7 +47,6 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
     nomination = SerializerMethodField()
     age_categories = SerializerMethodField()
     contest_stage = SerializerMethodField()
-    region_name = SerializerMethodField()
 
     class Meta:
         model = Contest
@@ -71,7 +69,6 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "prizes",
             "contacts_for_participants",
             "file_constraint",
-            "region_name",
             "contest_category",
         ]
 
@@ -97,9 +94,6 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
 
     def get_contest_category(self, instance):
         return instance.contest_category.name
-
-    def get_region_name(self, instance):
-        return instance.region.name
 
     def get_criteria(self, instance):
         criteria_list = ContestCriteria.objects.filter(contest_id=instance.id).all()
@@ -187,7 +181,6 @@ class ContestAllJurySerializer(ModelSerializer[Contest]):
 class CreateBaseContestSerializer(ModelSerializer[Contest]):
     contest_category_name = CharField(write_only=True)
     age_category = ListField(child=IntegerField(), write_only=True)
-    region_id = IntegerField()
 
     class Meta:
         model = Contest
@@ -199,7 +192,6 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
             "organizer",
             "prizes",
             "contacts_for_participants",
-            "region_id",
             "contest_category_name",
             "age_category",
         ]
@@ -209,7 +201,6 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
             "avatar": {"required": False},
             "link_to_rules": {"required": False},
             "organizer": {"required": True},
-            "region_id": {"required": True},
             "prizes": {"required": False},
             "contacts_for_participants": {"required": False},
             "contest_category_name": {"required": True},
@@ -239,11 +230,6 @@ class CreateBaseContestSerializer(ModelSerializer[Contest]):
         )
 
         return contest
-
-    def validate_region_id(self, region_id: int):
-        if not Region.objects.filter(id=region_id).exists():
-            raise ValidationError(detail={"error": "Region does not exist"}, code=400)
-        return region_id
 
     def validate_age_category(self, value):
         if not value:
@@ -276,14 +262,8 @@ class UpdateBaseContestSerializer(Serializer):
     prizes = CharField(required=False)
     contacts_for_participants = CharField(required=False)
     organizer = CharField(required=False)
-    region_id = IntegerField(required=False)
     contest_category_name = CharField(required=False)
     age_category = ListField(child=IntegerField(), required=False)
-
-    def validate_region_id(self, region_id: int):
-        if not Region.objects.filter(id=region_id).exists():
-            raise ValidationError("Region does not exist")
-        return region_id
 
     def validate_age_category(self, value):
         if not value:

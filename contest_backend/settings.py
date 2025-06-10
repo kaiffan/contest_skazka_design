@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "email_confirmation",
     "nomination",
     "participants",
-    "regions",
     "storage_s3",
     "users",
     "vk_news",
@@ -88,7 +87,7 @@ DATABASES = {
         "USER": settings.postgres_credentials.USERNAME,
         "PASSWORD": settings.postgres_credentials.PASSWORD,
         "HOST": settings.postgres_credentials.HOST,
-        "PORT": settings.postgres_credentials.PORT
+        "PORT": settings.postgres_credentials.PORT,
     }
 }
 

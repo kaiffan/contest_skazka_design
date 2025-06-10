@@ -6,16 +6,13 @@ from rest_framework.fields import (
     CharField,
     EmailField,
     URLField,
-    DateField,
-    IntegerField,
+    DateField
 )
 from rest_framework.serializers import Serializer, ModelSerializer
 
 from authentication.models import Users
 from competencies.models import Competencies
 from competencies.serializers import CompetenciesSerializer
-from regions.models import Region
-from regions.serializers import RegionSerializer
 
 
 class ContestDataUpdateSerializer(Serializer):
@@ -70,11 +67,9 @@ class ContestDataUpdateSerializer(Serializer):
 class UserDataPatchSerializer(Serializer):
     first_name = CharField(required=False)
     last_name = CharField(required=False)
-    middle_name = CharField(required=False)
     email = EmailField(required=False)
     avatar_link = URLField(required=False)
     birth_date = DateField(required=False)
-    region_id = IntegerField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -113,13 +108,6 @@ class UserDataPatchSerializer(Serializer):
 
         return value
 
-    def validate_region_id(self, value):
-        if not Region.objects.filter(id=value).exists():
-            raise ValidationError(
-                detail={"error": "Регион с таким ID не существует."}, code=400
-            )
-        return value
-
     def update(self, instance, validated_data):
         for field, value in validated_data.items():
             current_value = getattr(instance, field)
@@ -130,7 +118,6 @@ class UserDataPatchSerializer(Serializer):
 
 
 class UserFullDataSerializer(ModelSerializer[Users]):
-    region = RegionSerializer(read_only=True)
     competencies = CompetenciesSerializer(many=True, read_only=True)
 
     class Meta:
@@ -139,12 +126,10 @@ class UserFullDataSerializer(ModelSerializer[Users]):
             "id",
             "first_name",
             "last_name",
-            "middle_name",
             "email",
             "birth_date",
             "avatar_link",
             "education_or_work",
-            "region",
             "competencies",
         ]
 
@@ -162,10 +147,10 @@ class UserShortDataSerializer(ModelSerializer[Users]):
 class AllUsersShortDataSerializer(ModelSerializer[Users]):
     class Meta:
         model = Users
-        fields = ["id", "first_name", "last_name", "middle_name", "email"]
+        fields = ["id", "first_name", "last_name", "email"]
 
 
 class UserParticipantSerializer(ModelSerializer[Users]):
     class Meta:
         model = Users
-        fields = ["id", "first_name", "last_name", "middle_name", "email"]
+        fields = ["id", "first_name", "last_name", "email"]

@@ -107,15 +107,6 @@ class SendApplicationsSerializer(Serializer):
                 nomination_id=nomination_id, contest_id=contest.id, user_id=user.id
             ).exists()
 
-            contest_region: str = contest.region.name
-            user_region = user.region.name
-
-            if not (contest_region == user_region or contest_region == "Онлайн"):
-                raise ValidationError(
-                    detail={"error": "This application does not belong to this region"},
-                    code=403,
-                )
-
             if exists_application:
                 raise ValidationError(detail={"error": "Application already exists"})
 

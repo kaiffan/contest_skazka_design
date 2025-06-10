@@ -29,10 +29,10 @@ def extract_photo(photo_data: dict):
 
 
 def get_posts_with_api(
-        token: str,
-        domain: str,
-        count: int,
-        version: str = "5.199",
+    token: str,
+    domain: str,
+    count: int,
+    version: str = "5.199",
 ):
     params = {
         "domain": domain,

@@ -14,8 +14,7 @@ class UsersManager(BaseUserManager):
         email,
         first_name,
         last_name,
-        birth_date,
-        region_id,
+        birth_date
     ):
         if not email:
             raise ValidationError("Пользователь должен иметь адрес электронной почты.")
@@ -25,8 +24,6 @@ class UsersManager(BaseUserManager):
             raise ValidationError("Пользователь должен иметь фамилию.")
         if not birth_date:
             raise ValidationError("Пользователь должен иметь дату рождения.")
-        if not region_id:
-            raise ValidationError("Пользователь должен иметь регион.")
 
     def create_user(
         self,
@@ -34,31 +31,23 @@ class UsersManager(BaseUserManager):
         first_name,
         last_name,
         birth_date,
-        region_id,
         password=None,
-        middle_name="",
     ):
         self._validate_required_fields(
             email=email,
             first_name=first_name,
             last_name=last_name,
-            birth_date=birth_date,
-            region_id=region_id,
+            birth_date=birth_date
         )
         self._validate_birth_date(birth_date=birth_date)
 
         email = self.normalize_email(email)
 
-        if not middle_name:
-            middle_name = self.model.middle_name.field.default
-
         user = self.model(
             email=email,
             first_name=first_name,
-            last_name=last_name,
-            middle_name=middle_name,
+            last_name=last_name[:1],
             birth_date=birth_date,
-            region_id=region_id,
         )
 
         user.set_password(raw_password=password)
@@ -70,9 +59,7 @@ class UsersManager(BaseUserManager):
         email,
         first_name,
         last_name,
-        middle_name,
         birth_date,
-        region,
         password,
     ):
         if password is None:
@@ -81,10 +68,8 @@ class UsersManager(BaseUserManager):
             email=email,
             first_name=first_name,
             last_name=last_name,
-            middle_name=middle_name,
             birth_date=birth_date,
-            password=password,
-            region_id=region.id,
+            password=password
         )
         user.is_superuser = True
         user.is_staff = True

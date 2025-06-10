@@ -4,7 +4,7 @@ from django.db import models
 class VkNewsAttachment(models.Model):
     url = models.URLField(
         verbose_name="URL изображения",
-        max_length=255,
+        max_length=1024,
         null=False,
         blank=False,
         db_index=True,

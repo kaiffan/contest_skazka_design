@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db import transaction
 from requests import RequestException
 from django.core.cache import cache
 from django.utils.timezone import make_aware
@@ -28,10 +29,10 @@ def extract_photo(photo_data: dict):
 
 
 def get_posts_with_api(
-    token: str,
-    domain: str,
-    count: int,
-    version: str = "5.199",
+        token: str,
+        domain: str,
+        count: int,
+        version: str = "5.199",
 ):
     params = {
         "domain": domain,
@@ -50,33 +51,34 @@ def save_vk_post_to_database(items: dict):
     text = clean_text(items.get("text", ""))
     date = format_date(items.get("date", 0))
 
-    if VkNews.objects.filter(vk_id=post_id).exists():
-        return False
+    with transaction.atomic():
+        if VkNews.objects.filter(vk_id=post_id).exists():
+            return False
 
-    photo_data = None
-    for attachment in items.get("attachments", []):
-        if attachment.get("type") == "photo":
-            photo_data = extract_photo(attachment.get("photo", {}))
-            break
+        photo_data = None
+        for attachment in items.get("attachments", []):
+            if attachment.get("type") == "photo":
+                photo_data = extract_photo(attachment.get("photo", {}))
+                break
 
-    attachment_obj = None
-    if photo_data:
-        attachment_obj, _ = VkNewsAttachment.objects.get_or_create(
-            url=photo_data.get("url"),
-            defaults={
-                "width": photo_data.get("width"),
-                "height": photo_data.get("height"),
-                "type": "photo",
-            },
+        attachment_obj = None
+        if photo_data:
+            attachment_obj, _ = VkNewsAttachment.objects.get_or_create(
+                url=photo_data.get("url"),
+                defaults={
+                    "width": photo_data.get("width"),
+                    "height": photo_data.get("height"),
+                    "type": "photo",
+                },
+            )
+
+        VkNews.objects.create(
+            vk_id=post_id,
+            description=text,
+            date=date,
+            vk_attachment=attachment_obj,
+            url=f"https://vk.com/wall{items.get('owner_id', '')}_{post_id}",
         )
-
-    VkNews.objects.create(
-        vk_id=post_id,
-        description=text,
-        date=date,
-        vk_attachment=attachment_obj,
-        url=f"https://vk.com/wall{items.get('owner_id', '')}_{post_id}",
-    )
     return True
 
 

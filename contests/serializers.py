@@ -60,6 +60,8 @@ class ContestByIdSerializer(ModelSerializer[Contest]):
             "avatar",
             "organizer",
             "is_draft",
+            "is_deleted",
+            "is_published",
             "nomination",
             "criteria",
             "age_categories",

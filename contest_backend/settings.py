@@ -82,7 +82,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "contest_backend.wsgi.application"
 
 DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": settings.postgres_credentials.DATABASE_NAME,
+        "USER": settings.postgres_credentials.USERNAME,
+        "PASSWORD": settings.postgres_credentials.PASSWORD,
+        "HOST": settings.postgres_credentials.HOST,
+        "PORT": settings.postgres_credentials.PORT
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [

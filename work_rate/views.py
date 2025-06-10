@@ -114,9 +114,7 @@ def get_rated_work_by_jury_in_contest_view(request: Request) -> Response:
         .select_related("jury__user")
         .annotate(
             full_name=Concat(
-                F("jury__user__last_name"),
-                Value(" "),
-                F("jury__user__first_name")
+                F("jury__user__last_name"), Value(" "), F("jury__user__first_name")
             )
         )
         .values("jury_id", "full_name")

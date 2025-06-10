@@ -1,7 +1,12 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, IntegerField, CharField, ListField
+from rest_framework.fields import (
+    SerializerMethodField,
+    IntegerField,
+    CharField,
+    ListField,
+)
 
 from applications.enums import ApplicationStatus
 from applications.models import Applications
@@ -152,11 +157,7 @@ class SendApplicationsSerializer(Serializer):
 
 
 class ApproveApplicationSerializer(Serializer):
-    application_ids = ListField(
-        child=IntegerField(),
-        required=True,
-        allow_empty=False
-    )
+    application_ids = ListField(child=IntegerField(), required=True, allow_empty=False)
 
     def validate_application_ids(self, value):
         validated_instances = []
@@ -183,7 +184,7 @@ class ApproveApplicationSerializer(Serializer):
             Participant.objects.create(
                 user_id=application.user_id,
                 contest_id=application.contest_id,
-                role=ParticipantRole.member.value
+                role=ParticipantRole.member.value,
             )
 
             approved_applications.append(application)

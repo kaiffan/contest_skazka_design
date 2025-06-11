@@ -45,8 +45,8 @@ class UsersManager(BaseUserManager):
 
         user = self.model(
             email=email,
-            first_name=first_name,
-            last_name=last_name[:1] + ".",
+            first_name=first_name[:1] + ".",
+            last_name=last_name,
             birth_date=birth_date,
         )
 

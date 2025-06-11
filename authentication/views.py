@@ -248,6 +248,7 @@ def logout_view(request: Request) -> Response:
         },
         status=status.HTTP_200_OK,
     )
+
     delete_refresh_cookie(response=response)
     return response
 
@@ -258,10 +259,12 @@ def reset_password_view(request: Request) -> Response:
     serializer = PasswordResetSerializer(
         data=request.data, context={"user": request.user}
     )
+
     if not serializer.is_valid(raise_exception=True):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     serializer.update(instance=request.user, validated_data=serializer.validated_data)
+
     return Response(
         data={"message": "Пароль успешно изменён."}, status=status.HTTP_200_OK
     )

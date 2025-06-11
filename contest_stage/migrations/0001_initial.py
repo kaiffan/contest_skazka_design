@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def add_contest_stage(apps, schema_editor):
     ContestStage = apps.get_model("contest_stage", "ContestStage")
-    for stage in ["Приём", "Оценка работы", "Подведение итогов", "Завершен"]:
+    for stage in ["Приём", "Оценка работы", "Подведение итогов"]:
         ContestStage.objects.get_or_create(name=stage)
 
 

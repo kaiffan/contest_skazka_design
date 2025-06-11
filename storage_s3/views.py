@@ -38,7 +38,7 @@ def upload_file_view(request: Request) -> Response:
         type_uploads=type_uploads, contest_id=None
     )
 
-    file_url: str = upload_file_to_storage(
+    file_url = upload_file_to_storage(
         uploaded_file=uploaded_file, file_constraints=file_constraints
     )
     if isinstance(file_url, str):
@@ -78,13 +78,9 @@ def upload_contest_work_view(request: Request) -> Response:
         type_uploads=type_uploads, contest_id=contest_id
     )
 
-    try:
-        file_url: str = upload_file_to_storage(
-            uploaded_file=uploaded_file, file_constraints=file_constraints
-        )
+    file_url: str = upload_file_to_storage(
+        uploaded_file=uploaded_file, file_constraints=file_constraints
+    )
+    if isinstance(file_url, str):
         return Response(data={"link_to_file": file_url}, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response(
-            data={"error": f"Ошибка при загрузке файла: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+    return Response(data=file_url, status=status.HTTP_400_BAD_REQUEST)

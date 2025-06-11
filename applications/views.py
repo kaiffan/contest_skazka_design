@@ -265,6 +265,7 @@ def delete_application_view(request: Request) -> Response:
                         status=status.HTTP_403_FORBIDDEN)
 
     application.is_deleted = True
+    application.save(update_fields=["is_deleted"])
 
     return Response(
         data={"message": "Application successfully deleted"},

@@ -46,7 +46,7 @@ def upload_file_view(request: Request) -> Response:
     except Exception as e:
         return Response(
             data={"error": f"Ошибка при загрузке файла: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 

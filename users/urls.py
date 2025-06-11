@@ -3,7 +3,7 @@ from users.views import (
     user_data_update_view,
     user_data_get_view,
     all_users_view,
-    user_short_data_get_view,
+    user_short_data_get_view, user_competencies_jury_view,
 )
 from django.urls import path
 
@@ -25,4 +25,5 @@ urlpatterns = [
     ),
     path(route="all", view=all_users_view, name="all_users_view"),
     path(route="info", view=user_short_data_get_view, name="user_short_data_get_view"),
+    path(route="info/competencies", view=user_competencies_jury_view, name="user_competencies_jury_view"),
 ]

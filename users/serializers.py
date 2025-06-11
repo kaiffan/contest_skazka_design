@@ -144,13 +144,15 @@ class UserShortDataSerializer(ModelSerializer[Users]):
         ]
 
 
-class AllUsersShortDataSerializer(ModelSerializer[Users]):
-    class Meta:
-        model = Users
-        fields = ["id", "first_name", "last_name", "email"]
-
-
 class UserParticipantSerializer(ModelSerializer[Users]):
     class Meta:
         model = Users
         fields = ["id", "first_name", "last_name", "email"]
+
+
+class UserCompetenciesSerializer(ModelSerializer[Users]):
+    competencies = CompetenciesSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Users
+        fields = ["id", "first_name", "last_name", "email", "competencies"]

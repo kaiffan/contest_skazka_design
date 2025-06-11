@@ -11,8 +11,9 @@ from users.serializers import (
     ContestDataUpdateSerializer,
     UserDataPatchSerializer,
     UserFullDataSerializer,
-    AllUsersShortDataSerializer,
     UserShortDataSerializer,
+    UserCompetenciesSerializer,
+    UserParticipantSerializer,
 )
 
 
@@ -74,6 +75,21 @@ def all_users_view(request: Request) -> Response:
     if search:
         queryset = queryset.filter(email__icontains=search)
 
-    serializer = AllUsersShortDataSerializer(instance=queryset, many=True)
+    serializer = UserParticipantSerializer(instance=queryset, many=True)
 
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def user_competencies_jury_view(request: Request) -> Response:
+    email = request.data.get("email", None)
+
+    if not email:
+        return Response(
+            data={"error": "Not exists email"}
+        )
+
+    user = Users.objects.get(email=email)
+    serializer = UserCompetenciesSerializer(instance=user)
     return Response(data=serializer.data, status=status.HTTP_200_OK)

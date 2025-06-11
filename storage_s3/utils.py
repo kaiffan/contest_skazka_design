@@ -27,7 +27,7 @@ def get_sesion_s3():
 
 def upload_file_to_storage(
     uploaded_file: UploadedFile, file_constraints: dict[str, list[str]]
-) -> str:
+):
     """
     Загружает файл в облако (например, S3), предварительно проверив его формат.
 
@@ -41,7 +41,7 @@ def upload_file_to_storage(
     try:
         file_extension = uploaded_file.name.rsplit(sep=".", maxsplit=1)[1].lower()
     except IndexError:
-        raise ValidationError(detail={"error": "Файл не имеет расширения"}, code=400)
+        return {"error": "Файл не имеет расширения"}
 
     normalized_constraints = {
         folder: {ext.lower() for ext in formats}
@@ -61,13 +61,10 @@ def upload_file_to_storage(
         allowed_extensions = sorted(
             {ext for formats in normalized_constraints.values() for ext in formats}
         )
-        raise ValidationError(
-            detail={
+        return {
                 "error": f"Формат файла '{file_extension}' не поддерживается. "
                 f"Допустимые форматы: {', '.join(allowed_extensions)}"
-            },
-            code=400,
-        )
+            }
 
     client = get_sesion_s3()
 

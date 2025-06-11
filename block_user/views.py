@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from authentication.permissions import IsAdminSystemPermission
 from block_user.models import UserBlock
 from block_user.paginator import BlockUserPagination
+from block_user.permissions import IsNotBlockUserPermission
 from block_user.serializers import (
     BlockUserSerializer,
     UnblockUserSerializer,
@@ -15,7 +16,13 @@ from block_user.serializers import (
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsAdminSystemPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def block_user_view(request: Request) -> Response:
     serializer = BlockUserSerializer(
         data=request.data, context={"blocked_by_id": request.user.id}
@@ -29,7 +36,13 @@ def block_user_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsAdminSystemPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def unblock_user_view(request: Request) -> Response:
     serializer = UnblockUserSerializer(data=request.data)
     if not serializer.is_valid(raise_exception=True):
@@ -43,7 +56,13 @@ def unblock_user_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsAdminSystemPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsAdminSystemPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_all_blocked_users_view(request: Request) -> Response:
     queryset = (
         UserBlock.objects.prefetch_related("user", "blocked_by")

@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from applications.models import Applications
+from block_user.permissions import IsNotBlockUserPermission
 from contests.models import Contest
 from work_rate.utils import validate_count_criteria_by_contest
 
@@ -22,7 +23,13 @@ from work_rate.serializers import (
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestJuryPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
     serializer = WorkRateSerializer(
@@ -53,7 +60,13 @@ def work_rate_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestJuryPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_all_rated_works_in_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -68,7 +81,13 @@ def get_all_rated_works_in_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestJuryPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_all_rated_works_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -86,7 +105,13 @@ def get_all_rated_works_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestJuryPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def update_rated_work_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -105,7 +130,13 @@ def update_rated_work_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestJuryPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_rated_work_by_jury_in_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

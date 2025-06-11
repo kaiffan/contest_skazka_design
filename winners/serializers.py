@@ -24,8 +24,7 @@ class ApplicationRatedSerializer(ModelSerializer):
         )
 
     def get_user_fio(self, application: Applications):
-        user = application.user
-        return f"{user.first_name} {user.last_name}"
+        return application.user.get_fio()
 
     def get_sum_rate(self, application):
         winner = self.get_winner_qs(application)

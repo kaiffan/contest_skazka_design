@@ -13,6 +13,7 @@ from authentication.serializers import (
     LogoutSerializer,
     PasswordResetSerializer,
 )
+from block_user.permissions import IsNotBlockUserPermission
 from contest_backend.settings import settings
 
 from authentication.throttle import CodeBasedThrottle, IpBasedThrottle
@@ -26,11 +27,7 @@ from django.utils import timezone
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(
-    permission_classes=[
-        AllowAny,
-    ]
-)
+@permission_classes(permission_classes=[AllowAny])
 @throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
 def registration_view(request: Request) -> Response:
     serializer = RegistrationSerializer(data=request.data)
@@ -222,11 +219,7 @@ def cookie_tokens_refresh_view(request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(
-    permission_classes=[
-        IsAuthenticated,
-    ]
-)
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def logout_view(request: Request) -> Response:
     refresh_token: str = request.COOKIES.get("refresh_token")
 
@@ -254,7 +247,7 @@ def logout_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PUT"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def reset_password_view(request: Request) -> Response:
     serializer = PasswordResetSerializer(
         data=request.data, context={"user": request.user}

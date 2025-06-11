@@ -769,7 +769,7 @@ class ContestWinnerSerializer(Serializer):
             to_create: List[Winners] = []
 
             for application in applications:
-                total_score = application.total_score_application
+                total_score = application.total_score
                 winner = existing_winners.get(application.pk, None)
 
                 if not winner:

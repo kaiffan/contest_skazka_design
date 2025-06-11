@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from block_user.permissions import IsNotBlockUserPermission
 from contest_criteria.models import ContestCriteria
 from contest_criteria.serializers import ContestCriteriaFullSerializer
 from contests.models import Contest
@@ -16,7 +17,13 @@ from django.core.cache import cache
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes([IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def add_or_remove_criteria_contest_view(request: Request) -> Response:
     contest = Contest.objects.get(id=request.contest_id)
 
@@ -41,7 +48,13 @@ def add_or_remove_criteria_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes([IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_all_criteria_view(request: Request) -> Response:
     cache_key = f"criteria_all_{request.query_params.get('search', 'all')}"
     cached_data = cache.get(cache_key)
@@ -70,7 +83,7 @@ def get_all_criteria_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_criteria_by_contest_view(request: Request) -> Response:
     criteria_by_contest = ContestCriteria.objects.filter(
         contest_id=request.contest_id

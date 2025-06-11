@@ -16,6 +16,7 @@ from applications.serializers import (
     ApplicationWithCriteriaSerializer,
     UpdateApplicationSerializer,
 )
+from block_user.permissions import IsNotBlockUserPermission
 from participants.permissions import IsContestJuryPermission, IsOrgCommitteePermission
 
 
@@ -37,7 +38,7 @@ def get_applications_by_status(request: Request, status_filter: str) -> Response
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def send_applications_view(request: Request) -> Response:
     serializer = SendApplicationsSerializer(
         data=request.data, context={"user": request.user}
@@ -52,7 +53,13 @@ def send_applications_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PUT"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsOrgCommitteePermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def approve_application_view(request: Request) -> Response:
     serializer = ApproveApplicationSerializer(data=request.data)
 
@@ -71,7 +78,13 @@ def approve_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsOrgCommitteePermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def reject_application_view(request: Request) -> Response:
     serializer = RejectApplicationSerializer(data=request.data)
 
@@ -89,7 +102,13 @@ def reject_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsOrgCommitteePermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsOrgCommitteePermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_all_applications_view(request: Request) -> Response:
     return get_applications_by_status(
         request=request, status_filter=ApplicationStatus.pending.value
@@ -97,7 +116,13 @@ def get_all_applications_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestJuryPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestJuryPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_all_applications_rejected_view(request: Request) -> Response:
     return get_applications_by_status(
         request=request, status_filter=ApplicationStatus.rejected.value
@@ -110,6 +135,7 @@ def get_all_applications_rejected_view(request: Request) -> Response:
         IsAuthenticated,
         IsOrgCommitteePermission,
         IsContestJuryPermission,
+        IsNotBlockUserPermission,
     ]
 )
 def get_all_applications_approved_view(request: Request) -> Response:
@@ -119,7 +145,7 @@ def get_all_applications_approved_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_application_view(request: Request) -> Response:
     application_id = request.data.get("application_id", None)
 
@@ -136,7 +162,7 @@ def get_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_applications_user_view(request: Request) -> Response:
     user_applications = Applications.objects.filter(user_id=request.user.id)
 
@@ -153,7 +179,7 @@ def get_applications_user_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def update_application_view(request: Request) -> Response:
     application_id = request.data.get("application_id", None)
 
@@ -167,6 +193,8 @@ def update_application_view(request: Request) -> Response:
     serializer = UpdateApplicationSerializer(
         instance=application, data=request.data, partial=True
     )
+    application.status = ApplicationStatus.pending.value
+    application.save(update_fields=["status"])
 
     if not serializer.is_valid(raise_exception=True):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

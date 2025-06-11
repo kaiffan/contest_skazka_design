@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 
 from authentication.permissions import IsAdminSystemPermission
+from block_user.permissions import IsNotBlockUserPermission
 from contests.filter import ContestFilter
 from contests.models import Contest
 from contests.paginator import ContestPaginator
@@ -22,7 +23,7 @@ from participants.permissions import IsContestOwnerPermission
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def create_contest_view(request: Request) -> Response:
     serializer = CreateBaseContestSerializer(
         data=request.data, context={"user_id": request.user.id}
@@ -40,7 +41,13 @@ def create_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def update_contest_view(request: Request) -> Response:
     serializer = UpdateBaseContestSerializer(data=request.data)
 
@@ -57,7 +64,7 @@ def update_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -71,7 +78,7 @@ def publish_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["DELETE"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def delete_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -84,7 +91,7 @@ def delete_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_contest_by_id_view(request: Request) -> Response:
     instance = Contest.objects.prefetch_related(
         "criteria",
@@ -101,7 +108,13 @@ def get_contest_by_id_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def get_contest_by_id_owner_view(request: Request) -> Response:
     instance = Contest.objects.prefetch_related(
         "criteria",
@@ -128,7 +141,7 @@ def get_all_contests_not_permissions_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_all_contests_view(request: Request) -> Response:
     contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
 
@@ -145,11 +158,12 @@ def get_all_contests_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_all_contests_owner_view(request: Request) -> Response:
     contests = Contest.objects.filter(
         participant__user_id=request.user.id,
         participant__role=ParticipantRole.owner.value,
+        is_deleted=False
     ).distinct()
 
     serializer = ContestAllOwnerSerializer(instance=contests, many=True)
@@ -158,7 +172,7 @@ def get_all_contests_owner_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_all_contests_jury_view(request: Request) -> Response:
     conntests = Contest.objects.filter(
         participant__user_id=request.user.id,

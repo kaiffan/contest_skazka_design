@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from block_user.permissions import IsNotBlockUserPermission
 from participants.permissions import IsContestOwnerPermission
 from participants.serializers import (
     JuryParticipantSerializer,
@@ -12,7 +13,13 @@ from participants.serializers import (
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def change_jury_view(request: Request) -> Response:
     serializer = JuryParticipantSerializer(
         data=request.data, context={"contest_id": request.contest_id}
@@ -27,7 +34,13 @@ def change_jury_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        IsNotBlockUserPermission,
+    ]
+)
 def change_or_committee_view(request: Request) -> Response:
     serializer = OrgCommitteeParticipantSerializer(
         data=request.data, context={"contest_id": request.contest_id}

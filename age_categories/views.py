@@ -6,10 +6,11 @@ from rest_framework.response import Response
 
 from age_categories.serializers import AgeCategoriesSerializer
 from age_categories.models import AgeCategories
+from block_user.permissions import IsNotBlockUserPermission
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_age_categories_view(request: Request) -> Response:
     age_categories = AgeCategories.objects.all()
 

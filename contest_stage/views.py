@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from block_user.permissions import IsNotBlockUserPermission
 from contest_stage.models import ContestStage
 from contest_stage.serializers import ContestStageSerializer
 from contests.models import Contest
@@ -12,7 +13,7 @@ from contests.serializers import ContestChangeStageSerializer
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def all_contest_stage_view(request):
     all_contest_stages = ContestStage.objects.all()
     serializer = ContestStageSerializer(all_contest_stages, many=True)
@@ -20,7 +21,7 @@ def all_contest_stage_view(request):
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsNotBlockUserPermission])
 def add_or_remove_contest_stage_in_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

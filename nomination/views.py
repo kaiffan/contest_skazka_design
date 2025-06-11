@@ -6,6 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from django.core.cache import cache
 
+from block_user.permissions import IsNotBlockUserPermission
 from contests.models import Contest
 from contests.serializers import ContestChangeNominationSerializer
 from nomination.models import Nominations
@@ -15,7 +16,7 @@ from participants.permissions import IsContestOwnerPermission
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_all_nominations(request: Request) -> Response:
     cache_key = f"nominations_all_{request.query_params.get('search', 'all')}"
     cached_data = cache.get(cache_key)
@@ -45,7 +46,9 @@ def get_all_nominations(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes([IsAuthenticated, IsContestOwnerPermission])
+@permission_classes(
+    [IsAuthenticated, IsContestOwnerPermission, IsNotBlockUserPermission]
+)
 def add_or_remove_nomination_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

@@ -214,3 +214,12 @@ class UpdateApplicationSerializer(ModelSerializer[Applications]):
     class Meta:
         model = Applications
         fields = ["name", "annotation", "link_to_work"]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.status = ApplicationStatus.pending.value
+
+        instance.save(update_fields=["name", "annotation", "link_to_work", "status"])
+        return instance

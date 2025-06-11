@@ -17,7 +17,12 @@ from applications.serializers import (
     UpdateApplicationSerializer,
 )
 from block_user.permissions import IsNotBlockUserPermission
-from participants.permissions import IsContestJuryPermission, IsOrgCommitteePermission
+from contest_stage.permissions import CanSubmitApplicationPermission
+from participants.permissions import (
+    IsContestJuryPermission,
+    IsOrgCommitteePermission,
+    IsContestMemberPermission,
+)
 
 
 def get_filtered_applications(contest_id: str, status_filter: str):
@@ -38,7 +43,13 @@ def get_applications_by_status(request: Request, status_filter: str) -> Response
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsNotBlockUserPermission,
+        CanSubmitApplicationPermission,
+    ]
+)
 def send_applications_view(request: Request) -> Response:
     serializer = SendApplicationsSerializer(
         data=request.data, context={"user": request.user}
@@ -162,9 +173,15 @@ def get_application_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsNotBlockUserPermission,
+        IsContestMemberPermission,
+    ]
+)
 def get_applications_user_view(request: Request) -> Response:
-    user_applications = Applications.objects.filter(user_id=request.user.id)
+    user_applications = Applications.objects.filter(user_id=request.user.id, is_deleted=False).all()
 
     application_filter = ApplicationFilter(data=request.GET, queryset=user_applications)
 
@@ -179,9 +196,16 @@ def get_applications_user_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["PATCH"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(
+    [
+        IsAuthenticated,
+        IsNotBlockUserPermission,
+        IsContestMemberPermission,
+        CanSubmitApplicationPermission,
+    ]
+)
 def update_application_view(request: Request) -> Response:
-    application_id = request.data.get("application_id", None)
+    application_id = request.data.get("application_id")
 
     if not application_id:
         return Response(
@@ -189,15 +213,59 @@ def update_application_view(request: Request) -> Response:
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    application = Applications.objects.get(id=application_id)
+    try:
+        application = Applications.objects.get(id=application_id)
+    except Applications.DoesNotExist:
+        return Response(
+            data={"error": "Application not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
     serializer = UpdateApplicationSerializer(
         instance=application, data=request.data, partial=True
     )
-    application.status = ApplicationStatus.pending.value
-    application.save(update_fields=["status"])
 
     if not serializer.is_valid(raise_exception=True):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     serializer.save()
+
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["DELETE"])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsNotBlockUserPermission,
+        CanSubmitApplicationPermission,
+        IsContestMemberPermission,
+    ]
+)
+def delete_application_view(request: Request) -> Response:
+    application_id = request.data.get("application_id")
+
+    if not application_id:
+        return Response(
+            data={"error": "Application id not found"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        application = Applications.objects.get(id=application_id)
+    except Applications.DoesNotExist:
+        return Response(
+            data={"error": "Application not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if application.user != request.user:
+        return Response(data={"error": "You do not have permission to delete this application"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    application.is_deleted = True
+
+    return Response(
+        data={"message": "Application successfully deleted"},
+        status=status.HTTP_200_OK,
+    )

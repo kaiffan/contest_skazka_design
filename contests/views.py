@@ -163,7 +163,7 @@ def get_all_contests_owner_view(request: Request) -> Response:
     contests = Contest.objects.filter(
         participant__user_id=request.user.id,
         participant__role=ParticipantRole.owner.value,
-        is_deleted=False
+        is_deleted=False,
     ).distinct()
 
     serializer = ContestAllOwnerSerializer(instance=contests, many=True)

@@ -33,6 +33,8 @@ class Applications(models.Model):
         related_name="criteria_rate",
     )
 
+    is_deleted = models.BooleanField(default=False)
+
     class Meta:
         db_table = "applications"
         unique_together = ("name", "contest", "nomination")

@@ -7,19 +7,19 @@ from contests.models import Contest
 from contests_contest_stage.models import ContestsContestStage
 
 
-def get_current_contest_stage(contest: Contest) -> Dict[str, Any]:
-    current_stage = cache.get(key=f"current_contest_stage_{contest.id}", default=None)
+def get_current_contest_stage(contest_id: int) -> Dict[str, Any]:
+    current_stage = cache.get(key=f"current_contest_stage_{contest_id}", default=None)
 
     if not current_stage:
         current_stage = ContestsContestStage.objects.filter(
-            contest_id=contest.id,
+            contest_id=contest_id,
             start_date__lte=date.today(),
             end_date__gte=date.today(),
         ).first()
 
         if current_stage:
             cache.set(
-                key=f"current_contest_stage_{contest.id}",
+                key=f"current_contest_stage_{contest_id}",
                 value=current_stage,
                 timeout=60 * 30,
             )

@@ -16,12 +16,13 @@ from winners.serializers import ContestWinnersSerializer
 def get_contest_winners(request: Request) -> Response:
     contest: Contest = get_object_or_404(Contest, id=request.contest_id)
     current_contest_stage: bool = ContestsContestStage.objects.filter(
-        contest_id=contest.id,
-        stage__name="Подведение итогов"
+        contest_id=contest.id, stage__name="Подведение итогов"
     ).exists()
 
     if not current_contest_stage:
-        return Response(data={"error": "Не подходящая стадия для подведения итогов конкурса"})
+        return Response(
+            data={"error": "Не подходящая стадия для подведения итогов конкурса"}
+        )
 
     serializer = ContestWinnersSerializer(instance=contest)
     return Response(data=serializer.data, status=status.HTTP_200_OK)

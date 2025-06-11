@@ -132,7 +132,7 @@ class ContestAllSerializer(ModelSerializer[Contest]):
         ]
 
     def get_contest_stage(self, contest):
-        return get_current_contest_stage(contest=contest)
+        return get_current_contest_stage(contest_id=contest.id)
 
 
 class ContestAllOwnerSerializer(ModelSerializer[Contest]):
@@ -175,7 +175,7 @@ class ContestAllJurySerializer(ModelSerializer[Contest]):
         ).count()
 
     def get_current_stage(self, contest):
-        return get_current_contest_stage(contest=contest)
+        return get_current_contest_stage(contest_id=contest.id)
 
 
 class CreateBaseContestSerializer(ModelSerializer[Contest]):

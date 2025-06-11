@@ -9,7 +9,9 @@ from rest_framework.response import Response
 
 from applications.models import Applications
 from block_user.permissions import IsNotBlockUserPermission
+from contest_stage.permissions import CanCheckWorksPermission
 from contests.models import Contest
+from contests.utils import get_current_contest_stage
 from work_rate.utils import validate_count_criteria_by_contest
 
 from participants.permissions import IsContestJuryPermission
@@ -28,10 +30,12 @@ from work_rate.serializers import (
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
+        CanCheckWorksPermission,
     ]
 )
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
+
     serializer = WorkRateSerializer(
         data=request.data,
         context={"contest": contest, "jury_id": request.user.id},
@@ -65,6 +69,7 @@ def work_rate_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
+        CanCheckWorksPermission
     ]
 )
 def get_all_rated_works_in_contest_view(request: Request) -> Response:
@@ -86,6 +91,7 @@ def get_all_rated_works_in_contest_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
+        CanCheckWorksPermission,
     ]
 )
 def get_all_rated_works_view(request: Request) -> Response:
@@ -110,6 +116,7 @@ def get_all_rated_works_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
+        CanCheckWorksPermission
     ]
 )
 def update_rated_work_view(request: Request) -> Response:
@@ -135,6 +142,7 @@ def update_rated_work_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
+        CanCheckWorksPermission
     ]
 )
 def get_rated_work_by_jury_in_contest_view(request: Request) -> Response:

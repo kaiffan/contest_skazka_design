@@ -29,7 +29,7 @@ class BaseStagePermission(permissions.BasePermission):
         except Contest.DoesNotExist:
             raise PermissionDenied("Конкурс не найден.")
 
-        current_stage: dict[str, Any] = get_current_contest_stage(contest=contest)
+        current_stage: dict[str, Any] = get_current_contest_stage(contest_id=contest.id)
 
         if current_stage["name"] != self.allowed_stage:
             return False
@@ -37,21 +37,16 @@ class BaseStagePermission(permissions.BasePermission):
         return True
 
 
-class CanSubmitApplication(BaseStagePermission):
+class CanSubmitApplicationPermission(BaseStagePermission):
     allowed_stage = "Сбор заявок"
     message = "Заявку можно отправить только на стадии: 'Сбор заявок'."
 
 
-class CanCheckWorks(BaseStagePermission):
-    allowed_stage = "Проверка работ"
+class CanCheckWorksPermission(BaseStagePermission):
+    allowed_stage = "Оценка работ"
     message = "Проверка работ возможна только на стадии: 'Проверка работ'."
 
 
 class CanFinalizeResults(BaseStagePermission):
     allowed_stage = "Подведение итогов"
     message = "Итоги можно подводить только на стадии: 'Подведение итогов'."
-
-
-class CanAccessAfterEnding(BaseStagePermission):
-    allowed_stage = "Конец"
-    message = "Доступ разрешён только после завершения конкурса."

@@ -17,7 +17,7 @@ from applications.serializers import (
     UpdateApplicationSerializer,
 )
 from block_user.permissions import IsNotBlockUserPermission
-from contest_stage.permissions import CanSubmitApplicationPermission
+from contest_stage.permissions import CanSubmitApplicationPermission, CanCheckWorksPermission
 from participants.permissions import (
     IsContestJuryPermission,
     IsOrgCommitteePermission,
@@ -69,6 +69,8 @@ def send_applications_view(request: Request) -> Response:
         IsAuthenticated,
         IsOrgCommitteePermission,
         IsNotBlockUserPermission,
+        CanSubmitApplicationPermission,
+        CanCheckWorksPermission
     ]
 )
 def approve_application_view(request: Request) -> Response:
@@ -94,6 +96,8 @@ def approve_application_view(request: Request) -> Response:
         IsAuthenticated,
         IsOrgCommitteePermission,
         IsNotBlockUserPermission,
+        CanSubmitApplicationPermission,
+        CanCheckWorksPermission
     ]
 )
 def reject_application_view(request: Request) -> Response:
@@ -176,8 +180,7 @@ def get_application_view(request: Request) -> Response:
 @permission_classes(
     permission_classes=[
         IsAuthenticated,
-        IsNotBlockUserPermission,
-        IsContestMemberPermission,
+        IsNotBlockUserPermission
     ]
 )
 def get_applications_user_view(request: Request) -> Response:

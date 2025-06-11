@@ -240,9 +240,7 @@ def update_application_view(request: Request) -> Response:
 @permission_classes(
     permission_classes=[
         IsAuthenticated,
-        IsNotBlockUserPermission,
-        CanSubmitApplicationPermission,
-        IsContestMemberPermission,
+        IsNotBlockUserPermission
     ]
 )
 def delete_application_view(request: Request) -> Response:

@@ -21,7 +21,6 @@ from authentication.validator import UserValidator
 
 
 class RegistrationSerializer(ModelSerializer[Users]):
-
     class Meta:
         model = Users
         fields = [
@@ -30,7 +29,7 @@ class RegistrationSerializer(ModelSerializer[Users]):
             "email",
             "avatar_link",
             "birth_date",
-            "password"
+            "password",
         ]
 
         extra_kwargs = {
@@ -38,7 +37,7 @@ class RegistrationSerializer(ModelSerializer[Users]):
             "last_name": {"required": True},
             "email": {"required": True},
             "birth_date": {"required": True},
-            "password": {"required": True}
+            "password": {"required": True},
         }
 
     def validate_first_name(self, value):

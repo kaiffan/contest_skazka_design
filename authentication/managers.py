@@ -9,13 +9,7 @@ class UsersManager(BaseUserManager):
         if birth_date > date.today():
             raise ValidationError("Дата рождения не может быть в будущем.")
 
-    def _validate_required_fields(
-        self,
-        email,
-        first_name,
-        last_name,
-        birth_date
-    ):
+    def _validate_required_fields(self, email, first_name, last_name, birth_date):
         if not email:
             raise ValidationError("Пользователь должен иметь адрес электронной почты.")
         if not first_name:
@@ -37,7 +31,7 @@ class UsersManager(BaseUserManager):
             email=email,
             first_name=first_name,
             last_name=last_name,
-            birth_date=birth_date
+            birth_date=birth_date,
         )
         self._validate_birth_date(birth_date=birth_date)
 
@@ -69,7 +63,7 @@ class UsersManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
             birth_date=birth_date,
-            password=password
+            password=password,
         )
         user.is_superuser = True
         user.is_staff = True

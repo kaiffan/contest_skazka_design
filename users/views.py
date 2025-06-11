@@ -86,9 +86,7 @@ def user_competencies_jury_view(request: Request) -> Response:
     email = request.data.get("email", None)
 
     if not email:
-        return Response(
-            data={"error": "Not exists email"}
-        )
+        return Response(data={"error": "Not exists email"})
 
     user = Users.objects.get(email=email)
     serializer = UserCompetenciesSerializer(instance=user)

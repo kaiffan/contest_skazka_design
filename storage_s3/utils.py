@@ -10,6 +10,7 @@ from boto3.session import Session
 from contest_file_constraints.models import ContestFileConstraints
 from contests.models import Contest
 from storage_s3.enums import TypeUploads
+from storage_s3.success_error_type import Error, Success, FileUploadResult
 
 settings = get_settings()
 
@@ -27,21 +28,11 @@ def get_sesion_s3():
 
 def upload_file_to_storage(
     uploaded_file: UploadedFile, file_constraints: dict[str, list[str]]
-):
-    """
-    Загружает файл в облако (например, S3), предварительно проверив его формат.
-
-    Аргументы:
-        uploaded_file (UploadedFile): Загруженный пользователем файл.
-        file_constraints (Dict[str, List[str]]): Ограничения на форматы файлов.
-
-    Возвращает:
-        str: Публичный URL файла в хранилище.
-    """
+) -> FileUploadResult:
     try:
         file_extension = uploaded_file.name.rsplit(sep=".", maxsplit=1)[1].lower()
     except IndexError:
-        return {"error": "Файл не имеет расширения"}
+        return Error(message="Файл не имеет расширения")
 
     normalized_constraints = {
         folder: {ext.lower() for ext in formats}
@@ -61,10 +52,10 @@ def upload_file_to_storage(
         allowed_extensions = sorted(
             {ext for formats in normalized_constraints.values() for ext in formats}
         )
-        return {
-                "error": f"Формат файла '{file_extension}' не поддерживается. "
-                f"Допустимые форматы: {', '.join(allowed_extensions)}"
-            }
+        return Error(
+            message=f"Формат файла '{file_extension}' не поддерживается. "
+            f"Допустимые форматы: {', '.join(allowed_extensions)}"
+        )
 
     client = get_sesion_s3()
 
@@ -73,7 +64,6 @@ def upload_file_to_storage(
 
     with NamedTemporaryFile(delete=False) as tmp_file:
         file_path = tmp_file.name
-
         for chunk in uploaded_file.chunks():
             tmp_file.write(chunk)
 
@@ -83,12 +73,14 @@ def upload_file_to_storage(
             settings.yandex_s3_credentials.BACKET_NAME,
             file_key,
         )
-
+    except Exception as e:
+        return Error(message=f"Ошибка загрузки файла в S3: {str(e)}")
     finally:
         unlink(file_path)
 
     endpoint_url: str = settings.yandex_s3_credentials.ENDPOINT_URL.rstrip("/")
-    return f"{endpoint_url}/{settings.yandex_s3_credentials.BACKET_NAME}/{file_key}"
+    url = f"{endpoint_url}/{settings.yandex_s3_credentials.BACKET_NAME}/{file_key}"
+    return Success(url)
 
 
 def get_file_constraint_by_type(

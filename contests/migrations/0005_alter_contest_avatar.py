@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('contests', '0004_remove_contest_file_constraints_and_more'),
+        ("contests", "0004_remove_contest_file_constraints_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='contest',
-            name='avatar',
-            field=models.CharField(default='https://storage.yandexcloud.net/skazka-design/avatars/ce9e66fa-74ac-437a-a0f9-ae2954be1de7.jpg', max_length=255),
+            model_name="contest",
+            name="avatar",
+            field=models.CharField(
+                default="https://storage.yandexcloud.net/skazka-design/avatars/ce9e66fa-74ac-437a-a0f9-ae2954be1de7.jpg",
+                max_length=255,
+            ),
         ),
     ]

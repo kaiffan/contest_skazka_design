@@ -1,13 +1,7 @@
 from datetime import date
 
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import (
-    ListField,
-    CharField,
-    EmailField,
-    URLField,
-    DateField
-)
+from rest_framework.fields import ListField, CharField, EmailField, URLField, DateField
 from rest_framework.serializers import Serializer, ModelSerializer
 
 from authentication.models import Users

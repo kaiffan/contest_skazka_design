@@ -142,7 +142,7 @@ def get_all_contests_not_permissions_view(request: Request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[AllowAny])
 def get_all_contests_view(request: Request) -> Response:
-    contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
+    contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all().order_by("id")
 
     contest_filter = ContestFilter(data=request.GET, queryset=contest_list)
 

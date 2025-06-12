@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from authentication.permissions import IsAdminSystemPermission
 from block_user.permissions import IsNotBlockUserPermission
 from contests.filter import ContestFilter
 from contests.models import Contest
@@ -141,7 +140,7 @@ def get_all_contests_not_permissions_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(permission_classes=[AllowAny])
 def get_all_contests_view(request: Request) -> Response:
     contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all()
 

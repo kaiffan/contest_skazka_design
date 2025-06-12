@@ -90,7 +90,7 @@ def delete_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(permission_classes=[AllowAny])
 def get_contest_by_id_view(request: Request) -> Response:
     instance = Contest.objects.prefetch_related(
         "criteria",

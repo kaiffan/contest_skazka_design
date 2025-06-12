@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -13,7 +13,7 @@ from contests.serializers import ContestChangeStageSerializer
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(permission_classes=[AllowAny])
 def all_contest_stage_view(request):
     all_contest_stages = ContestStage.objects.all()
     serializer = ContestStageSerializer(all_contest_stages, many=True)

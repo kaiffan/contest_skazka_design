@@ -69,8 +69,7 @@ def send_applications_view(request: Request) -> Response:
         IsAuthenticated,
         IsOrgCommitteePermission,
         IsNotBlockUserPermission,
-        CanSubmitApplicationPermission,
-        CanCheckWorksPermission
+        CanSubmitApplicationPermission
     ]
 )
 def approve_application_view(request: Request) -> Response:
@@ -96,8 +95,7 @@ def approve_application_view(request: Request) -> Response:
         IsAuthenticated,
         IsOrgCommitteePermission,
         IsNotBlockUserPermission,
-        CanSubmitApplicationPermission,
-        CanCheckWorksPermission
+        CanSubmitApplicationPermission
     ]
 )
 def reject_application_view(request: Request) -> Response:

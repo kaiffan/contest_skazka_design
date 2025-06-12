@@ -19,15 +19,12 @@ class BaseStagePermission(permissions.BasePermission):
         return contest_id
 
     def has_permission(self, request, view):
-        if self.allowed_stage is None:
-            raise NotImplementedError("Необходимо указать allowed_stage в подклассе.")
-
         contest_id = self.get_contest_id(request)
 
         try:
             contest = Contest.objects.get(id=contest_id)
         except Contest.DoesNotExist:
-            raise PermissionDenied("Конкурс не найден.")
+            return False
 
         current_stage: dict[str, Any] = get_current_contest_stage(contest_id=contest.id)
 
@@ -47,6 +44,6 @@ class CanCheckWorksPermission(BaseStagePermission):
     message = "Проверка работ возможна только на стадии: 'Проверка работ'."
 
 
-class CanFinalizeResults(BaseStagePermission):
+class CanFinalizeResultsPermission(BaseStagePermission):
     allowed_stage = "Подведение итогов"
     message = "Итоги можно подводить только на стадии: 'Подведение итогов'."

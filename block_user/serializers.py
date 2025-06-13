@@ -52,7 +52,8 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
         user_id = self.validated_data.get("user_id")
         reason_blocked = self.validated_data.get("reason_blocked")
 
-        user_blocked = UserBlock.objects.get(user_id=user_id).is_blocked
+        user_block = UserBlock.objects.filter(user_id=user_id).first()
+        user_blocked = user_block.is_blocked if user_block else False
 
         if user_blocked:
             raise ValidationError(

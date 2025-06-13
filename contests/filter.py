@@ -9,7 +9,6 @@ from contests.models import Contest
 
 class ContestFilter(FilterSet):
     contest_title = CharFilter(field_name="title", lookup_expr="icontains")
-    contest_category = NumberFilter(field_name="contest_category__id")
 
     age_category = ModelMultipleChoiceFilter(
         field_name="age_category",
@@ -28,7 +27,6 @@ class ContestFilter(FilterSet):
         model = Contest
         fields = [
             "contest_title",
-            "contest_category",
             "age_category",
             "contest_stage",
         ]

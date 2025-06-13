@@ -69,7 +69,7 @@ def publish_contest_view(request: Request) -> Response:
 
     contest.is_published = True
     contest.is_draft = False
-    contest.save()
+    contest.save(update_fields=["is_published"])
 
     return Response(
         data={"message": "Contest successfully published"}, status=status.HTTP_200_OK
@@ -78,15 +78,23 @@ def publish_contest_view(request: Request) -> Response:
 
 @api_view(http_method_names=["DELETE"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
-def delete_contest_view(request: Request) -> Response:
+def reject_publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
-    contest.is_deleted = True
-    contest.save()
+    contest.is_published = False
+    contest.save(update_fields=["is_published"])
 
     return Response(
         data={"message": "Contest successfully deleted"}, status=status.HTTP_200_OK
     )
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+def get_published_contest_view(request: Request) -> Response:
+    contest_list = Contest.objects.all().filter(is_published=True)
+
+    serializer = ContestAllSerializer(instance=contest_list, many=True)
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(http_method_names=["GET"])

@@ -106,12 +106,14 @@ class UnblockUserSerializer(ModelSerializer[UserBlock]):
 
 class AllBlockUsersSerializer(ModelSerializer[UserBlock]):
     blocked_by_fio = SerializerMethodField()
+    user_email = SerializerMethodField()
     user_fio = SerializerMethodField()
 
     class Meta:
         model = UserBlock
         fields = [
             "user_id",
+            "user_email",
             "user_fio",
             "blocked_by_fio",
             "blocked_until",
@@ -120,6 +122,9 @@ class AllBlockUsersSerializer(ModelSerializer[UserBlock]):
 
     def get_blocked_by_fio(self, instance):
         return instance.blocked_by.get_fio()
+
+    def get_user_email(self, instance):
+        return instance.user.email
 
     def get_user_fio(self, instance):
         return instance.user.get_fio()

@@ -88,8 +88,8 @@ def get_all_blocked_users_view(request: Request) -> Response:
     ]
 )
 def get_all_users_view(request: Request) -> Response:
-    blocked_user_ids = UserBlock.objects.filter(is_blocked=True).all().values_list("user_id", flat=True)
-    user_list = Users.objects.exclude(id=request.user.id).exclude(id__in=blocked_user_ids).all()
+    blocked_user_ids = UserBlock.objects.filter(is_blocked=True).values_list("user_id", flat=True)
+    user_list = Users.objects.exclude(id=request.user.id).exclude(id__in=blocked_user_ids)
 
     paginator = BlockUserPagination()
     users_page = paginator.paginate_queryset(queryset=user_list, request=request)

@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from rest_framework.fields import SerializerMethodField, CharField
+
+from rest_framework.fields import SerializerMethodField, DateTimeField, CharField
 from rest_framework.serializers import (
     ModelSerializer,
-    DateTimeField,
     ValidationError,
     IntegerField,
 )
@@ -13,9 +13,8 @@ from block_user.models import UserBlock
 
 
 class BlockUserSerializer(ModelSerializer[UserBlock]):
-    user_id = IntegerField(write_only=True)
+    user_id = IntegerField(write_only=True, required=True)
     blocked_until = DateTimeField(required=False)
-    reason_blocked = CharField(read_only=True, allow_blank=False)
 
     class Meta:
         model = UserBlock
@@ -28,7 +27,7 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
             raise ValidationError(detail={"error": "Пользователь не найден."}, code=404)
         return user.id
 
-    def validate_blocked_until(self, value):
+    def validate_reason_blocked(self, value):
         if not value:
             raise ValidationError(
                 detail={"error": "Нельзя заблокировать без причины!"}, code=400
@@ -36,7 +35,8 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
 
         return value
 
-    def validate_reason_blocked(self, value):
+    def validate_blocked_until(self, value):
+        # Если значение не передано
         if not value:
             return timezone.now() + timedelta(days=7)
 
@@ -65,10 +65,10 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
 
         block, created = UserBlock.objects.update_or_create(
             user_id=user_id,
-            reason_blocked=reason_blocked,
             defaults={
                 "blocked_by_id": blocked_by_id,
                 "blocked_until": blocked_until,
+                "reason_blocked": reason_blocked,
                 "is_blocked": True,
             },
         )

@@ -15,6 +15,7 @@ class UserBlock(models.Model):
         related_name="user_blocks_created",
         verbose_name="Кем заблокирован",
     )
+    reason_blocked = models.TextField(null=False, default="Значение по умолчанию")
     blocked_until = models.DateTimeField(null=False, verbose_name="Заблокирован до")
     unblocked_at = models.DateTimeField(
         null=True, blank=True, verbose_name="Разблокирован в"

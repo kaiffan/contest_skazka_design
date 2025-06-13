@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from rest_framework.fields import SerializerMethodField
+from rest_framework.fields import SerializerMethodField, CharField
 from rest_framework.serializers import (
     ModelSerializer,
     DateTimeField,
@@ -15,6 +15,7 @@ from block_user.models import UserBlock
 class BlockUserSerializer(ModelSerializer[UserBlock]):
     user_id = IntegerField(write_only=True)
     blocked_until = DateTimeField(required=False)
+    reason_blocked = CharField(read_only=True, allow_blank=False)
 
     class Meta:
         model = UserBlock
@@ -28,8 +29,16 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
         return user.id
 
     def validate_blocked_until(self, value):
-        if value is None:
-            return timezone.now() + timedelta(days=7)  # значение по умолчанию
+        if not value:
+            raise ValidationError(
+                detail={"error": "Нельзя заблокировать без причины!"}, code=400
+            )
+
+        return value
+
+    def validate_blocked_until(self, value):
+        if not value:
+            return timezone.now() + timedelta(days=7)
 
         if value < timezone.now():
             raise ValidationError(
@@ -40,7 +49,8 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
         return value
 
     def save(self):
-        user_id = self.validated_data["user_id"]
+        user_id = self.validated_data.get("user_id")
+        reason_blocked = self.validated_data.get("reason_blocked")
 
         user_blocked = UserBlock.objects.get(user_id=user_id).is_blocked
 
@@ -54,6 +64,7 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
 
         block, created = UserBlock.objects.update_or_create(
             user_id=user_id,
+            reason_blocked=reason_blocked,
             defaults={
                 "blocked_by_id": blocked_by_id,
                 "blocked_until": blocked_until,
@@ -85,8 +96,9 @@ class UnblockUserSerializer(ModelSerializer[UserBlock]):
 
         block = UserBlock.objects.get(id=user_id)
         block.is_blocked = False
+        block.reason_blocked = ""
         block.unblocked_at = timezone.now()
-        block.save(update_fields=["unblocked_at", "is_blocked"])
+        block.save(update_fields=["unblocked_at", "is_blocked", "reason_blocked"])
 
         return block
 

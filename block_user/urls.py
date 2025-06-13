@@ -7,15 +7,15 @@ from block_user.views import (
 )
 
 urlpatterns = [
-    path(route="admin/block_user", view=block_user_view, name="block_user_view"),
-    path(route="admin/unblock_user", view=unblock_user_view, name="unblock_user_view"),
+    path(route="block_user", view=block_user_view, name="block_user_view"),
+    path(route="unblock_user", view=unblock_user_view, name="unblock_user_view"),
     path(
-        route="admin/all_blocked_user",
+        route="all_blocked_user",
         view=get_all_blocked_users_view,
         name="get_all_blocked_users_view",
     ),
     path(
-        route="admin/all_users",
+        route="all_users",
         view=get_all_users_view,
         name="get_all_users_view",
     )

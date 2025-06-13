@@ -3,7 +3,6 @@ from contests.views import (
     create_contest_view,
     publish_contest_view,
     update_contest_view,
-    delete_contest_view,
     get_all_contests_view,
     get_contest_by_id_owner_view,
     get_all_contests_owner_view,

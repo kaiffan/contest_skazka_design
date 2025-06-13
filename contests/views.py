@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.request import Request
 
+from authentication.permissions import IsAdminSystemPermission
 from block_user.permissions import IsNotBlockUserPermission
 from contests.filter import ContestFilter
 from contests.models import Contest
@@ -63,7 +64,7 @@ def update_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission])
 def publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -77,7 +78,7 @@ def publish_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["DELETE"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission])
 def reject_publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -89,7 +90,7 @@ def reject_publish_contest_view(request: Request) -> Response:
     )
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
+@permission_classes(permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission])
 def get_published_contest_view(request: Request) -> Response:
     contest_list = Contest.objects.all().filter(is_published=True)
 

@@ -36,7 +36,7 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
 
         return value
 
-    def validate_blocked_until(self, value):
+    def validate_reason_blocked(self, value):
         if not value:
             return timezone.now() + timedelta(days=7)
 

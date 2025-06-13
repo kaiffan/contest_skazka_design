@@ -19,7 +19,7 @@ class BlockUserSerializer(ModelSerializer[UserBlock]):
 
     class Meta:
         model = UserBlock
-        fields = ["user_id", "blocked_until"]
+        fields = ["user_id", "blocked_until", "reason_blocked"]
 
     def validate_user_id(self, value):
         try:

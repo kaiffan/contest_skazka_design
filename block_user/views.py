@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
 
+from authentication.models import Users
 from authentication.permissions import IsAdminSystemPermission
 from block_user.models import UserBlock
 from block_user.paginator import BlockUserPagination
@@ -13,6 +14,7 @@ from block_user.serializers import (
     UnblockUserSerializer,
     AllBlockUsersSerializer,
 )
+from users.serializers import UserParticipantSerializer
 
 
 @api_view(http_method_names=["POST"])
@@ -73,5 +75,24 @@ def get_all_blocked_users_view(request: Request) -> Response:
     paginator = BlockUserPagination()
     result_page = paginator.paginate_queryset(queryset=queryset, request=request)
 
-    serializer = AllBlockUsersSerializer(result_page, many=True)
+    serializer = AllBlockUsersSerializer(instance=result_page, many=True)
     return paginator.get_paginated_response(data=serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsAdminSystemPermission,
+        IsNotBlockUserPermission,
+    ]
+)
+def get_all_users_view(request: Request) -> Response:
+    queryset = Users.objects.exclude(id=request.user.id).all()
+
+    paginator = BlockUserPagination()
+    users_page = paginator.paginate_queryset(queryset=queryset, request=request)
+
+    serializer = UserParticipantSerializer(instance=users_page, many=True)
+    return paginator.get_paginated_response(data=serializer.data)
+

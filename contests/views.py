@@ -173,6 +173,7 @@ def reject_publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
     contest.is_published = False
+    contest.is_draft = True
     contest.save(update_fields=["is_published"])
 
     return Response(
@@ -467,7 +468,19 @@ def get_all_contests_jury_view(request: Request) -> Response:
     conntests = Contest.objects.filter(
         participant__user_id=request.user.id,
         participant__role=ParticipantRole.jury.value,
+        is_deleted=False,
     )
 
     serializer = ContestAllJurySerializer(instance=conntests, many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=["DELETE"])
+@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission, IsContestOwnerPermission])
+def delete_contest_view(request: Request) -> Response:
+    contest = get_object_or_404(Contest, id=request.contest_id)
+
+    contest.is_deleted = True
+    contest.save(update_fields=["is_deleted"])
+
+    return Response(status=status.HTTP_204_NO_CONTENT)

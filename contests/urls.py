@@ -10,7 +10,7 @@ from contests.views import (
     get_all_contests_jury_view,
     get_contest_by_id_view,
     get_published_contest_view,
-    reject_publish_contest_view,
+    reject_publish_contest_view, delete_contest_view,
 )
 
 urlpatterns = [
@@ -48,5 +48,10 @@ urlpatterns = [
         route="admin/all/published",
         view=get_published_contest_view,
         name="get_published_contest_view",
+    ),
+    path(
+        route="owner/delete",
+        view=delete_contest_view,
+        name="delete_contest_view",
     ),
 ]

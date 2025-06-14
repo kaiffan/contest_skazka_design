@@ -161,8 +161,6 @@ def user_short_data_get_view(request: Request) -> Response:
 @permission_classes(
     permission_classes=[
         IsAuthenticated,
-        IsContestOwnerPermission,
-        IsOrgCommitteePermission,
         IsNotBlockUserPermission,
     ]
 )

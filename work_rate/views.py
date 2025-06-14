@@ -12,6 +12,8 @@ from applications.models import Applications
 from block_user.permissions import IsNotBlockUserPermission
 from contest_stage.permissions import CanCheckWorksPermission
 from contests.models import Contest
+from participants.enums import ParticipantRole
+from participants.models import Participant
 from work_rate.utils import validate_count_criteria_by_contest
 
 from participants.permissions import IsContestJuryPermission
@@ -78,9 +80,15 @@ from work_rate.serializers import (
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
+    participant_id = Participant.objects.filter(
+        contest=contest,
+        user=request.user,
+        role=ParticipantRole.jury.value,
+    ).first().id
+
     serializer = WorkRateSerializer(
         data=request.data,
-        context={"contest": contest, "jury_id": request.user.id},
+        context={"contest": contest, "jury_id": participant_id},
     )
 
     if not serializer.is_valid(raise_exception=True):

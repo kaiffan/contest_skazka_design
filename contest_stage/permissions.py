@@ -40,8 +40,8 @@ class CanSubmitApplicationPermission(BaseStagePermission):
 
 
 class CanCheckWorksPermission(BaseStagePermission):
-    allowed_stage = "Оценка работ"
-    message = "Проверка работ возможна только на стадии: 'Проверка работ'."
+    allowed_stage = "Оценка работы"
+    message = "Проверка работ возможна только на стадии: 'Оценка работы'."
 
 
 class CanFinalizeResultsPermission(BaseStagePermission):

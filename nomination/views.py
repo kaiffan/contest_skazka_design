@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiExample, extend_schema
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
@@ -15,6 +17,32 @@ from nomination.serializers import NominationsSerializer
 from participants.permissions import IsContestOwnerPermission
 
 
+@extend_schema(
+    summary="Получение всех номинаций",
+    description="Возвращает список всех номинаций. Можно фильтровать по имени через параметр `search`.",
+    parameters=[
+        OpenApiParameter(
+            name="search",
+            type=OpenApiTypes.STR,
+            location="query",
+            description="Поиск по названию номинации",
+        )
+    ],
+    responses={200: NominationsSerializer(many=True)},
+    examples=[
+        OpenApiExample(
+            name="Успешный ответ",
+            value={
+                "data": [
+                    {"id": 1, "name": "Лучший фильм"},
+                    {"id": 2, "name": "Лучшая музыка"},
+                ],
+                "message": "All names by фильм",
+            },
+            response_only=True,
+        )
+    ],
+)
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_all_nominations(request: Request) -> Response:
@@ -45,6 +73,54 @@ def get_all_nominations(request: Request) -> Response:
     return paginator.get_paginated_response(response_data)
 
 
+@extend_schema(
+    summary="Добавление/удаление номинаций у конкурса",
+    description="Принимает список номинаций в формате JSON и добавляет или удаляет их у конкретного конкурса.",
+    request=ContestChangeNominationSerializer,
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string"},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "added": {"type": "array", "items": {"type": "integer"}},
+                        "removed": {"type": "array", "items": {"type": "integer"}},
+                    },
+                },
+            },
+        },
+        400: {
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+        404: {"type": "object", "properties": {"message": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса",
+            value={"nomination_list": [{"id": 1, "name": "Лучший фильм"}]},
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={
+                "message": "Nominations updated successfully",
+                "data": {"added": [1], "removed": []},
+            },
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Неверные данные",
+            value={
+                "error": "Invalid data",
+                "errors": {"nomination_list": ["This field is required."]},
+                "response_only": True,
+            },
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(
     [IsAuthenticated, IsContestOwnerPermission, IsNotBlockUserPermission]

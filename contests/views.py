@@ -64,7 +64,9 @@ def update_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission])
+@permission_classes(
+    permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission]
+)
 def publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -78,7 +80,9 @@ def publish_contest_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["DELETE"])
-@permission_classes(permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission])
+@permission_classes(
+    permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission]
+)
 def reject_publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
@@ -89,8 +93,11 @@ def reject_publish_contest_view(request: Request) -> Response:
         data={"message": "Contest successfully deleted"}, status=status.HTTP_200_OK
     )
 
+
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission])
+@permission_classes(
+    permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission]
+)
 def get_published_contest_view(request: Request) -> Response:
     contest_list = Contest.objects.all().filter(is_published=True)
 
@@ -151,7 +158,9 @@ def get_all_contests_not_permissions_view(request: Request) -> Response:
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[AllowAny])
 def get_all_contests_view(request: Request) -> Response:
-    contest_list = Contest.objects.filter(is_published=True, is_deleted=False).all().order_by("id")
+    contest_list = (
+        Contest.objects.filter(is_published=True, is_deleted=False).all().order_by("id")
+    )
 
     contest_filter = ContestFilter(data=request.GET, queryset=contest_list)
 

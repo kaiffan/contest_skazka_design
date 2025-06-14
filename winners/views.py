@@ -12,7 +12,13 @@ from winners.serializers import ContestWinnersSerializer
 
 
 @api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission, CanFinalizeResultsPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        CanFinalizeResultsPermission,
+    ]
+)
 def get_contest_winners(request: Request) -> Response:
     contest: Contest = get_object_or_404(Contest, id=request.contest_id)
 

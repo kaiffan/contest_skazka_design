@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('applications', '0003_alter_applications_link_to_work'),
+        ("applications", "0003_alter_applications_link_to_work"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='applications',
-            name='is_deleted',
+            model_name="applications",
+            name="is_deleted",
             field=models.BooleanField(default=False),
         ),
     ]

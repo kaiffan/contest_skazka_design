@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('block_user', '0001_initial'),
+        ("block_user", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userblock',
-            name='reason_blocked',
-            field=models.TextField(default='Значение по умолчанию'),
+            model_name="userblock",
+            name="reason_blocked",
+            field=models.TextField(default="Значение по умолчанию"),
         ),
     ]

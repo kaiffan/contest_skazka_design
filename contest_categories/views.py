@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +9,10 @@ from contest_categories.models import ContestCategories
 from contest_categories.serializers import ContestCategoriesSerializer
 
 
+@extend_schema(
+    summary="Получение всех категорий конкурсов",
+    description="Возвращает список всех доступных категорий конкурсов.",
+)
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def all_contest_categories_view(request):

@@ -69,7 +69,7 @@ def work_rate_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
-        CanCheckWorksPermission
+        CanCheckWorksPermission,
     ]
 )
 def get_all_rated_works_in_contest_view(request: Request) -> Response:
@@ -116,7 +116,7 @@ def get_all_rated_works_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
-        CanCheckWorksPermission
+        CanCheckWorksPermission,
     ]
 )
 def update_rated_work_view(request: Request) -> Response:
@@ -142,7 +142,7 @@ def update_rated_work_view(request: Request) -> Response:
         IsAuthenticated,
         IsContestJuryPermission,
         IsNotBlockUserPermission,
-        CanCheckWorksPermission
+        CanCheckWorksPermission,
     ]
 )
 def get_rated_work_by_jury_in_contest_view(request: Request) -> Response:

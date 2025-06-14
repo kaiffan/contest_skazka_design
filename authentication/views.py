@@ -1,4 +1,6 @@
 from django.db import transaction
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiExample, extend_schema, OpenApiParameter
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -26,6 +28,41 @@ from email_confirmation.models import EmailConfirmationLogin
 from django.utils import timezone
 
 
+@extend_schema(
+    summary="Регистрация нового пользователя",
+    description="Создаёт нового пользователя на основе предоставленной информации.",
+    request=RegistrationSerializer,
+    responses={
+        201: {"type": "object", "properties": {"message": {"type": "string"}}},
+        400: {
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса",
+            value={
+                "first_name": "Иван",
+                "last_name": "Иванов",
+                "email": "ivan@example.com",
+                "birth_date": "1990-01-01",
+                "password": "SecurePass123!",
+            },
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={"message": "Registration successful"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Email уже существует",
+            value={"error": "A user with that email already exists."},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[AllowAny])
 @throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
@@ -42,6 +79,41 @@ def registration_view(request: Request) -> Response:
     )
 
 
+@extend_schema(
+    summary="Вход пользователя",
+    description="Авторизует пользователя по email и паролю. Отправляет код подтверждения на почту.",
+    request=LoginSerializer,
+    responses={
+        200: {"type": "object", "properties": {"message": {"type": "string"}}},
+        400: {
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+        401: {"type": "object", "properties": {"error": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса",
+            value={"email": "ivan@example.com", "password": "SecurePass123!"},
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={"message": "Код отправлен на почту"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Неверные учетные данные",
+            value={"error": "A user with this email and password was not found."},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Пользователь не активирован",
+            value={"error": "This user is not currently activated."},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[AllowAny])
 @throttle_classes(throttle_classes=[CodeBasedThrottle, IpBasedThrottle])
@@ -68,6 +140,40 @@ def login_view(request: Request) -> Response:
     )
 
 
+@extend_schema(
+    summary="Повторная отправка кода подтверждения",
+    description="Отправляет повторный код подтверждения на email пользователя, если предыдущий истёк.",
+    responses={
+        200: {"type": "object", "properties": {"message": {"type": "string"}}},
+        400: {"type": "object", "properties": {"detail": {"type": "string"}}},
+        401: {"type": "object", "properties": {"error": {"type": "string"}}},
+        404: {"type": "object", "properties": {"detail": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Успешный ответ",
+            value={"message": "Код успешно отправлен повторно"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Сессия не найдена",
+            value={"detail": "Нет активной сессии или попытки."},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Попытка не найдена",
+            value={"detail": "Не найдено активной попытки подтверждения."},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Код ещё не истёк",
+            value={
+                "error": "Предыдущий код ещё не истёк. Пожалуйста, подождите и отправьте запрос после истечения!"
+            },
+            response_only=True,
+        ),
+    ],
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @throttle_classes(throttle_classes=[IpBasedThrottle])
@@ -109,6 +215,65 @@ def resend_code_view(request: Request) -> Response:
     )
 
 
+@extend_schema(
+    summary="Подтверждение входа по коду",
+    description="Подтверждает вход пользователя по одноразовому коду из email.",
+    parameters=[
+        OpenApiParameter(
+            name="code",
+            type=OpenApiTypes.STR,
+            location="path",
+            description="Одноразовый код подтверждения (обычно 6 цифр)",
+        )
+    ],
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string"},
+                "token_type": {"type": "string"},
+                "access_token": {"type": "string"},
+            },
+        },
+        400: {
+            "type": "object",
+            "properties": {"detail": {"type": "string"}, "error": {"type": "string"}},
+        },
+        401: {
+            "type": "object",
+            "properties": {"detail": {"type": "string"}, "error": {"type": "string"}},
+        },
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса", value={"code": "123456"}, request_only=True
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={
+                "message": "Вход подтверждён.",
+                "token_type": "Bearer",
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx",
+            },
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Неверный код",
+            value={"detail": "Неверный или использованный код подтверждения."},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Код истёк",
+            value={"detail": "Код подтверждения истёк."},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Код не указан",
+            value={"detail": "Код подтверждения обязателен."},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[AllowAny])
 @throttle_classes(throttle_classes=[IpBasedThrottle])
@@ -181,6 +346,50 @@ def confirm_login_view(request: Request) -> Response:
     return response
 
 
+@extend_schema(
+    summary="Обновление токенов через Cookie",
+    description="Обновляет access и refresh токены на основе refresh_token из кук.",
+    request=None,
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "access_token": {"type": "string"},
+                "message": {"type": "string"},
+            },
+        },
+        400: {
+            "description": "Ошибка валидации или отсутствующий токен",
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+        401: {
+            "description": "Неверный или истёкший refresh token",
+            "type": "object",
+            "properties": {"error": {"type": "string"}},
+        },
+    },
+    examples=[
+        OpenApiExample(
+            name="Успешный ответ",
+            value={
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx",
+                "message": "Refresh successful",
+            },
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Refresh token отсутствует",
+            value={"error": "Refresh token is missing"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Неверный refresh token",
+            value={"error": "Token is invalid or expired"},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(
     permission_classes=[
@@ -218,6 +427,30 @@ def cookie_tokens_refresh_view(request) -> Response:
     return response
 
 
+@extend_schema(
+    summary="Выход пользователя (Logout)",
+    description="Производит выход пользователя, удаляя refresh-токен из кук и устанавливая флаг подтверждения email в False.",
+    responses={
+        200: {"type": "object", "properties": {"message": {"type": "string"}}},
+        400: {
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+        401: {"type": "object", "properties": {"error": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Успешный выход",
+            value={"message": "Logout successful"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Refresh token не найден",
+            value={"error": "Refresh token not found"},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def logout_view(request: Request) -> Response:
@@ -246,6 +479,41 @@ def logout_view(request: Request) -> Response:
     return response
 
 
+@extend_schema(
+    summary="Смена пароля",
+    description="Изменяет пароль текущего пользователя после валидации данных.",
+    request="PasswordResetSerializer",
+    responses={
+        200: {"type": "object", "properties": {"message": {"type": "string"}}},
+        400: {
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса",
+            value={
+                "password": "new_secure_password123",
+                "password_confirm": "new_secure_password123",
+            },
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешная смена пароля",
+            value={"message": "Пароль успешно изменён."},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Пароли не совпадают",
+            value={
+                "errors": {"non_field_errors": ["Passwords do not match."]},
+                "error": "Passwords do not match.",
+            },
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["PUT"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def reset_password_view(request: Request) -> Response:

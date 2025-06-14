@@ -9,7 +9,8 @@ from applications.views import (
     get_all_applications_approved_view,
     get_all_applications_rejected_view,
     update_application_view,
-    get_applications_user_view, delete_application_view,
+    get_applications_user_view,
+    delete_application_view,
 )
 from work_rate.views import (
     work_rate_view,

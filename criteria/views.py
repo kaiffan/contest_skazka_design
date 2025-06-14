@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiExample, extend_schema, OpenApiParameter
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -16,6 +17,52 @@ from participants.permissions import IsContestOwnerPermission
 from django.core.cache import cache
 
 
+@extend_schema(
+    summary="Добавление/удаление/обновление критериев у конкурса",
+    description="Принимает список критериев в формате JSON и добавляет, обновляет или удаляет их у конкурса.",
+    request=ContestChangeCriteriaSerializer,
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string"},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "added": {"type": "array", "items": {"type": "integer"}},
+                        "removed": {"type": "array", "items": {"type": "integer"}},
+                        "updated": {"type": "array", "items": {"type": "integer"}},
+                    },
+                },
+            },
+        },
+        400: {
+            "type": "object",
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
+        404: {"type": "object", "properties": {"message": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса",
+            value={
+                "criteria_list": [
+                    {"id": 1, "name": "Креативность"},
+                    {"id": 2, "name": "Техника исполнения"},
+                ]
+            },
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={
+                "message": "Criteria updated successfully",
+                "data": {"added": [1, 2], "removed": [], "updated": []},
+            },
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(
     permission_classes=[
@@ -47,6 +94,32 @@ def add_or_remove_criteria_contest_view(request: Request) -> Response:
     )
 
 
+@extend_schema(
+    summary="Получение всех критериев",
+    description="Возвращает список всех критериев. Можно фильтровать по имени через параметр `search`.",
+    parameters=[
+        OpenApiParameter(
+            name="search",
+            type=str,
+            location="query",
+            description="Поиск по названию критерия",
+        )
+    ],
+    responses={200: CriteriaSerializer(many=True)},
+    examples=[
+        OpenApiExample(
+            name="Успешный ответ",
+            value={
+                "data": [
+                    {"id": 1, "name": "Креативность"},
+                    {"id": 2, "name": "Техника исполнения"},
+                ],
+                "message": "All names by креатив",
+            },
+            response_only=True,
+        )
+    ],
+)
 @api_view(http_method_names=["GET"])
 @permission_classes(
     permission_classes=[
@@ -82,6 +155,10 @@ def get_all_criteria_view(request: Request) -> Response:
     return paginator.get_paginated_response(response_data)
 
 
+@extend_schema(
+    summary="Получение критериев конкурса",
+    description="Возвращает все критерии, связанные с конкретным конкурсом.",
+)
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_criteria_by_contest_view(request: Request) -> Response:

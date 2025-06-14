@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiExample
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +12,55 @@ from storage_s3.success_error_type import FileUploadResult, Success
 from storage_s3.utils import upload_file_to_storage, get_file_constraint_by_type
 
 
+@extend_schema(
+    summary="Загрузка файла любого типа",
+    description="Загружает файл на сервер с проверкой по ограничениям, зависящим от типа загрузки.",
+    parameters=[
+        OpenApiParameter(
+            name="file",
+            type=OpenApiTypes.BINARY,
+            location="query",
+            description="Файл для загрузки",
+        ),
+        OpenApiParameter(
+            name="upload_type",
+            type=OpenApiTypes.STR,
+            location="query",
+            description='Тип загрузки (например: "application", "photo")',
+        ),
+    ],
+    responses={
+        201: {
+            "type": "object",
+            "properties": {"link_to_file": {"type": "string", "format": "uri"}},
+        },
+        400: {"type": "object", "properties": {"error": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса (multipart/form-data)",
+            value={"file": "example.jpg", "upload_type": "application"},
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={"link_to_file": "https://storage.example.com/files/example.jpg"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Файл не предоставлен",
+            value={"error": "Файл не предоставлен"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Некорректный тип загрузки",
+            value={
+                "error": "Некорректный тип загрузки. Допустимые значения: ['application', 'photo', 'document']"
+            },
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def upload_file_view(request: Request) -> Response:
@@ -51,6 +102,59 @@ def upload_file_view(request: Request) -> Response:
     return Response(data={"error": result.message}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(
+    summary="Загрузка конкурсной работы",
+    description="Загружает файл заявки на конкурс с учетом ограничений по типу и конкурсу.",
+    parameters=[
+        OpenApiParameter(
+            name="file",
+            type=OpenApiTypes.BINARY,
+            location="path",
+            description="Файл заявки",
+        ),
+        OpenApiParameter(
+            name="upload_type",
+            type=OpenApiTypes.STR,
+            location="path",
+            description='Тип загрузки (должен быть "application")',
+        ),
+        OpenApiParameter(
+            name="contest_id",
+            type=OpenApiTypes.INT,
+            location="path",
+            description="ID конкурса",
+        ),
+    ],
+    responses={
+        201: {
+            "type": "object",
+            "properties": {"link_to_file": {"type": "string", "format": "uri"}},
+        },
+        400: {"type": "object", "properties": {"error": {"type": "string"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса (multipart/form-data)",
+            value={"file": "work.zip", "upload_type": "application", "contest_id": 1},
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ",
+            value={"link_to_file": "https://storage.example.com/files/work.zip"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: contest_id не задан",
+            value={"error": "contest_id не задан"},
+            response_only=True,
+        ),
+        OpenApiExample(
+            name="Ошибка: Неподдерживаемый тип загрузки",
+            value={"error": "Данный тип заявки не поддерживается"},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def upload_contest_work_view(request: Request) -> Response:

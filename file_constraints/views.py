@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
@@ -13,6 +14,10 @@ from file_constraints.serailizers import FileConstraintSerializer
 from participants.permissions import IsContestOwnerPermission
 
 
+@extend_schema(
+    summary="Получение всех ограничений на файлы",
+    description="Возвращает список всех доступных ограничений на загрузку файлов.",
+)
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
 def get_all_file_constraints_view(request: Request) -> Response:
@@ -23,6 +28,30 @@ def get_all_file_constraints_view(request: Request) -> Response:
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    summary="Добавление/удаление ограничений на файлы у конкурса",
+    description="Принимает список ID ограничений и обновляет их у конкретного конкурса.",
+    request=FileConstraintChangeSerializer,
+    responses={
+        200: {"type": "object", "properties": {"status": {"type": "string"}}},
+        400: {"type": "object", "properties": {"message": {"type": "object"}}},
+    },
+    examples=[
+        OpenApiExample(
+            name="Пример запроса",
+            value={"file_constraint_ids": [1, 2, 3]},
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Успешный ответ", value={"status": "success"}, response_only=True
+        ),
+        OpenApiExample(
+            name="Ошибка: Неверные данные",
+            value={"message": {"file_constraint_ids": ["This field is required."]}},
+            response_only=True,
+        ),
+    ],
+)
 @api_view(http_method_names=["POST"])
 @permission_classes(
     permission_classes=[

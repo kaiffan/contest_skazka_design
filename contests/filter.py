@@ -1,6 +1,11 @@
 from datetime import date
 
-from django_filters import FilterSet, ModelMultipleChoiceFilter, NumberFilter, CharFilter
+from django_filters import (
+    FilterSet,
+    ModelMultipleChoiceFilter,
+    NumberFilter,
+    CharFilter,
+)
 
 from age_categories.models import AgeCategories
 from contest_stage.models import ContestStage
@@ -17,10 +22,10 @@ class ContestFilter(FilterSet):
 
     contest_stage = ModelMultipleChoiceFilter(
         queryset=ContestStage.objects.all(),
-        field_name='contestsconteststage__stage',
-        to_field_name='id',
+        field_name="contestsconteststage__stage",
+        to_field_name="id",
         conjoined=False,
-        method='filter_contest_stage_with_current_check'
+        method="filter_contest_stage_with_current_check",
     )
 
     class Meta:
@@ -37,10 +42,13 @@ class ContestFilter(FilterSet):
 
         today = date.today()
 
-        stage_ids = [contest_stage.id if hasattr(contest_stage, 'id') else contest_stage for contest_stage in value]
+        stage_ids = [
+            contest_stage.id if hasattr(contest_stage, "id") else contest_stage
+            for contest_stage in value
+        ]
 
         return queryset.filter(
             contestsconteststage__stage_id__in=stage_ids,
             contestsconteststage__start_date__lte=today,
-            contestsconteststage__end_date__gte=today
+            contestsconteststage__end_date__gte=today,
         ).distinct()

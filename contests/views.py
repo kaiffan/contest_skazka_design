@@ -139,7 +139,7 @@ def update_contest_view(request: Request) -> Response:
 )
 @api_view(http_method_names=["POST"])
 @permission_classes(
-    permission_classes=[IsAdminSystemPermission, IsNotBlockUserPermission]
+    permission_classes=[IsContestOwnerPermission, IsNotBlockUserPermission]
 )
 def publish_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)

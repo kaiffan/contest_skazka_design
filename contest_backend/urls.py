@@ -22,6 +22,7 @@ urlpatterns = [
     path(route="api/v1/participants/", view=include("participants.urls")),
     path(route="api/v1/storage/", view=include("storage_s3.urls")),
     path(route="api/v1/file_constraints/", view=include("file_constraints.urls")),
+    path(route="api/v1/winners/", view=include("winners.urls")),
     path(route="api/v1/admin/", view=include("block_user.urls")),
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

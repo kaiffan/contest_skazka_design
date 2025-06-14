@@ -31,10 +31,7 @@ from work_rate.serializers import (
     responses={
         400: {
             "type": "object",
-            "properties": {
-                "message": {"type": "string"},
-                "error": {"type": "string"}
-            }
+            "properties": {"message": {"type": "string"}, "error": {"type": "string"}},
         }
     },
     examples=[
@@ -44,10 +41,10 @@ from work_rate.serializers import (
                 "application_id": 1,
                 "rates": [
                     {"criterion_id": 1, "rate": 95},
-                    {"criterion_id": 2, "rate": 85}
-                ]
+                    {"criterion_id": 2, "rate": 85},
+                ],
             },
-            request_only=True
+            request_only=True,
         ),
         OpenApiExample(
             name="Успешный ответ",
@@ -56,18 +53,18 @@ from work_rate.serializers import (
                     "application_id": 1,
                     "rates": [
                         {"criterion_id": 1, "rate": 95},
-                        {"criterion_id": 2, "rate": 85}
-                    ]
+                        {"criterion_id": 2, "rate": 85},
+                    ],
                 }
             ],
-            response_only=True
+            response_only=True,
         ),
         OpenApiExample(
             name="Ошибка: Недостаточно критериев",
             value={"message": "Invalid rate for contest"},
-            response_only=True
-        )
-    ]
+            response_only=True,
+        ),
+    ],
 )
 @api_view(http_method_names=["POST"])
 @permission_classes(
@@ -114,18 +111,10 @@ def work_rate_view(request: Request) -> Response:
     examples=[
         OpenApiExample(
             name="Успешный ответ",
-            value=[
-                {
-                    "application": {
-                        "id": 1,
-                        "name": "Моя работа"
-                    },
-                    "total": 180
-                }
-            ],
-            response_only=True
+            value=[{"application": {"id": 1, "name": "Моя работа"}, "total": 180}],
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(
@@ -160,12 +149,12 @@ def get_all_rated_works_in_contest_view(request: Request) -> Response:
                     "id": 1,
                     "rates": [
                         {"criteria_id": 1, "criteria_name": "Креативность", "rate": 95}
-                    ]
+                    ],
                 }
             ],
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(
@@ -197,19 +186,11 @@ def get_all_rated_works_view(request: Request) -> Response:
     description="Принимает список заявок и критериев с оценками от жюри.",
     request=WorkRateSerializer,
     responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "message": {"type": "string"}
-            }
-        },
+        200: {"type": "object", "properties": {"message": {"type": "string"}}},
         400: {
             "type": "object",
-            "properties": {
-                "error": {"type": "string"},
-                "errors": {"type": "object"}
-            }
-        }
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
     },
     examples=[
         OpenApiExample(
@@ -218,17 +199,17 @@ def get_all_rated_works_view(request: Request) -> Response:
                 "application_id": 1,
                 "rates": [
                     {"criterion_id": 1, "rate": 95},
-                    {"criterion_id": 2, "rate": 85}
-                ]
+                    {"criterion_id": 2, "rate": 85},
+                ],
             },
-            request_only=True
+            request_only=True,
         ),
         OpenApiExample(
             name="Успешный ответ",
             value={"message": "Updated success"},
-            response_only=True
-        )
-    ]
+            response_only=True,
+        ),
+    ],
 )
 @api_view(http_method_names=["PATCH"])
 @permission_classes(
@@ -263,20 +244,12 @@ def update_rated_work_view(request: Request) -> Response:
         OpenApiExample(
             name="Успешный ответ",
             value=[
-                {
-                    "jury_id": 1,
-                    "full_name": "Иванов Иван",
-                    "total_rates": 5
-                },
-                {
-                    "jury_id": 2,
-                    "full_name": "Петров Петр",
-                    "total_rates": 3
-                }
+                {"jury_id": 1, "full_name": "Иванов Иван", "total_rates": 5},
+                {"jury_id": 2, "full_name": "Петров Петр", "total_rates": 3},
             ],
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(

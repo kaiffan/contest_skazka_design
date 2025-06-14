@@ -33,16 +33,13 @@ from participants.permissions import IsContestOwnerPermission
             "type": "object",
             "properties": {
                 "contest_id": {"type": "integer"},
-                "message": {"type": "string"}
-            }
+                "message": {"type": "string"},
+            },
         },
         400: {
             "type": "object",
-            "properties": {
-                "error": {"type": "string"},
-                "errors": {"type": "object"}
-            }
-        }
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
     },
     examples=[
         OpenApiExample(
@@ -52,16 +49,16 @@ from participants.permissions import IsContestOwnerPermission
                 "description": "Ежегодный конкурс для молодых талантов",
                 "organizer": "Министерство культуры",
                 "contest_category_name": "Искусство",
-                "age_category": [1, 2]
+                "age_category": [1, 2],
             },
-            request_only=True
+            request_only=True,
         ),
         OpenApiExample(
             name="Успешный ответ",
             value={"contest_id": 1, "message": "Contest created successfully"},
-            response_only=True
-        )
-    ]
+            response_only=True,
+        ),
+    ],
 )
 @api_view(http_method_names=["POST"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
@@ -86,35 +83,24 @@ def create_contest_view(request: Request) -> Response:
     description="Частично обновляет данные о конкурсе по ID из URL или контекста.",
     request=UpdateBaseContestSerializer,
     responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "message": {"type": "string"}
-            }
-        },
+        200: {"type": "object", "properties": {"message": {"type": "string"}}},
         400: {
             "type": "object",
-            "properties": {
-                "error": {"type": "string"},
-                "errors": {"type": "object"}
-            }
-        }
+            "properties": {"error": {"type": "string"}, "errors": {"type": "object"}},
+        },
     },
     examples=[
         OpenApiExample(
             name="Пример запроса",
-            value={
-                "title": "Новое название",
-                "description": "Обновленное описание"
-            },
-            request_only=True
+            value={"title": "Новое название", "description": "Обновленное описание"},
+            request_only=True,
         ),
         OpenApiExample(
             name="Успешный ответ",
             value={"message": "Contest successfully update"},
-            response_only=True
-        )
-    ]
+            response_only=True,
+        ),
+    ],
 )
 @api_view(http_method_names=["PATCH"])
 @permission_classes(
@@ -142,21 +128,14 @@ def update_contest_view(request: Request) -> Response:
 @extend_schema(
     summary="Публикация конкурса",
     description="Устанавливает флаг is_published=True у конкурса.",
-    responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "message": {"type": "string"}
-            }
-        }
-    },
+    responses={200: {"type": "object", "properties": {"message": {"type": "string"}}}},
     examples=[
         OpenApiExample(
             name="Успешный ответ",
             value={"message": "Contest successfully published"},
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["POST"])
 @permission_classes(
@@ -177,21 +156,14 @@ def publish_contest_view(request: Request) -> Response:
 @extend_schema(
     summary="Отмена публикации конкурса",
     description="Убирает флаг is_published у конкурса.",
-    responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "message": {"type": "string"}
-            }
-        }
-    },
+    responses={200: {"type": "object", "properties": {"message": {"type": "string"}}}},
     examples=[
         OpenApiExample(
             name="Успешный ответ",
             value={"message": "Contest successfully deleted"},
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["DELETE"])
 @permission_classes(
@@ -221,12 +193,12 @@ def reject_publish_contest_view(request: Request) -> Response:
                     "title": "Конкурс талантов",
                     "avatar": "https://example.com/avatar.jpg",
                     "contest_category": {"name": "Искусство"},
-                    "contest_stage": "registration"
+                    "contest_stage": "registration",
                 }
             ],
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(
@@ -257,7 +229,9 @@ def get_published_contest_view(request: Request) -> Response:
                 "is_deleted": False,
                 "is_published": True,
                 "nomination": [{"name": "Лучший фильм"}],
-                "criteria": [{"name": "Креативность", "description": "Оценка оригинальности"}],
+                "criteria": [
+                    {"name": "Креативность", "description": "Оценка оригинальности"}
+                ],
                 "age_categories": [{"name": "Дети"}],
                 "contest_stage": ["registration"],
                 "jury": [],
@@ -265,11 +239,11 @@ def get_published_contest_view(request: Request) -> Response:
                 "file_constraint": {"max_size": "10MB"},
                 "contest_category": {"name": "Искусство"},
                 "prizes": "Призы за победу",
-                "contacts_for_participants": "email@example.com"
+                "contacts_for_participants": "email@example.com",
             },
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[AllowAny])
@@ -302,11 +276,11 @@ def get_contest_by_id_view(request: Request) -> Response:
                 "organizer": "Минкультуры",
                 "contest_category": {"name": "Искусство"},
                 "age_categories": [{"name": "Дети"}],
-                "contest_stage": ["registration"]
+                "contest_stage": ["registration"],
             },
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(
@@ -344,12 +318,12 @@ def get_contest_by_id_owner_view(request: Request) -> Response:
                     "title": "Конкурс талантов",
                     "avatar": "https://example.com/avatar.jpg",
                     "contest_category": {"name": "Искусство"},
-                    "contest_stage": ["registration"]
+                    "contest_stage": ["registration"],
                 }
             ],
-            response_only=True
+            response_only=True,
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[AllowAny])
@@ -369,20 +343,20 @@ def get_all_contests_not_permissions_view(request: Request) -> Response:
             name="contest_title",
             type=OpenApiTypes.STR,
             location="query",
-            description="Фильтрация по части названия конкурса"
+            description="Фильтрация по части названия конкурса",
         ),
         OpenApiParameter(
             name="age_category",
             type=int,
             location="query",
-            description="Фильтрация по ID возрастной категории (можно несколько)"
+            description="Фильтрация по ID возрастной категории (можно несколько)",
         ),
         OpenApiParameter(
             name="contest_stage",
             type=int,
             location="query",
-            description="Фильтрация по ID этапа конкурса (можно несколько)"
-        )
+            description="Фильтрация по ID этапа конкурса (можно несколько)",
+        ),
     ],
     responses={200: ContestAllSerializer},
     examples=[
@@ -394,20 +368,20 @@ def get_all_contests_not_permissions_view(request: Request) -> Response:
                     "title": "Конкурс талантов",
                     "avatar": "https://example.com/avatar.jpg",
                     "contest_category": {"name": "Искусство"},
-                    "contest_stage": ["registration"]
+                    "contest_stage": ["registration"],
                 },
                 {
                     "id": 2,
                     "title": "Музыкальный конкурс",
                     "avatar": "https://example.com/music.jpg",
                     "contest_category": {"name": "Музыка"},
-                    "contest_stage": ["submission", "review"]
-                }
+                    "contest_stage": ["submission", "review"],
+                },
             ],
             response_only=True,
-            media_type="application/json"
+            media_type="application/json",
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[AllowAny])
@@ -444,13 +418,13 @@ def get_all_contests_view(request: Request) -> Response:
                     "count_jury": 3,
                     "is_draft": False,
                     "is_published": True,
-                    "is_deleted": False
+                    "is_deleted": False,
                 }
             ],
             response_only=True,
-            media_type="application/json"
+            media_type="application/json",
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])
@@ -479,13 +453,13 @@ def get_all_contests_owner_view(request: Request) -> Response:
                     "title": "Конкурс талантов",
                     "avatar": "https://example.com/contest.jpg",
                     "current_stage": "registration",
-                    "count_application": 5
+                    "count_application": 5,
                 }
             ],
             response_only=True,
-            media_type="application/json"
+            media_type="application/json",
         )
-    ]
+    ],
 )
 @api_view(http_method_names=["GET"])
 @permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission])

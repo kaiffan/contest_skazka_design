@@ -761,9 +761,10 @@ class ContestWinnerSerializer(Serializer):
                 total_score=Sum("workrate__rate")
             )
 
-            existing_winners = Winners.objects.filter(contest=contest).in_bulk(
-                field_name="application_id"
-            )
+            existing_winners = {
+                winner.application_id: winner
+                for winner in Winners.objects.filter(contest=contest).select_related("application")
+            }
 
             to_update: List[Winners] = []
             to_create: List[Winners] = []
@@ -775,9 +776,9 @@ class ContestWinnerSerializer(Serializer):
                 if not winner:
                     to_create.append(
                         Winners(
-                            contest=contest.id,
-                            application=application.id,
-                            rate=total_score,
+                            contest=contest,
+                            application=application,
+                            sum_rate=total_score,
                         )
                     )
                     continue
@@ -787,7 +788,7 @@ class ContestWinnerSerializer(Serializer):
                     to_update.append(winner)
 
             if to_update:
-                Winners.objects.bulk_update(objs=to_update, fields=["rate"])
+                Winners.objects.bulk_update(objs=to_update, fields=["sum_rate"])
 
             if to_create:
                 Winners.objects.bulk_create(objs=to_create)
@@ -797,4 +798,4 @@ class ContestWinnerSerializer(Serializer):
             ).select_related("application")
 
             updated_winners = self.assign_places(list(all_winners_by_contest))
-            Winners.objects.bulk_update(updated_winners, fields=["place"])
+            Winners.objects.bulk_update(objs=updated_winners, fields=["place"])

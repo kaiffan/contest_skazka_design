@@ -20,5 +20,5 @@ def get_contest_winners_view(request: Request) -> Response:
     winner_serializer = ContestWinnerSerializer(context={'contest': contest})
     winner_serializer.change_winners_by_contest()
 
-    output_serializer = ContestWinnersSerializer(instance=contest)
-    return Response(data=output_serializer.data, status=status.HTTP_200_OK)
+    serializer = ContestWinnersSerializer(contest, context={"contest": contest})
+    return Response(data=serializer.data, status=status.HTTP_200_OK)

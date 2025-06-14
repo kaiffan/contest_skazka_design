@@ -19,17 +19,17 @@ class BaseStagePermission(permissions.BasePermission):
         return contest_id
 
     def has_permission(self, request, view):
-        contest_id = self.get_contest_id(request)
+        contest_id = self.get_contest_id(request=request)
 
         try:
             contest = Contest.objects.get(id=contest_id)
         except Contest.DoesNotExist:
-            return False
+            raise PermissionDenied(detail="Not contest_id in header")
 
         current_stage: dict[str, Any] = get_current_contest_stage(contest_id=contest.id)
 
         if current_stage["name"] != self.allowed_stage:
-            return False
+            raise PermissionDenied(detail=self.message)
 
         return True
 

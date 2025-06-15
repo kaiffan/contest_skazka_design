@@ -8,8 +8,10 @@ from contests_contest_stage.models import ContestsContestStage
 
 
 def get_current_contest_stage(contest_id: int) -> Dict[str, Any]:
-    current_stage = cache.get(key=f"current_contest_stage_{contest_id}", default=None)
     today = date.today()
+    cache_key = f"current_contest_stage_{contest_id}"
+
+    current_stage = cache.get(key=cache_key)
 
     if not current_stage:
         current_stage = ContestsContestStage.objects.filter(
@@ -18,23 +20,18 @@ def get_current_contest_stage(contest_id: int) -> Dict[str, Any]:
             end_date__gte=today,
         ).first()
         if current_stage:
-            cache.set(
-                key="current_contest_stage_{contest_id}",
-                value=current_stage,
-                timeout=60 * 30,
-            )
+            cache.set(cache_key, current_stage, timeout=60 * 30)
 
-    if not current_stage:
-        return {"name": "Закончен"}
+    if current_stage:
+        return {
+            "name": current_stage.stage.name,
+            "start_date": current_stage.start_date,
+            "end_date": current_stage.end_date,
+        }
 
-    if current_stage.start_date > today:
-        return {"name": "Запланирован"}
+    future_stages_exist = ContestsContestStage.objects.filter(
+        contest_id=contest_id,
+        start_date__gt=today
+    ).exists()
 
-    if current_stage.end_date < today:
-        return {"name": "Закончен"}
-
-    return {
-        "name": current_stage.stage.name,
-        "start_date": current_stage.start_date,
-        "end_date": current_stage.end_date,
-    }
+    return {"name": "Запланирован" if future_stages_exist else "Закончен"}

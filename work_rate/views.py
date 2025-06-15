@@ -80,11 +80,15 @@ from work_rate.serializers import (
 def work_rate_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
-    participant_id = Participant.objects.filter(
-        contest=contest,
-        user=request.user,
-        role=ParticipantRole.jury.value,
-    ).first().id
+    participant_id = (
+        Participant.objects.filter(
+            contest=contest,
+            user=request.user,
+            role=ParticipantRole.jury.value,
+        )
+        .first()
+        .id
+    )
 
     serializer = WorkRateSerializer(
         data=request.data,

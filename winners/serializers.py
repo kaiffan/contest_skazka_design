@@ -16,7 +16,15 @@ class ApplicationRatedSerializer(ModelSerializer[Applications]):
 
     class Meta:
         model = Applications
-        fields = ("id", "name", "annotation", "user_fio", "sum_rate", "place", "user_email")
+        fields = (
+            "id",
+            "name",
+            "annotation",
+            "user_fio",
+            "sum_rate",
+            "place",
+            "user_email",
+        )
 
     def get_winner_qs(self, application):
         contest = self.context.get("contest")
@@ -59,8 +67,7 @@ class NominationWinnersSerializer(Serializer):
         contest = self.context.get("contest")
 
         winners = Winners.objects.filter(
-            contest=contest,
-            application__nomination=obj
+            contest=contest, application__nomination=obj
         ).select_related("application")
 
         grouped = defaultdict(list)
@@ -71,7 +78,9 @@ class NominationWinnersSerializer(Serializer):
         for age_name, apps in grouped.items():
             serialized_data = {
                 "age_category": age_name,
-                "winners": ApplicationRatedSerializer(apps, many=True, context=self.context).data
+                "winners": ApplicationRatedSerializer(
+                    apps, many=True, context=self.context
+                ).data,
             }
             result.append(serialized_data)
 

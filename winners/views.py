@@ -12,12 +12,18 @@ from participants.permissions import IsContestOwnerPermission
 from winners.serializers import ContestWinnersSerializer
 
 
-@api_view(http_method_names=['GET'])
-@permission_classes(permission_classes=[IsAuthenticated, IsContestOwnerPermission, CanFinalizeResultsPermission])
+@api_view(http_method_names=["GET"])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsContestOwnerPermission,
+        CanFinalizeResultsPermission,
+    ]
+)
 def get_contest_winners_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 
-    winner_serializer = ContestWinnerSerializer(context={'contest': contest})
+    winner_serializer = ContestWinnerSerializer(context={"contest": contest})
     winner_serializer.change_winners_by_contest()
 
     serializer = ContestWinnersSerializer(contest, context={"contest": contest})

@@ -476,7 +476,13 @@ def get_all_contests_jury_view(request: Request) -> Response:
 
 
 @api_view(http_method_names=["DELETE"])
-@permission_classes(permission_classes=[IsAuthenticated, IsNotBlockUserPermission, IsContestOwnerPermission])
+@permission_classes(
+    permission_classes=[
+        IsAuthenticated,
+        IsNotBlockUserPermission,
+        IsContestOwnerPermission,
+    ]
+)
 def delete_contest_view(request: Request) -> Response:
     contest = get_object_or_404(Contest, id=request.contest_id)
 

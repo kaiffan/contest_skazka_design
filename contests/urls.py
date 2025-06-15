@@ -10,7 +10,8 @@ from contests.views import (
     get_all_contests_jury_view,
     get_contest_by_id_view,
     get_published_contest_view,
-    reject_publish_contest_view, delete_contest_view,
+    reject_publish_contest_view,
+    delete_contest_view,
 )
 
 urlpatterns = [

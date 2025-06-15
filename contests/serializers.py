@@ -763,7 +763,9 @@ class ContestWinnerSerializer(Serializer):
 
             existing_winners = {
                 winner.application_id: winner
-                for winner in Winners.objects.filter(contest=contest).select_related("application")
+                for winner in Winners.objects.filter(contest=contest).select_related(
+                    "application"
+                )
             }
 
             to_update: List[Winners] = []

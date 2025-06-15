@@ -10,7 +10,7 @@ class BaseContestRolePermission(BasePermission):
     message = "Недостаточно прав для выполнения действия."
 
     def has_permission(self, request, view):
-        contest_id = getattr(request, 'contest_id', None)
+        contest_id = request.contest_id
         user = request.user
 
         if not contest_id:
@@ -21,7 +21,9 @@ class BaseContestRolePermission(BasePermission):
             user_id=user.id,
             role=self.role.value,
         ).exists():
-            raise PermissionDenied(f"Для этого действия требуется роль: {self.role.label}")
+            raise PermissionDenied(
+                f"Для этого действия требуется роль: {self.role.value}"
+            )
 
         return True
 
@@ -30,13 +32,13 @@ class IsContestOwnerPermission(BaseContestRolePermission):
     role = ParticipantRole.owner
 
 
-class IsContestJuryPermission(BasePermission):
+class IsContestJuryPermission(BaseContestRolePermission):
     role = ParticipantRole.jury
 
 
-class IsContestMemberPermission(BasePermission):
+class IsContestMemberPermission(BaseContestRolePermission):
     role = ParticipantRole.member
 
 
-class IsOrgCommitteePermission(BasePermission):
+class IsOrgCommitteePermission(BaseContestRolePermission):
     role = ParticipantRole.org_committee

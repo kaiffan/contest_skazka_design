@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("sum rate", models.PositiveIntegerField(default=0)),
+                ("sum_rate", models.PositiveIntegerField(default=0)),
                 ("place", models.PositiveIntegerField(default=0)),
                 (
                     "application",
